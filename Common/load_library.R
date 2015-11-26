@@ -1,0 +1,17 @@
+stop("Set working directory to current source file")
+#setwd("~/Dropbox/Cell Line Drug Response Prediction Project/Code/Docetaxel/Script")
+
+# Load Libraries and Dependencies ---------------------------------
+library("SNFtool")
+library("igraph")
+library("foreach")
+library("sva")
+library("ROCR")
+library('doParallel')
+library("caret")
+library("glmnet")
+library("randomForest")
+library("kernlab")
+library("pROC")
+library(preprocessCore)
+rm(list = ls(pattern="temp*"))
