@@ -1,5 +1,5 @@
-stop("Set working directory to current source file")
-#setwd("~/Dropbox/Cell Line Drug Response Prediction Project/Code/Docetaxel/Script")
+# This needs to be changed to point to root directory of this repo
+REPO_ROOT = "/Users/chengzhao/Git/CP2P"
 
 # Load Libraries and Dependencies ---------------------------------
 library("SNFtool")
@@ -15,3 +15,4 @@ library("kernlab")
 library("pROC")
 library(preprocessCore)
 rm(list = ls(pattern="temp*"))
+registerDoParallel(4) # using 4 cores

@@ -260,7 +260,7 @@ Other_Model_Predict <- function(data, ground_truth, partition, selected_features
   rm(list = ls(pattern="ridge."))  
   rm(list = ls(pattern="temp"))  
   
-#   # 4) Random Forest  
+# 4) Random Forest  
   other_model.y = as.factor(ground_truth[partition[[run_ind]]$training_index.single])
   levels(other_model.y) <- c("a", "b")
   
@@ -307,8 +307,7 @@ Other_Model_Predict <- function(data, ground_truth, partition, selected_features
   rm(list = ls(pattern="rf."))
   rm(list = ls(pattern="temp."))
   
-  # 5) SVM with linear kernel
-  
+  # 5) SVM with linear kernel  
   svmLinear.model <- train(x = data[partition[[run_ind]]$training_index.single, selected_features]
                            , y = other_model.y
                            , method = "svmLinear"
