@@ -7,14 +7,12 @@ args[1] = 1
 args[2] = 1
 PARTITION_BEGIN = as.integer(args[1])
 PARTITION_END = as.integer(args[2]) 
-registerDoParallel(8)
 args[3] = "slope"
 args[4] = 3
 ### End ###
 
 print(paste("begin", PARTITION_BEGIN, "end", PARTITION_END))
 load("Epirubicin/WS/epirubicin_data.RData")
-setwd("Common/")
 
 if (args[3] == "slope") {
   input_data <- epirubicin$combined_slope.sva
@@ -59,7 +57,9 @@ if (length(args) == 4) {
 }
 rm(epirubicin)
 
-source("cp_compute.R")
+# do the computation
+source("Common/cp_compute.R")
+# end
 
 print("completed!")
 print(paste("BEGIN and END:", PARTITION_BEGIN, PARTITION_END))

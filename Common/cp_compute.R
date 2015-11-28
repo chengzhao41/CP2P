@@ -16,7 +16,7 @@ for (temp.run_ind in PARTITION_BEGIN:PARTITION_END) {
   temp.mRMR_features <- mRMR_getFeatures(
     input_data[input_partition$cp[[temp.run_ind]]$training_index.single, ], 
     as.ordered(input_label[input_partition$cp[[temp.run_ind]]$training_index.single]), 
-    feature_count = 50, 
+    feature_count = 1000, 
     solution_count = 1)
   print(paste("Number of mRMR features:", length(temp.mRMR_features)))
   temp.mRMR_features <- as.integer(temp.mRMR_features)

@@ -15,4 +15,6 @@ library("kernlab")
 library("pROC")
 library(preprocessCore)
 rm(list = ls(pattern="temp*"))
+
+# Configure
 registerDoParallel(4) # using 4 cores
