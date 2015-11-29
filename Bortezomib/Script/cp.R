@@ -70,14 +70,11 @@ feature.l1000 <- feature.l1000$cp
 remove(bortezomib)
 
 # do the computations
-snf.parameter <- seq(from = 5, to = 30, by = 5)
 source("Common/cp_compute.R")
+#
 
-print("completed!")
-print(paste("BEGIN and END:", PARTITION_BEGIN, PARTITION_END))
+# output
 
-### output
-rm(input_data)
 OUTPUT_DIR = "Bortezomib/output_WS/"
 if (exists("training_var_amount")) {
   save.image(file = paste0(OUTPUT_DIR, "bortezomib_cp_", PARTITION_BEGIN, "to", PARTITION_END, "_", args[3], "_var", training_var_amount, ".RData"))  

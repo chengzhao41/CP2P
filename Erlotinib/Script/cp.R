@@ -69,12 +69,10 @@ if (length(args) == 4) {
 
 rm(erlotinib)
 
+# do the computations
 source("Common/cp_compute.R")
+#
 
-print("completed!")
-print(paste("BEGIN and END:", PARTITION_BEGIN, PARTITION_END))
-
-rm(input_data)
 OUTPUT_DIR = "Erlotinib/output_WS/"
 if (exists("training_var_amount")) {
   save.image(paste0(OUTPUT_DIR, "erlotinib_cp_", PARTITION_BEGIN, "to", PARTITION_END, "_", args[3], "_var", training_var_amount, ".RData"))  

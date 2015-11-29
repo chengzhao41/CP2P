@@ -87,11 +87,11 @@ if (length(args) == 4) {
 }
 
 feature.l1000 <- feature.l1000$cp
-source("cp_compute.R")
 
-print("completed!")
-print(paste("BEGIN and END:", PARTITION_BEGIN, PARTITION_END))
-remove(input_data)
+# do the computations
+source("Common/cp_compute.R")
+#
+
 OUTPUT_DIR = "Docetaxel/output_WS/"
 if (exists("training_var_amount")) {
   save.image(paste0(OUTPUT_DIR, "docetaxel_cp_", PARTITION_BEGIN, "to", PARTITION_END, "_", args[3], "_var", training_var_amount, ".RData"))  

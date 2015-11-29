@@ -100,6 +100,6 @@ for (temp.run_ind in PARTITION_BEGIN:PARTITION_END) {
                                                             NFOLDS = 5,
                                                             type_measure = "auc")
 }
-
-print("completed!")
+rm(input_data)
+print("completed computation!")
 print(paste("BEGIN and END:", PARTITION_BEGIN, PARTITION_END))

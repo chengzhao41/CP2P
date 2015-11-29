@@ -61,13 +61,9 @@ rm(epirubicin)
 source("Common/cp_compute.R")
 # end
 
-print("completed!")
-print(paste("BEGIN and END:", PARTITION_BEGIN, PARTITION_END))
-setwd("/home/zhaoche7/")
-rm(input_data)
-
+OUTPUT_DIR = "Epirubicin/output_WS/"
 if (exists("training_var_amount")) {
-  save.image(paste0("epirubicin_cp_", PARTITION_BEGIN, "to", PARTITION_END, "_", args[3], "_var", training_var_amount, ".RData"))  
+  save.image(paste0(OUTPUT_DIR, "epirubicin_cp_", PARTITION_BEGIN, "to", PARTITION_END, "_", args[3], "_var", training_var_amount, ".RData"))  
 } else {
-  save.image(paste0("epirubicin_cp_", PARTITION_BEGIN, "to", PARTITION_END, "_", args[3], ".RData"))  
+  save.image(paste0(OUTPUT_DIR, "epirubicin_cp_", PARTITION_BEGIN, "to", PARTITION_END, "_", args[3], ".RData"))  
 }
