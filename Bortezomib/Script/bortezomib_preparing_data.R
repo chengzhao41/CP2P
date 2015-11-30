@@ -1,3 +1,15 @@
+library("doParallel")
+library("sva")
+
+source('Bortezomib/Script/generate_random_partition.R')
+source('Common/preparing_data_helper.R')
+source('Common/drug_cut/callingWaterfall.R')
+source('Common/drug_cut/distancePointLine.R')
+source('Common/drug_cut/distancePointSegment.R')
+source('Common/comGENE.R')
+
+###
+
 load("CGP/cdrug2_cgp_ccle_all.RData")
 
 bortezomib.labels <- list()
@@ -43,9 +55,6 @@ temp.auc <- temp.auc[temp.auc_ind]
 length(temp.auc)
 
 # binarize the responses
-source('Common/drug_cut/callingWaterfall.R')
-source('Common/drug_cut/distancePointLine.R')
-source('Common/drug_cut/distancePointSegment.R')
 temp.response <- callingWaterfall(temp.ic50, type="IC50")
 
 temp.response_auc <- callingWaterfall(temp.auc, type="AUC")
@@ -68,8 +77,6 @@ bortezomib.labels$AUC <- temp.label_auc
 ### END ###
 
 ### Getting the expression values
-source('Common/preparing_data_helper.R')
-
 ## get the gene expression data
 bortezomib <- list()
 bortezomib$cgp_slope <- data.ge.cgp[bortezomib.labels$slope_ind,  ]
@@ -115,8 +122,6 @@ sum(!is.na(temp.ind))
 ### END
 
 # Using sva to harmonize across different tissue types
-library("sva")
-
 # show_pca(input_data = bortezomib$cgp_slope, label = bortezomib.labels$slope)
 # show_pca(input_data = bortezomib$cgp_AUC, label = bortezomib.labels$AUC)
 # show_pca(input_data = bortezomib$cgp_IC50, label = bortezomib.labels$IC50)
@@ -151,14 +156,13 @@ bortezomib$patient.combat <- scale(t(bortezomib.patient_ComBat))
 bortezomib.labels$patient <- binaryResponse == 1
 table(bortezomib.labels$patient)
 
-library("sva")
 ### Slopes
 # Using sva to harmonize patients and cell lines
 bortezomib.labels$slope_combined <- c(bortezomib.labels$slope, bortezomib.labels$patient)
 stopifnot(substring(colnames(bortezomib$cgp_slope.sva), 8) == annot.ge.cgp$EntrezGene.ID)
 colnames(bortezomib$cgp_slope.sva) <- annot.ge.cgp$symbol
 
-source('Common/comGENE.R')
+
 temp.data <- comGENE(bortezomib$cgp_slope.sva, bortezomib$patient.combat)
 mean(temp.data[[1]])
 mean(temp.data[[2]])
@@ -220,10 +224,9 @@ rm(temp.data)
 #save(bortezomib, bortezomib.labels, sampleinfo.cgp, file = "Bortezomib/WS/bortezomib_data.RData")
 
 ### get the partitioning
-source('Bortezomib/Script/generate_random_partition.R')
-temp.test_amount <- list(cpp = round(0.4 * length(bortezomib.labels$patient)), cc = round(0.2 * length(bortezomib.labels$slope)))
-
 partition <- list()
+
+temp.test_amount <- list(cpp = round(0.4 * length(bortezomib.labels$patient)), cc = round(0.2 * length(bortezomib.labels$slope)))
 partition$slope <- generate_random_partition(input_labels_cell_lines = bortezomib.labels$slope, 
                                              input_labels_patient = bortezomib.labels$patient, 
                                              test_amount = temp.test_amount)
@@ -254,8 +257,6 @@ feature.l1000$pp <- which(colnames(bortezomib$patient.combat) %in% Landmark_Gene
 #save(bortezomib, bortezomib.labels, sampleinfo.cgp, partition, feature.l1000, file = "Bortezomib/WS/bortezomib_data.RData")
 
 ### create partitions for varying number of patients
-source('Bortezomib/Script/generate_random_partition.R')
-library("doParallel")
 partition_var <- list()
 
 temp.cp <- foreach (training_amount.cp = seq(from = 10, to = 300, by = 10)) %do% {    
@@ -319,5 +320,51 @@ for (temp.ind in 1:15) {
 }
 
 partition_var$pp <- temp.pp
+
+#### get partitions for 100 patients and varying number of cell lines in training set
+temp.cpp <- foreach (cell_line_training_amount = seq(from = 10, to = 310, by = 10)) %do% {    
+  
+  temp.slope <- generate_random_partition.cpp_var2(input_labels_cell_lines = bortezomib.labels$slope, 
+                                                  input_labels_patient = bortezomib.labels$patient, 
+                                                  cell_line_training_amount = cell_line_training_amount,
+                                                  patient_training_amount = 100)
+  
+  temp.IC50 <- generate_random_partition.cpp_var2(input_labels_cell_lines = bortezomib.labels$IC50, 
+                                                 input_labels_patient = bortezomib.labels$patient, 
+                                                 cell_line_training_amount = cell_line_training_amount,
+                                                 patient_training_amount = 100)
+  
+  temp.AUC <- generate_random_partition.cpp_var2(input_labels_cell_lines = bortezomib.labels$AUC, 
+                                                input_labels_patient = bortezomib.labels$patient, 
+                                                cell_line_training_amount = cell_line_training_amount,
+                                                patient_training_amount = 100)
+  list(slope = temp.slope, IC50 = temp.IC50, AUC = temp.AUC)
+}
+
+partition_var$cVar_p100_p <- temp.cpp
+
+#### get partitions for 100 patients and varying number of cell lines in training set
+temp.cpp <- foreach (cell_line_training_amount = seq(from = 10, to = 310, by = 10)) %do% {    
+  
+  temp.slope <- generate_random_partition.cpp_var2(input_labels_cell_lines = bortezomib.labels$slope, 
+                                                   input_labels_patient = bortezomib.labels$patient, 
+                                                   cell_line_training_amount = cell_line_training_amount,
+                                                   patient_training_amount = 50)
+  
+  temp.IC50 <- generate_random_partition.cpp_var2(input_labels_cell_lines = bortezomib.labels$IC50, 
+                                                  input_labels_patient = bortezomib.labels$patient, 
+                                                  cell_line_training_amount = cell_line_training_amount,
+                                                  patient_training_amount = 50)
+  
+  temp.AUC <- generate_random_partition.cpp_var2(input_labels_cell_lines = bortezomib.labels$AUC, 
+                                                 input_labels_patient = bortezomib.labels$patient, 
+                                                 cell_line_training_amount = cell_line_training_amount,
+                                                 patient_training_amount = 50)
+  list(slope = temp.slope, IC50 = temp.IC50, AUC = temp.AUC)
+}
+
+partition_var$cVar_p50_p <- temp.cpp
+
+
 
 #save(bortezomib, bortezomib.labels, sampleinfo.cgp, partition, feature.l1000, partition_var, file = "Bortezomib/WS/bortezomib_data.RData")
