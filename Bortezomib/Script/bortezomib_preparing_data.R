@@ -1,12 +1,9 @@
-stop("Set working directory to current source file")
-setwd("~/Dropbox/Cell Line Drug Response Prediction Project/Code/Docetaxel/Script")
-
-load("../../CGP/cdrug2_cgp_ccle_all.RData")
+load("CGP/cdrug2_cgp_ccle_all.RData")
 
 bortezomib.labels <- list()
 
 ### Get bortezomib response labels from Slope Summary Statistics ###
-cgp_sensitivity_1 <- read.csv("../../CGP/cgp_sensitivity_1.csv")
+cgp_sensitivity_1 <- read.csv("CGP/cgp_sensitivity_1.csv")
 
 temp.bortezomib_ind <- which(cgp_sensitivity_1$drug.name == "Bortezomib")
 cgp_sensitivity_1 <- cgp_sensitivity_1[temp.bortezomib_ind, ]
@@ -46,9 +43,9 @@ temp.auc <- temp.auc[temp.auc_ind]
 length(temp.auc)
 
 # binarize the responses
-source('../../Common/drug_cut/callingWaterfall.R')
-source('../../Common/drug_cut/distancePointLine.R')
-source('../../Common/drug_cut/distancePointSegment.R')
+source('Common/drug_cut/callingWaterfall.R')
+source('Common/drug_cut/distancePointLine.R')
+source('Common/drug_cut/distancePointSegment.R')
 temp.response <- callingWaterfall(temp.ic50, type="IC50")
 
 temp.response_auc <- callingWaterfall(temp.auc, type="AUC")
@@ -71,7 +68,7 @@ bortezomib.labels$AUC <- temp.label_auc
 ### END ###
 
 ### Getting the expression values
-source('../../Common/preparing_data_helper.R')
+source('Common/preparing_data_helper.R')
 
 ## get the gene expression data
 bortezomib <- list()
@@ -114,7 +111,7 @@ sum(bortezomib.labels$IC50[temp.ind] == bortezomib.labels$AUC)
 sum(!is.na(temp.ind))
 # 286 / 313 for AUC vs. IC50 
 
-#save(bortezomib, bortezomib.labels, sampleinfo.cgp, file = "../WS/bortezomib_data.RData")
+#save(bortezomib, bortezomib.labels, sampleinfo.cgp, file = "Bortezomib/WS/bortezomib_data.RData")
 ### END
 
 # Using sva to harmonize across different tissue types
@@ -142,13 +139,13 @@ bortezomib$cgp_AUC.sva <- sva_combine(batch = sampleinfo.cgp$tissue.type[bortezo
 # show_pca(input_data = bortezomib$cgp_AUC.sva, label = sampleinfo.cgp$tissue.type[bortezomib.labels$AUC_ind])
 
 # Using sva to harmonize across different tissue types
-#save("../WS/bortezomib_data.RData")
+#save("Bortezomib/WS/bortezomib_data.RData")
 
 ### Get Patient expression data ###
-##load("../WS/bortezomib_data.RData")
+##load("Bortezomib/WS/bortezomib_data.RData")
 
 # get patient data 
-load("../WS/bortezomib.patient.RData")
+load("Bortezomib/WS/bortezomib.patient.RData")
 
 bortezomib$patient.combat <- scale(t(bortezomib.patient_ComBat))
 bortezomib.labels$patient <- binaryResponse == 1
@@ -161,7 +158,7 @@ bortezomib.labels$slope_combined <- c(bortezomib.labels$slope, bortezomib.labels
 stopifnot(substring(colnames(bortezomib$cgp_slope.sva), 8) == annot.ge.cgp$EntrezGene.ID)
 colnames(bortezomib$cgp_slope.sva) <- annot.ge.cgp$symbol
 
-source('../../Common/comGENE.R')
+source('Common/comGENE.R')
 temp.data <- comGENE(bortezomib$cgp_slope.sva, bortezomib$patient.combat)
 mean(temp.data[[1]])
 mean(temp.data[[2]])
@@ -177,7 +174,7 @@ bortezomib$combined_slope.sva <- sva_combine(batch = bortezomib.labels$slope_com
 show_pca(input_data = bortezomib$combined_slope.sva, label = bortezomib.labels$slope_combined)
 show_pca(input_data = bortezomib$combined_slope.sva, label = bortezomib.labels$slope_combined.source)
 rm(temp.data)
-#save(bortezomib, bortezomib.labels, sampleinfo.cgp, file = "../WS/bortezomib_data.RData")
+#save(bortezomib, bortezomib.labels, sampleinfo.cgp, file = "Bortezomib/WS/bortezomib_data.RData")
 
 ## IC50
 # Using sva to harmonize patients and cell lines
@@ -199,7 +196,7 @@ bortezomib$combined_IC50.sva <- sva_combine(batch = bortezomib.labels$IC50_combi
 show_pca(input_data = bortezomib$combined_IC50.sva, label = bortezomib.labels$IC50_combined)
 show_pca(input_data = bortezomib$combined_IC50.sva, label = bortezomib.labels$IC50_combined.source)
 rm(temp.data)
-#save(bortezomib, bortezomib.labels, sampleinfo.cgp, file = "../WS/bortezomib_data.RData")
+#save(bortezomib, bortezomib.labels, sampleinfo.cgp, file = "Bortezomib/WS/bortezomib_data.RData")
 
 ## AUC
 # Using sva to harmonize patients and cell lines
@@ -220,10 +217,10 @@ show_pca(input_data = bortezomib$combined_AUC.sva, label = bortezomib.labels$AUC
 show_pca(input_data = bortezomib$combined_AUC.sva, label = bortezomib.labels$AUC_combined.source)
 rm(temp.data)
 
-#save(bortezomib, bortezomib.labels, sampleinfo.cgp, file = "../WS/bortezomib_data.RData")
+#save(bortezomib, bortezomib.labels, sampleinfo.cgp, file = "Bortezomib/WS/bortezomib_data.RData")
 
 ### get the partitioning
-source('../Script/generate_random_partition.R')
+source('Bortezomib/Script/generate_random_partition.R')
 temp.test_amount <- list(cpp = round(0.4 * length(bortezomib.labels$patient)), cc = round(0.2 * length(bortezomib.labels$slope)))
 
 partition <- list()
@@ -241,23 +238,23 @@ partition$AUC <- generate_random_partition(input_labels_cell_lines = bortezomib.
                                            input_labels_patient = bortezomib.labels$patient, 
                                            test_amount = temp.test_amount)
 
-#save(bortezomib, bortezomib.labels, sampleinfo.cgp, partition, file = "../WS/bortezomib_data.RData")
+#save(bortezomib, bortezomib.labels, sampleinfo.cgp, partition, file = "Bortezomib/WS/bortezomib_data.RData")
 
 ### get l1000 features
 stopifnot(colnames(bortezomib$cgp_IC50.sva) == colnames(bortezomib$cgp_AUC.sva))
 stopifnot(colnames(bortezomib$cgp_slope.sva) == colnames(bortezomib$cgp_AUC.sva))
 
-Landmark_Genes_n978 <- read.csv("../../Common/Landmark_Genes_n978.csv")
+Landmark_Genes_n978 <- read.csv("Common/Landmark_Genes_n978.csv")
 
 feature.l1000 <- list()
 feature.l1000$cc <- which(colnames(bortezomib$cgp_slope.sva) %in% Landmark_Genes_n978$Gene.Symbol) # not used
 feature.l1000$cp <- which(colnames(bortezomib$combined_slope.sva) %in% Landmark_Genes_n978$Gene.Symbol)
 feature.l1000$pp <- which(colnames(bortezomib$patient.combat) %in% Landmark_Genes_n978$Gene.Symbol)
 
-#save(bortezomib, bortezomib.labels, sampleinfo.cgp, partition, feature.l1000, file = "../WS/bortezomib_data.RData")
+#save(bortezomib, bortezomib.labels, sampleinfo.cgp, partition, feature.l1000, file = "Bortezomib/WS/bortezomib_data.RData")
 
 ### create partitions for varying number of patients
-source('../Script/generate_random_partition.R')
+source('Bortezomib/Script/generate_random_partition.R')
 library("doParallel")
 partition_var <- list()
 
@@ -323,4 +320,4 @@ for (temp.ind in 1:15) {
 
 partition_var$pp <- temp.pp
 
-#save(bortezomib, bortezomib.labels, sampleinfo.cgp, partition, feature.l1000, partition_var, file = "../WS/bortezomib_data.RData")
+#save(bortezomib, bortezomib.labels, sampleinfo.cgp, partition, feature.l1000, partition_var, file = "Bortezomib/WS/bortezomib_data.RData")
