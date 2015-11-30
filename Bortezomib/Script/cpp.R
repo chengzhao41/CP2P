@@ -19,7 +19,7 @@ if (args[3] == "slope" || args[3] == "slope_p100" || args[3] == "slope_p50") {
   input_data <- bortezomib$combined_slope.sva
   input_label <- bortezomib.labels$slope_combined
   input_partition <- partition$slope
-} else if (args[3] == "auc" || args[3] == "auc_p100" || args[3] == args[3] == "auc_p50") {
+} else if (args[3] == "auc" || args[3] == "auc_p100" || args[3] == "auc_p50") {
   input_data <- bortezomib$combined_AUC.sva
   input_label <- bortezomib.labels$AUC_combined
   input_partition <- partition$AUC
