@@ -1,4 +1,3 @@
-snf.parameter <- seq(from = 5, to = 30, by = 5)
 # Other models make predictions ---------------------------------
 source('Common/Other_Model_Predict.R')
 source('Common/mRMR_getFeatures.R')
