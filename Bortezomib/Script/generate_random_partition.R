@@ -223,8 +223,8 @@ generate_random_partition.pp_var <- function(input_labels_patient, training_amou
 generate_random_partition.cpp_var2 <- function(input_labels_cell_lines, input_labels_patient, cell_line_training_amount, patient_training_amount) {
   
   require("doParallel")
-  stopifnot(input_labels_patient < patient_training_amount)
-  stopifnot(input_labels_cell_lines < cell_line_training_amount)
+  stopifnot(length(input_labels_patient) > patient_training_amount)
+  stopifnot(length(input_labels_cell_lines) > cell_line_training_amount)
   
   temp.cell_lines <- 1:length(input_labels_cell_lines)
   temp.patients <- length(input_labels_cell_lines) + 1:length(input_labels_patient)    

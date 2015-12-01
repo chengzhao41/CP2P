@@ -1,10 +1,17 @@
-stop("Set working directory to current source file")
-#setwd("~/Dropbox/Cell Line Drug Response Prediction Project/Code/Docetaxel/Script")
+library("doParallel")
+library("sva")
+
+source('Docetaxel/Script/generate_random_partition.R')
+source('Common/preparing_data_helper.R')
+source('Common/drug_cut/callingWaterfall.R')
+source('Common/drug_cut/distancePointLine.R')
+source('Common/drug_cut/distancePointSegment.R')
+source('Common/comGENE.R')
 
 docetaxel.labels <- list()
-load("../../CGP/cdrug2_cgp_ccle_all.RData")
+load("CGP/cdrug2_cgp_ccle_all.RData")
 #### Get the new Sensitivity Data
-cgp_sensitivity_1 <- read.csv("../../CGP/cgp_sensitivity_1.csv")
+cgp_sensitivity_1 <- read.csv("CGP/cgp_sensitivity_1.csv")
 
 temp.docetaxel_ind <- which(cgp_sensitivity_1$drug.name == "Docetaxel")
 cgp_sensitivity_1 <- cgp_sensitivity_1[temp.docetaxel_ind, ]
@@ -42,10 +49,6 @@ temp.auc <- drugpheno.cgp$AUC[, temp.drug_ind]
 temp.auc_ind <- which(!is.na(temp.auc))
 temp.auc <- temp.auc[temp.auc_ind]
 length(temp.auc)
-
-source('../../Common/drug_cut/callingWaterfall.R')
-source('../../Common/drug_cut/distancePointLine.R')
-source('../../Common/drug_cut/distancePointSegment.R')
 
 temp.response <- callingWaterfall(temp.ic50, type="IC50")
 temp.response_auc <- callingWaterfall(temp.auc, type="AUC")
@@ -97,7 +100,6 @@ sum(docetaxel.labels$slope[temp.slope_include] == docetaxel.labels$AUC[temp.ind]
 # 567 / 650 with AUC and slope
 
 ###################### 
-source('../../Common/preparing_data_helper.R')
 
 ## get the data for slopes
 docetaxel <- list()
@@ -141,14 +143,14 @@ sum(!is.na(temp.ind))
 # 511 / 618 for AUC vs. IC50 
 
 #getwd()
-#save(docetaxel, docetaxel.labels, sampleinfo.cgp, file = "../WS/docetaxel_data.RData")
+#save(docetaxel, docetaxel.labels, sampleinfo.cgp, file = "Docetaxel/WS/docetaxel_data.RData")
 
 # Using sva to harmonize across different tissue types
 library("sva")
-source('../../Common/comGENE.R')
+
 
 # get patient data 
-load("../WS/pp.RData")
+load("Docetaxel/WS/pp.RData")
 docetaxel$patient <- docetaxel.patient
 docetaxel.labels$patient <- pp.ground_truth == 1
 
@@ -181,7 +183,6 @@ docetaxel.labels$IC50_combined <- c(docetaxel.labels$IC50, docetaxel.labels$pati
 stopifnot(substring(colnames(docetaxel.labels$IC50), 8) == annot.ge.cgp$EntrezGene.ID)
 colnames(docetaxel$cgp_IC50) <- annot.ge.cgp$symbol
 
-source('~/Dropbox/SNF_DRUG_PROJECT/Script/comGENE.R')
 temp.data <- comGENE(scale(docetaxel$cgp_IC50), docetaxel$patient)
 mean(temp.data[[1]])
 mean(temp.data[[2]])
@@ -205,7 +206,6 @@ docetaxel.labels$AUC_combined <- c(docetaxel.labels$AUC, docetaxel.labels$patien
 stopifnot(substring(colnames(docetaxel.labels$AUC), 8) == annot.ge.cgp$EntrezGene.ID)
 colnames(docetaxel$cgp_AUC) <- annot.ge.cgp$symbol
 
-source('~/Dropbox/SNF_DRUG_PROJECT/Script/comGENE.R')
 temp.data <- comGENE(docetaxel$cgp_AUC, docetaxel$patient)
 mean(temp.data[[1]])
 mean(temp.data[[2]])
@@ -274,8 +274,6 @@ rm(temp.data)
 
 
 ### get the partitioning
-source('../Script/generate_random_partition.R')
-
 partition <- list()
 
 partition$slope <- generate_random_partition(input_labels_cell_lines = docetaxel.labels$slope, 
@@ -306,7 +304,7 @@ partition$AUC_breast <- generate_random_partition(input_labels_cell_lines = doce
                                                   test_amount = temp.test_amount)
 
 ### get l1000 features
-Landmark_Genes_n978 <- read.csv("../../Common/Landmark_Genes_n978.csv")
+Landmark_Genes_n978 <- read.csv("Common/Landmark_Genes_n978.csv")
 stopifnot(colnames(docetaxel$cgp_IC50) == colnames(docetaxel$cgp_AUC))
 stopifnot(colnames(docetaxel$cgp_slope) == colnames(docetaxel$cgp_AUC))
 feature.l1000 <- list()
@@ -433,8 +431,28 @@ for (temp.ind in 1:22) {
 
 partition_var$pp <- temp.pp
 
+###################
+temp.cpp <- foreach (cell_line_training_amount = seq(from = 10, to = 600, by = 30)) %do% {  
+  
+  temp.slope <- generate_random_partition.cpp_var2(input_labels_cell_lines = docetaxel.labels$slope, 
+                                                  input_labels_patient = docetaxel.labels$patient, 
+                                                  cell_line_training_amount = cell_line_training_amount,
+                                                  patient_training = 20)
+  
+  temp.IC50 <- generate_random_partition.cpp_var2(input_labels_cell_lines = docetaxel.labels$IC50, 
+                                                 input_labels_patient = docetaxel.labels$patient, 
+                                                 cell_line_training_amount = cell_line_training_amount,
+                                                 patient_training = 20)
+  
+  temp.AUC <- generate_random_partition.cpp_var2(input_labels_cell_lines = docetaxel.labels$AUC, 
+                                                input_labels_patient = docetaxel.labels$patient, 
+                                                cell_line_training_amount = cell_line_training_amount,
+                                                patient_training = 20)
+  list(slope = temp.slope, IC50 = temp.IC50, AUC = temp.AUC)
+}
+
+partition_var$cVar_p20_p <- temp.cpp
+
 
 ### UNCOMMENT if you want to save the homogenized dataset
-save(docetaxel, docetaxel.labels, sampleinfo.cgp, partition, feature.l1000, partition_var, file = "../WS/docetaxel_data.RData")
-
-
+#save(docetaxel, docetaxel.labels, sampleinfo.cgp, partition, feature.l1000, partition_var, file = "Docetaxel/WS/docetaxel_data.RData")
