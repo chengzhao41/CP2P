@@ -432,7 +432,7 @@ for (temp.ind in 1:22) {
 partition_var$pp <- temp.pp
 
 ###################
-temp.cpp <- foreach (cell_line_training_amount = seq(from = 10, to = 600, by = 30)) %do% {  
+temp.cpp <- foreach (cell_line_training_amount = seq(from = 30, to = 600, by = 30)) %do% {  
   
   temp.slope <- generate_random_partition.cpp_var2(input_labels_cell_lines = docetaxel.labels$slope, 
                                                   input_labels_patient = docetaxel.labels$patient, 
