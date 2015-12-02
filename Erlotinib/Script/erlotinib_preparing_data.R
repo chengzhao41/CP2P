@@ -1,11 +1,19 @@
-stop("Set working directory to current source file")
+library("doParallel")
+library("sva")
 
-setwd("~/Dropbox/Cell Line Drug Response Prediction Project/Code/Erlotinib/Script")
+source('Docetaxel/Script/generate_random_partition.R')
+source('Common/preparing_data_helper.R')
+source('Common/drug_cut/callingWaterfall.R')
+source('Common/drug_cut/distancePointLine.R')
+source('Common/drug_cut/distancePointSegment.R')
+source('Common/comGENE.R')
+
+###
 
 erlotinib.labels <- list()
-load("../CGP/cdrug2_cgp_ccle_all.RData")
+load("CGP/cdrug2_cgp_ccle_all.RData")
 #### Get the new Sensitivity Data
-cgp_sensitivity_1 <- read.csv("../../CGP/cgp_sensitivity_1.csv")
+cgp_sensitivity_1 <- read.csv("CGP/cgp_sensitivity_1.csv")
 
 temp.erlotinib_ind <- which(cgp_sensitivity_1$drug.name == "Erlotinib")
 cgp_sensitivity_1 <- cgp_sensitivity_1[temp.erlotinib_ind, ]
@@ -44,9 +52,9 @@ temp.auc_ind <- which(!is.na(temp.auc))
 temp.auc <- temp.auc[temp.auc_ind]
 length(temp.auc)
 
-source('../../Common/drug_cut/callingWaterfall.R')
-source('../../Common/drug_cut/distancePointLine.R')
-source('../../Common/drug_cut/distancePointSegment.R')
+source('Common/drug_cut/callingWaterfall.R')
+source('Common/drug_cut/distancePointLine.R')
+source('Common/drug_cut/distancePointSegment.R')
 
 temp.response <- callingWaterfall(temp.ic50, type="IC50")
 temp.response_auc <- callingWaterfall(temp.auc, type="AUC")
@@ -97,7 +105,7 @@ sum(erlotinib.labels$slope[temp.slope_include] == erlotinib.labels$AUC[temp.ind]
 # 304 / 348 with AUC and slope
 
 ###################### 
-source('../../Common/preparing_data_helper.R')
+source('Common/preparing_data_helper.R')
 ## get the data for slopes
 erlotinib <- list()
 erlotinib$cgp_slope <- data.ge.cgp[erlotinib.labels$slope_ind,  ]
@@ -141,8 +149,7 @@ sum(!is.na(temp.ind))
 
 
 # Using sva to harmonize across different tissue types
-library("sva")
-source('../../Common/comGENE.R')
+source('Common/comGENE.R')
 #load("erlotinib_data.RData")
 
 show_pca(input_data = erlotinib$cgp_slope, label = erlotinib.labels$slope)
@@ -151,7 +158,7 @@ show_pca(input_data = erlotinib$cgp_IC50, label = erlotinib.labels$IC50)
 
 ##
 # get patient data 
-load("../WS/clinical_data.RData")
+load("Erlotinib/WS/clinical_data.RData")
 temp.patient <- erlotinib$patient
 temp.label <- erlotinib$patient_label
 names(temp.label) <- rownames(erlotinib$patient)
@@ -160,7 +167,7 @@ names(temp.label) <- rownames(erlotinib$patient)
 temp.geo_cell_line <- erlotinib$cell_line.geo
 temp.geo_cell_line.label <- erlotinib$cell_line.geo.label == 1
 names(temp.geo_cell_line.label) <- rownames(erlotinib$cell_line.geo)
-load("../WS/erlotinib_data.RData")
+#load("Erlotinib/WS/erlotinib_data.RData")
 erlotinib$GEO_IC50 <- temp.geo_cell_line
 erlotinib.labels$GEO_IC50 <- temp.geo_cell_line.label
 erlotinib.labels$GEO_IC50_combined <- c(erlotinib.labels$GEO_IC50, erlotinib.labels$patient)
@@ -200,8 +207,6 @@ show_pca(input_data = erlotinib$lung_all.IC50.ComBat, label = erlotinib.labels$l
 show_pca(input_data = erlotinib$lung_all.IC50.ComBat, label = erlotinib.labels$lung_all.IC50.source)
 
 # slope
-source('~/Dropbox/Cell Line Drug Response Prediction Project/Ensemble Of Similarity Networks/Cheng/Script/preparing_data_helper.R')
-source('~/Dropbox/SNF_DRUG_PROJECT/Script/comGENE.R')
 temp.cgp_lung_only.slope <- which(sampleinfo.cgp$tissue.type[erlotinib.labels$slope_ind] == "lung")
 temp.data <- comGENE(erlotinib$GEO_IC50, scale(erlotinib$cgp_slope[temp.cgp_lung_only.slope, ]))
 mean(temp.data[[1]])
@@ -226,7 +231,6 @@ show_pca(input_data = erlotinib$lung_all.slope.ComBat, label = erlotinib.labels$
 
 ## all of CGP + GEO
 # IC50
-source('~/Dropbox/SNF_DRUG_PROJECT/Script/comGENE.R')
 temp.data <- comGENE(erlotinib$GEO_IC50, scale(erlotinib$cgp_IC50))
 mean(temp.data[[1]])
 mean(temp.data[[2]])
@@ -239,7 +243,6 @@ erlotinib$all.ComBat.IC50 <- ComBat_combine(batch = erlotinib.labels$all.source.
 show_pca(input_data = erlotinib$all.ComBat.IC50, label = erlotinib.labels$all.source.IC50)
 
 # slope
-source('~/Dropbox/SNF_DRUG_PROJECT/Script/comGENE.R')
 temp.data <- comGENE(erlotinib$GEO_IC50, scale(erlotinib$cgp_slope))
 mean(temp.data[[1]])
 mean(temp.data[[2]])
@@ -253,7 +256,6 @@ show_pca(input_data = erlotinib$all.ComBat.slope, label = erlotinib.labels$all.s
 
 
 ### get the partitioning
-source('~/Dropbox/Cell Line Drug Response Prediction Project/Ensemble Of Similarity Networks/Cheng/Erlotinib/Script/generate_random_partition.R')
 temp.test_amount <- list(cc = round(0.2 * length(erlotinib.labels$slope)))
 
 partition <- list()
@@ -291,7 +293,7 @@ partition$all.slope <- generate_random_partition(input_labels_cell_lines = erlot
 ### get l1000 features
 stopifnot(colnames(erlotinib$cgp_IC50) == colnames(erlotinib$cgp_slope))
 
-Landmark_Genes_n978 <- read.csv("~/Dropbox/Cell Line Drug Response Prediction Project/Ensemble Of Similarity Networks/Landmark_Genes_n978.csv")
+Landmark_Genes_n978 <- read.csv("Common/Landmark_Genes_n978.csv")
 
 feature.l1000 <- list()
 feature.l1000$cc <- which(colnames(erlotinib$cgp_slope) %in% Landmark_Genes_n978$Gene.Symbol)
@@ -308,12 +310,11 @@ feature.l1000$pp <- which(colnames(erlotinib$patient) %in% Landmark_Genes_n978$G
 length(feature.l1000$pp)
 
 getwd()
-setwd("~/Dropbox/Cell Line Drug Response Prediction Project/Ensemble Of Similarity Networks/Cheng/Erlotinib/WS")
-save(erlotinib, erlotinib.labels, sampleinfo.cgp, partition, feature.l1000, file = "erlotinib_data.RData")
+setwd("Erlotinib/WS/")
+#save(erlotinib, erlotinib.labels, sampleinfo.cgp, partition, feature.l1000, file = "erlotinib_data.RData")
 
 
 ### create partitions for varying number of patients
-source('~/Dropbox/Cell Line Drug Response Prediction Project/Ensemble Of Similarity Networks/Cheng/Erlotinib/Script/generate_random_partition.R')
 partition_var <- list()
 
 temp.cp <- foreach (training_amount.cp = seq(from = 30, to = 300, by = 30)) %do% {    
@@ -446,5 +447,27 @@ for (temp.ind in 14:23) {
 
 partition_var$pp <- temp.pp
 
-setwd("~/Dropbox/Cell Line Drug Response Prediction Project/Ensemble Of Similarity Networks/Cheng/Erlotinib/WS")
-save(erlotinib, erlotinib.labels, sampleinfo.cgp, partition, feature.l1000, partition_var, file = "erlotinib_data.RData")
+#######################
+
+temp.cpp <- foreach (cell_line_training_amount = seq(from = 20, to = 310, by = 20)) %do% {  
+  
+  temp.slope <- generate_random_partition.cpp_var2(input_labels_cell_lines = c(erlotinib.labels$GEO_IC50, erlotinib.labels$slope), 
+                                                   input_labels_patient = erlotinib.labels$patient, 
+                                                   cell_line_training_amount = cell_line_training_amount,
+                                                   patient_training = 20)
+  
+  temp.IC50 <- generate_random_partition.cpp_var2(input_labels_cell_lines = c(erlotinib.labels$GEO_IC50, erlotinib.labels$IC50), 
+                                                  input_labels_patient = erlotinib.labels$patient, 
+                                                  cell_line_training_amount = cell_line_training_amount,
+                                                  patient_training = 20)
+  
+  
+  list(slope = temp.slope, IC50 = temp.IC50)
+}
+
+partition_var$cVar_p20_p <- temp.cpp
+
+
+
+setwd("Erlotinib/WS")
+#save(erlotinib, erlotinib.labels, sampleinfo.cgp, partition, feature.l1000, partition_var, file = "erlotinib_data.RData")
