@@ -30,7 +30,7 @@ sva_combine <- function(batch, label, input_data, method = "fast", num_sv_method
   return(t(temp.sva$db))  
 }
 
-fsva_combine <- function(batch, label, input_data, method = "fast", num_sv_method = "be", training_ind, test_ind) {
+fsva_combine <- function(batch, label, input_data, training_ind, test_ind, method = "fast", num_sv_method = "leek", n.sv = 0) {
   require("sva")  
   
   stopifnot(length(label) == length(batch))
@@ -50,16 +50,17 @@ fsva_combine <- function(batch, label, input_data, method = "fast", num_sv_metho
   temp.mod = model.matrix(~as.factor(label.training), data=temp.pheno)
   temp.mod0 = model.matrix(~1, data=temp.pheno)  
   
-  # usually use leek, this time I used be
-  
-  if (num_sv_method == "leek") {
-    temp.n.sv = num.sv(dat = t(input_data.training), mod = temp.mod, method="leek")
-    print(paste("leek n.sv:", temp.n.sv))
-  }  
-  
-  if (num_sv_method == "be" || temp.n.sv == 0) {
-    temp.n.sv = num.sv(t(input_data.training), temp.mod, method="be")
-    print(paste("be n.sv:", temp.n.sv))
+  if (n.sv == 0) {
+    if (num_sv_method == "leek") {
+      temp.n.sv = num.sv(dat = t(input_data.training), mod = temp.mod, method="leek")
+      print(paste("leek n.sv:", temp.n.sv))
+    }  
+    if (num_sv_method == "be") {
+      temp.n.sv = num.sv(t(input_data.training), temp.mod, method="be")
+      print(paste("be n.sv:", temp.n.sv))
+    }
+  } else {
+    temp.n.sv = n.sv
   }
   
   temp.svobj = sva(t(input_data.training), mod=temp.mod, mod0=temp.mod0, n.sv=temp.n.sv)
