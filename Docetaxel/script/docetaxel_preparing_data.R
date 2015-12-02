@@ -206,7 +206,7 @@ docetaxel.labels$AUC_combined <- c(docetaxel.labels$AUC, docetaxel.labels$patien
 stopifnot(substring(colnames(docetaxel.labels$AUC), 8) == annot.ge.cgp$EntrezGene.ID)
 colnames(docetaxel$cgp_AUC) <- annot.ge.cgp$symbol
 
-temp.data <- comGENE(docetaxel$cgp_AUC, docetaxel$patient)
+temp.data <- comGENE(scale(docetaxel$cgp_AUC), docetaxel$patient)
 mean(temp.data[[1]])
 mean(temp.data[[2]])
 
