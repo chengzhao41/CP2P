@@ -1,3 +1,15 @@
+library("doParallel")
+library("sva")
+
+source('Epirubicin/Script/generate_random_partition.R')
+source('Common/preparing_data_helper.R')
+source('Common/drug_cut/callingWaterfall.R')
+source('Common/drug_cut/distancePointLine.R')
+source('Common/drug_cut/distancePointSegment.R')
+source('Common/comGENE.R')
+
+###
+
 load("~/Dropbox/SNF_DRUG_PROJECT/CELL_LINE/su2c_frma.RData")
 
 temp.drug_id = rownames(druginfo_su2c)[match("Epirubicin", druginfo_su2c$name)]
@@ -43,10 +55,6 @@ epirubicin.labels$slope = epirubicin.labels$slope == 1
 table(epirubicin.labels$slope)
 
 ### get AUC labels
-source('~/Dropbox/SNF_DRUG_PROJECT/Script/drug_cut/callingWaterfall.R')
-source('~/Dropbox/SNF_DRUG_PROJECT/Script/drug_cut/distancePointLine.R')
-source('~/Dropbox/SNF_DRUG_PROJECT/Script/drug_cut/distancePointSegment.R')
-
 temp.response <- callingWaterfall(gray_sensitivity_2$AUC[temp.ind], type="AUC")
 table(temp.response)
 temp.response <- temp.response != "resistant"
@@ -80,12 +88,8 @@ sum(epirubicin.labels$IC50 == epirubicin.labels$AUC[temp.ind])
 
 table(epirubicin.labels$IC50)
 
-getwd()
-setwd("~/Dropbox/Cell Line Drug Response Prediction Project/Ensemble Of Similarity Networks/Cheng/Epirubicin/WS")
-save(epirubicin, epirubicin.labels, file="epirubicin_data.RData")
-
 ###
-load("~/Dropbox/SNF_DRUG_PROJECT/CLINICAL/Epirubicin/desmedt2009.RData")
+load("Epirubicin/WS/desmedt2009.RData")
 dim(demo)
 
 ### get the labels for epirubicin
@@ -107,8 +111,6 @@ stopifnot(colnames(epirubicin$patient) == annot$probe)
 colnames(epirubicin$patient) <- annot$Gene.symbol
 
 ### combine slope and patient
-source('~/Dropbox/Cell Line Drug Response Prediction Project/Ensemble Of Similarity Networks/Cheng/Script/preparing_data_helper.R')
-source('~/Dropbox/SNF_DRUG_PROJECT/Script/comGENE.R')
 temp.data <- comGENE(scale(epirubicin$heiser), scale(epirubicin$patient))
 dim(temp.data[[1]])
 dim(temp.data[[2]])
@@ -137,8 +139,6 @@ rm(temp.data)
 # used ComBat
 
 ### combine AUC and patient
-source('~/Dropbox/Cell Line Drug Response Prediction Project/Ensemble Of Similarity Networks/Cheng/Script/preparing_data_helper.R')
-source('~/Dropbox/SNF_DRUG_PROJECT/Script/comGENE.R')
 temp.data <- comGENE(scale(epirubicin$heiser), scale(epirubicin$patient))
 dim(temp.data[[1]])
 dim(temp.data[[2]])
@@ -190,7 +190,6 @@ rm(temp.data)
 # combat
 
 ### get the partitioning
-source('~/Dropbox/Cell Line Drug Response Prediction Project/Ensemble Of Similarity Networks/Cheng/Epirubicin/Script/generate_random_partition.R')
 temp.test_amount <- list(cpp = round(0.2 * length(epirubicin.labels$patient)))
 
 partition <- list()
@@ -228,12 +227,7 @@ dim(epirubicin$patient)
 feature.l1000$pp <- which(colnames(epirubicin$patient) %in% Landmark_Genes_n978$Gene.Symbol)
 length(feature.l1000$pp)
 
-setwd("~/Dropbox/Cell Line Drug Response Prediction Project/Ensemble Of Similarity Networks/Cheng/Epirubicin/WS")
-save(epirubicin, epirubicin.labels, partition, feature.l1000, file="epirubicin_data.RData")
-
-
 ### create partitions for varying number of patients
-source('~/Dropbox/Cell Line Drug Response Prediction Project/Ensemble Of Similarity Networks/Cheng/Epirubicin/Script/generate_random_partition.R')
 partition_var <- list()
 
 temp.cp <- foreach (training_amount.cp = seq(from = 20, to = 38, by = 5)) %do% {    
@@ -290,6 +284,42 @@ for (temp.ind in 1:9) {
 
 partition_var$pp <- temp.pp
 
-setwd("~/Dropbox/Cell Line Drug Response Prediction Project/Ensemble Of Similarity Networks/Cheng/Epirubicin/WS")
-save(epirubicin, epirubicin.labels, partition, feature.l1000, partition_var, file = "epirubicin_data.RData")
+###
+temp.cp100p <- foreach (cell_line_training_amount = seq(from = 5, to = 35, by = 5)) %do% {    
+  
+  temp.slope <- generate_random_partition.cpp_var2(input_labels_cell_lines = epirubicin.labels$slope, 
+                                                  input_labels_patient = epirubicin.labels$patient, 
+                                                  patient_training_amount = 100,
+                                                  cell_line_training_amount = cell_line_training_amount
+                                                  )  
+  
+  temp.AUC <- generate_random_partition.cpp_var2(input_labels_cell_lines = epirubicin.labels$AUC, 
+                                                input_labels_patient = epirubicin.labels$patient,
+                                                cell_line_training_amount = cell_line_training_amount,
+                                                patient_training_amount = 100)
+  list(slope = temp.slope, AUC = temp.AUC)
+}
+
+partition_var$cVar_p100_p <- temp.cp100p
+
+
+temp.cp50p <- foreach (cell_line_training_amount = seq(from = 5, to = 35, by = 5)) %do% {    
+  
+  temp.slope <- generate_random_partition.cpp_var2(input_labels_cell_lines = epirubicin.labels$slope, 
+                                                   input_labels_patient = epirubicin.labels$patient, 
+                                                   patient_training_amount = 50,
+                                                   cell_line_training_amount = cell_line_training_amount
+  )  
+  
+  temp.AUC <- generate_random_partition.cpp_var2(input_labels_cell_lines = epirubicin.labels$AUC, 
+                                                 input_labels_patient = epirubicin.labels$patient,
+                                                 cell_line_training_amount = cell_line_training_amount,
+                                                 patient_training_amount = 50)
+  list(slope = temp.slope, AUC = temp.AUC)
+}
+
+partition_var$cVar_p50_p <- temp.cp50p
+
+
+save(epirubicin, epirubicin.labels, partition, feature.l1000, partition_var, file = "Epirubicin/WS/epirubicin_data.RData")
 

@@ -44,6 +44,7 @@ if (length(args) == 4) {
 rm(epirubicin)
 
 # do the computation 
+snf.parameter <- seq(from = 5, to = 30, by = 5)
 source("common/cpp_compute.R")
 ##
 
