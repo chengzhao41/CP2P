@@ -153,6 +153,7 @@ library("sva")
 load("Docetaxel/WS/pp.RData")
 docetaxel$patient <- docetaxel.patient
 docetaxel.labels$patient <- pp.ground_truth == 1
+names(docetaxel.labels$patient) <- rownames(docetaxel.patient)
 
 show_pca(input_data = docetaxel$cgp_slope, label = docetaxel.labels$slope)
 show_pca(input_data = docetaxel$cgp_AUC, label = docetaxel.labels$AUC)
