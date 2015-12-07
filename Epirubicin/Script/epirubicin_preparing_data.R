@@ -302,6 +302,26 @@ temp.cp100p <- foreach (cell_line_training_amount = seq(from = 5, to = 35, by = 
 
 partition_var$cVar_p100_p <- temp.cp100p
 
+###
+temp.cp80p <- foreach (cell_line_training_amount = seq(from = 5, to = 35, by = 5)) %do% {    
+  
+  temp.slope <- generate_random_partition.cpp_var2(input_labels_cell_lines = epirubicin.labels$slope, 
+                                                   input_labels_patient = epirubicin.labels$patient, 
+                                                   patient_training_amount = 80,
+                                                   cell_line_training_amount = cell_line_training_amount
+  )  
+  
+  temp.AUC <- generate_random_partition.cpp_var2(input_labels_cell_lines = epirubicin.labels$AUC, 
+                                                 input_labels_patient = epirubicin.labels$patient,
+                                                 cell_line_training_amount = cell_line_training_amount,
+                                                 patient_training_amount = 80)
+  list(slope = temp.slope, AUC = temp.AUC)
+}
+
+partition_var$cVar_p80_p <- temp.cp80p
+
+
+###
 
 temp.cp50p <- foreach (cell_line_training_amount = seq(from = 5, to = 35, by = 5)) %do% {    
   
