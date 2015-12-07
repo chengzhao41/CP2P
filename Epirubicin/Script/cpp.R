@@ -39,9 +39,9 @@ if (length(args) == 4) {
   } else if (args[3] == "auc_p50") {    
     input_partition$cpp <- partition_var$cVar_p50_p[[training_var_amount]]$AUC
   } else if (args[3] == "slope_p80") {    
-    input_partition$cpp <- partition_var$cVar_p50_p[[training_var_amount]]$slope
+    input_partition$cpp <- partition_var$cVar_p80_p[[training_var_amount]]$slope
   } else if (args[3] == "auc_p80") {    
-    input_partition$cpp <- partition_var$cVar_p50_p[[training_var_amount]]$AUC
+    input_partition$cpp <- partition_var$cVar_p80_p[[training_var_amount]]$AUC
   } else if (args[3] == "slope_p100") {    
     input_partition$cpp <- partition_var$cVar_p100_p[[training_var_amount]]$slope
   } else if (args[3] == "auc_p100") {    
