@@ -340,6 +340,40 @@ temp.cp50p <- foreach (cell_line_training_amount = seq(from = 5, to = 35, by = 5
 
 partition_var$cVar_p50_p <- temp.cp50p
 
+####
+load("CGP/cosmic.tcga.RData")
 
-save(epirubicin, epirubicin.labels, partition, feature.l1000, partition_var, file = "Epirubicin/WS/epirubicin_data.RData")
+cell_line_order <- list()
+cell_line_order$AUC <- order(match(names(epirubicin.labels$AUC), brca_ordered$cell.line))
+cell_line_order$slope <- order(match(names(epirubicin.labels$slope), brca_ordered$cell.line))
+
+stopifnot(!is.unsorted(match(brca_ordered$cell.line, names(epirubicin.labels$slope)[cell_line_order$AUC] ), na.rm = TRUE))
+
+stopifnot( length(table(epirubicin.labels$AUC[cell_line_order$AUC][1:5])) == 2 )
+stopifnot( length(table(epirubicin.labels$slope[cell_line_order$slope][1:5])) == 2 )
+
+# called this with 50 and 80
+temp.cp80p <- foreach (cell_line_training_amount = seq(from = 5, to = 35, by = 5)) %do% {    
+  
+  temp.slope <- generate_random_partition.cpp_var3(input_labels_cell_lines = epirubicin.labels$slope, 
+                                                   input_labels_patient = epirubicin.labels$patient, 
+                                                   patient_training_amount = 80,
+                                                   cell_line_training_amount = cell_line_training_amount,
+                                                   cell_line_order = cell_line_order$slope
+  )  
+  
+  temp.AUC <- generate_random_partition.cpp_var3(input_labels_cell_lines = epirubicin.labels$AUC, 
+                                                 input_labels_patient = epirubicin.labels$patient,
+                                                 cell_line_training_amount = cell_line_training_amount,
+                                                 patient_training_amount = 80,
+                                                 cell_line_order = cell_line_order$AUC)
+  list(slope = temp.slope, AUC = temp.AUC)
+}
+
+partition_var$cVar_p80_p_brca <- temp.cp80p
+
+
+
+###########
+#save(epirubicin, epirubicin.labels, partition, feature.l1000, partition_var, file = "Epirubicin/WS/epirubicin_data.RData")
 

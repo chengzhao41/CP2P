@@ -1,19 +1,16 @@
 library("doParallel")
 library("RColorBrewer")
+library("ROCR")
 
 ### USER SUPPLIED PARAMETERS
-label.type <- "ic50"
+label.type <- "slope_p20"
 ### END
 
 cpp.varying_training_matrix <- matrix(nrow = 0, ncol = 21)
 
-for (temp.num in 1:23) {
+for (temp.num in 1:20) {
   # Boxplot Data ---------------------------------
-  if (temp.num != 23) {
-    load(paste0("~/output_temp/Docetaxel/cpp_var/", label.type, "/docetaxel_cpp_1to100_", label.type, "_var", temp.num, ".RData"))       
-  } else {
-    load(paste0("~/output_temp/Docetaxel/Used/docetaxel_cpp_1to24_", label.type, ".RData"))
-  }
+  load(paste0("/Users/chengzhao/Dropbox/output_WS/docetaxel_cpp_100to1_", label.type, "_var", temp.num, ".RData"))  
   
   # Boxplot Data ---------------------------------
   cpp.predictions <- matrix(nrow = 0, ncol = 21)
@@ -53,27 +50,24 @@ for (temp.num in 1:23) {
     cpp.predictions = rbind(cpp.predictions, matrix(temp.row, length(temp.row) / 21, 21))
   }   
   
-  if (temp.num != 23) {
-    cpp.test_index <- foreach (temp.ind = 1:length(input_partition$cpp), .combine=c, .errorhandling = 'remove') %do% {
-      if (temp.ind %in% temp.failed_runs) {
-        print(temp.ind)
-        stop()
-      }
-      input_partition$cpp[[temp.ind]]$test_index
-    }  
-  } else {
-    cpp.test_index = length(input_partition$cell_lines) + 1:24
-  }
+  cpp.test_index <- foreach (temp.ind = 1:length(input_partition$cpp), .combine=c, .errorhandling = 'remove') %do% {
+    if (temp.ind %in% temp.failed_runs) {
+      print(temp.ind)
+      stop()
+    }
+    input_partition$cpp[[temp.ind]]$test_index
+  }  
+  
   stopifnot(dim(cpp.predictions)[1] == length(cpp.test_index))
   cpp.test_auc <- foreach (temp.ind = 1:21, .combine=rbind) %do% {
-    if (label.type == "slope") {
+    if (label.type == "slope" || label.type == "slope_p20") {
       temp.predict <- prediction(cpp.predictions[, temp.ind], docetaxel.labels$slope_combined[cpp.test_index])
-    } else if (label.type == "auc") {
+    } else if (label.type == "auc" || label.type == "auc_p20") {
       temp.predict <- prediction(cpp.predictions[, temp.ind], docetaxel.labels$AUC_combined[cpp.test_index])
-    } else if (label.type == "ic50") {
+    } else if (label.type == "ic50" || label.type == "ic50_p20") {
       temp.predict <- prediction(cpp.predictions[, temp.ind], docetaxel.labels$IC50_combined[cpp.test_index])
     } else {
-      stop()
+      stop("Provide the label.type logic")
     }
     unlist(slot(performance(temp.predict, "auc"), "y.values"))  
   }
@@ -109,10 +103,9 @@ for (temp.num in 1:23) {
   cpp.varying_training_matrix <- rbind(cpp.varying_training_matrix, cpp.test_auc)
 }
 
-setwd("~/Dropbox/Cell Line Drug Response Prediction Project/Ensemble Of Similarity Networks/Cheng/Docetaxel/WS")
-num_of_patients = seq(1, 23, 1)
-stopifnot(dim(cpp.varying_training_matrix)[1] == length(num_of_patients))
-#save(cpp.varying_training_matrix, num_of_patients, label.type, file = paste0("cpp_var_", label.type, ".RData"))
+num_of_cell_lines = seq(30, 600, 30)
+stopifnot(dim(cpp.varying_training_matrix)[1] == length(num_of_cell_lines))
+save(cpp.varying_training_matrix, num_of_cell_lines, label.type, file = paste0("Docetaxel/output_WS/cpp_var_", label.type, ".RData"))
 
 ###
 load("~/Dropbox/Cell Line Drug Response Prediction Project/Ensemble Of Similarity Networks/Cheng/Docetaxel/WS/cpp_var_ic50.RData")
@@ -121,9 +114,8 @@ load("~/Dropbox/Cell Line Drug Response Prediction Project/Ensemble Of Similarit
 
 
 stopifnot(dim(cpp.varying_training_matrix)[2] == 21)
-setwd("~/Dropbox/Cell Line Drug Response Prediction Project/Ensemble Of Similarity Networks/Cheng/Docetaxel/Results/")
 
-png(filename = paste0("doc_cpp_var_", label.type, ".png"), width = 800, height = 800)
+png(filename = paste0("Docetaxel/plots/doc_cpp_var_", label.type, ".png"), width = 800, height = 800)
 
 if (label.type == "ic50") {
   ylim = c(0.45, 1.1)
@@ -132,14 +124,20 @@ if (label.type == "ic50") {
 } else if (label.type == "slope") {
   ylim = c(0.4, 1.05)
   #par(yaxp = c(0.4, 0.95, 10))
+} else if (label.type == "ic50_p20") {
+  ylim = c(0.65, 1)  
+} else if (label.type == "auc_p20") {
+  ylim = c(0.7, 1)  
+} else if (label.type == "slope_p20") {
+  ylim = c(0.7, 0.95)  
 } else {
   stop("label not defined!")
 }
 
 par(mar=c(5.1,7,4.5,3.5))
-plot(0, 0, xlim = range(num_of_patients), ylim = ylim, type = "n", 
+plot(0, 0, xlim = range(num_of_cell_lines), ylim = ylim, type = "n", 
      ylab = "",
-     xlab = "# of Patient Samples in Training Data",
+     xlab = "# of Cell Line Samples in Training Data",
      #las = 1, cex.axis = 1.2, cex.lab = 1.5)
      las = 1, cex.axis = 1.2, cex.lab = 1.5, yaxp = c(0.4, 1, 12))
 
@@ -153,7 +151,7 @@ temp.points <- rep(1, 7)
 temp.points <- c(temp.points, rep(2, 7))
 temp.points <- c(temp.points, rep(3, 7))
 for (temp.ind in 1:21) {
-  lines(num_of_patients, cpp.varying_training_matrix[, temp.ind], col = cl[(temp.ind - 1) %% 7 + 1], type = 'b', pch=temp.points[temp.ind])
+  lines(num_of_cell_lines, cpp.varying_training_matrix[, temp.ind], col = cl[(temp.ind - 1) %% 7 + 1], type = 'b', pch=temp.points[temp.ind])
 }
 legend("topleft", legend = colnames(cpp.varying_training_matrix), col=cl, pch=temp.points, ncol=3, pt.cex = 1, cex = 1.3) # optional legend
 

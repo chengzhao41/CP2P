@@ -4,9 +4,9 @@ library("ROCR")
 
 cpp.varying_training_matrix <- matrix(nrow = 0, ncol = 21)
 
-label.type <- "auc_p50"
+label.type <- "auc_p100"
 
-for (temp.num in 1:10) {
+for (temp.num in 1:7) {
   #load(paste0("~/output_temp/Epirubicin/cpp_var/", label.type, "/epirubicin_cpp_1to100_", label.type, "_var", temp.num, ".RData"))   
   
   load(paste0("/Users/chengzhao/Dropbox/output_WS/epirubicin_cpp_1to100_", label.type, "_var", temp.num, ".RData")) 
@@ -86,38 +86,37 @@ for (temp.num in 1:10) {
   cpp.varying_training_matrix <- rbind(cpp.varying_training_matrix, temp.median_results)
 }
 
-setwd("~/Dropbox/Cell Line Drug Response Prediction Project/Ensemble Of Similarity Networks/Cheng/Epirubicin/WS")
-num_of_patients = seq(10, 100, 10)
-save(cpp.varying_training_matrix, num_of_patients, label.type, file = paste0("cpp_var_", label.type, ".RData"))
+num_of_cell_lines = seq(5, 35, 5)
+stopifnot(dim(cpp.varying_training_matrix)[1] == length(num_of_cell_lines))
+save(cpp.varying_training_matrix, num_of_cell_lines, label.type, file = paste0("Epirubicin/output_WS/cpp_var_", label.type, ".RData"))
 
 ###
-load("~/Dropbox/Cell Line Drug Response Prediction Project/Ensemble Of Similarity Networks/Cheng/Epirubicin/WS/cpp_var_auc.RData")
-load("~/Dropbox/Cell Line Drug Response Prediction Project/Ensemble Of Similarity Networks/Cheng/Epirubicin/WS/cpp_var_slope.RData")
-
 stopifnot(dim(cpp.varying_training_matrix)[2] == 21)
-setwd("~/Dropbox/Cell Line Drug Response Prediction Project/Ensemble Of Similarity Networks/Cheng/Epirubicin/Results/")
 
 range(cpp.varying_training_matrix)
 
-png(filename = paste0("epi_cpp_var_", label.type, ".png"), width = 800, height = 800)
+png(filename = paste0("Epirubicin/plots/epi_cpp_var_", label.type, ".png"), width = 800, height = 800)
 
-if (label.type == "ic50") {
-  ylim = c(0.5, 0.9)
-  yaxp = c(0.4, 0.8, 8)
-} else if (label.type == "auc") {
-  ylim = c(0.35, 0.8)
-  yaxp = c(0.35, 0.7, 7)
-} else if (label.type == "slope") {
-  ylim = c(0.35, 0.8)
-  yaxp = c(0.35, 0.7, 7)  
+if (label.type == "auc_p50") {
+  ylim = c(0.4, 0.75)
+  yaxp = c(0.4, 0.65, 5)
+} else if (label.type == "auc_p100") {
+  ylim = c(0.35, 0.85)
+  yaxp = c(0.35, 0.75, 8)
+} else if (label.type == "slope_p50") {
+  ylim = c(0.4, 0.75)
+  yaxp = c(0.4, 0.65, 5)
+} else if (label.type == "slope_p100") {
+  ylim = c(0.35, 0.85)
+  yaxp = c(0.35, 0.75, 8)
 } else {
   stop("label not defined!")
 }
 
 par(mar=c(5.1,7,4.5,3.5))
-plot(0, 0, xlim = range(num_of_patients), ylim = ylim, type = "n", 
+plot(0, 0, xlim = range(num_of_cell_lines), ylim = ylim, type = "n", 
      ylab = "",
-     xlab = "# of Patient Samples in Training Data",
+     xlab = "# of Cell Line Samples in Training Data",
      #las = 1, cex.axis = 1.2, cex.lab = 1.5)
      las = 1, cex.axis = 1.2, cex.lab = 1.5, yaxp = yaxp)
 
@@ -131,7 +130,7 @@ temp.points <- rep(1, 7)
 temp.points <- c(temp.points, rep(2, 7))
 temp.points <- c(temp.points, rep(3, 7))
 for (temp.ind in 1:21) {
-  lines(num_of_patients, cpp.varying_training_matrix[, temp.ind], col = cl[(temp.ind - 1) %% 7 + 1], type = 'b', pch=temp.points[temp.ind])
+  lines(num_of_cell_lines, cpp.varying_training_matrix[, temp.ind], col = cl[(temp.ind - 1) %% 7 + 1], type = 'b', pch=temp.points[temp.ind])
 }
 legend("topleft", legend = colnames(cpp.varying_training_matrix), col=cl, pch=temp.points, ncol=3, pt.cex = 1, cex = 1.3) # optional legend
 

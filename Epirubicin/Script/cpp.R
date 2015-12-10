@@ -13,12 +13,24 @@ args[4] = 3
 
 load("Epirubicin/WS/epirubicin_data.RData")
 
-if (args[3] == "slope" || args[3] == "slope_p50" || args[3] == "slope_p100" || args[3] == "slope_p80") {
+if (args[3] == "slope" 
+    || args[3] == "slope_p50" 
+    || args[3] == "slope_p100" 
+    || args[3] == "slope_p80"
+    || args[3] == "slope_p80_brca"
+    || args[3] == "slope_p50_brca"
+    || args[3] == "slope_p100_brca") {
   input_data <- epirubicin$combined_slope.sva
   input_label <- epirubicin.labels$slope_combined
   input_partition <- partition$slope
   feature.l1000 <- feature.l1000$cp
-} else if (args[3] == "auc" || args[3] == "auc_p50" || args[3] == "auc_p100" || args[3] == "auc_p80") {
+} else if (args[3] == "auc" 
+           || args[3] == "auc_p50" 
+           || args[3] == "auc_p100" 
+           || args[3] == "auc_p80"
+           || args[3] == "auc_p50_brca" 
+           || args[3] == "auc_p100_brca" 
+           || args[3] == "auc_p80_brca") {
   input_data <- epirubicin$combined_AUC.sva
   input_label <- epirubicin.labels$AUC_combined
   input_partition <- partition$AUC
@@ -46,6 +58,18 @@ if (length(args) == 4) {
     input_partition$cpp <- partition_var$cVar_p100_p[[training_var_amount]]$slope
   } else if (args[3] == "auc_p100") {    
     input_partition$cpp <- partition_var$cVar_p100_p[[training_var_amount]]$AUC
+  } else if (args[3] == "slope_p100_brca") {    
+    input_partition$cpp <- partition_var$cVar_p100_p_brca[[training_var_amount]]$slope
+  } else if (args[3] == "slope_p80_brca") {    
+    input_partition$cpp <- partition_var$cVar_p80_p_brca[[training_var_amount]]$slope
+  } else if (args[3] == "slope_p50_brca") {    
+    input_partition$cpp <- partition_var$cVar_p50_p_brca[[training_var_amount]]$slope
+  } else if (args[3] == "auc_p100_brca") {    
+    input_partition$cpp <- partition_var$cVar_p100_p_brca[[training_var_amount]]$AUC
+  } else if (args[3] == "auc_p80_brca") {    
+    input_partition$cpp <- partition_var$cVar_p80_p_brca[[training_var_amount]]$AUC
+  } else if (args[3] == "auc_p50_brca") {    
+    input_partition$cpp <- partition_var$cVar_p50_p_brca[[training_var_amount]]$AUC
   } else {
     stop("arg 3 is wrong")
   }  
