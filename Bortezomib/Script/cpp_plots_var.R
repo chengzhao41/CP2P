@@ -1,15 +1,15 @@
-stop("Set working directory to current source file")
-#setwd("~/Dropbox/Cell Line Drug Response Prediction Project/Code/Bortezomib/Script")
-
 library("doParallel")
 library("RColorBrewer")
 
 cpp.varying_training_matrix <- matrix(nrow = 0, ncol = 21)
 
-label.type <- "slope"
+label.type <- "slope_p50"
 
-for (temp.num in 1:15) {
-  load(paste0("~/output_temp/Bortezomib/cpp_var/", label.type, "/bortezomib_cpp_1to100_", label.type, "_var", temp.num, ".RData")) 
+for (temp.num in 1:30) {
+  #load(paste0("~/output_temp/Bortezomib/cpp_var/", label.type, "/bortezomib_cpp_1to100_", label.type, "_var", temp.num, ".RData")) 
+  #load(paste0("/Users/chengzhao/Dropbox/output_WS/bortezomib_cpp_1to100_", label.type, "_var", temp.num, ".RData")) 
+  load(paste0("/Users/chengzhao/Dropbox/output_WS/bortezomib_cpp_1to100_", label.type, "_var", temp.num, ".RData")) 
+  
   
   # Boxplot Data ---------------------------------
   cpp.boxplot_matrix <- foreach (temp.ind = 1:100, .combine=rbind) %do% {
@@ -86,20 +86,19 @@ for (temp.num in 1:15) {
   cpp.varying_training_matrix <- rbind(cpp.varying_training_matrix, temp.median_results)
 }
 
-setwd("~/Dropbox/Cell Line Drug Response Prediction Project/Ensemble Of Similarity Networks/Cheng/Bortezomib/WS")
-num_of_patients = seq(10, 150, 10)
-save(cpp.varying_training_matrix, num_of_patients, label.type, file = paste0("cpp_var_", label.type, ".RData"))
-
+#setwd("~/Dropbox/Cell Line Drug Response Prediction Project/Ensemble Of Similarity Networks/Cheng/Bortezomib/WS")
+#num_of_patients = seq(10, 150, 10)
+num_of_patients = seq(10, 300, 10)
+save(cpp.varying_training_matrix, num_of_patients, label.type, file = paste0("Bortezomib/output_WS/cpp_var_", label.type, ".RData"))
 
 ###
-load("~/Dropbox/Cell Line Drug Response Prediction Project/Ensemble Of Similarity Networks/Cheng/Bortezomib/WS/cpp_var_ic50.RData")
-load("~/Dropbox/Cell Line Drug Response Prediction Project/Ensemble Of Similarity Networks/Cheng/Bortezomib/WS/cpp_var_auc.RData")
-load("~/Dropbox/Cell Line Drug Response Prediction Project/Ensemble Of Similarity Networks/Cheng/Bortezomib/WS/cpp_var_slope.RData")
+load("Bortezomib/output_WS/cpp_var_slope_p100.RData")
+load("Bortezomib/output_WS/cpp_var_auc_p100.RData")
+load("Bortezomib/output_WS/cpp_var_ic50_p100.RData")
 
 stopifnot(dim(cpp.varying_training_matrix)[2] == 21)
-setwd("~/Dropbox/Cell Line Drug Response Prediction Project/Ensemble Of Similarity Networks/Cheng/Bortezomib/Results/")
 
-png(filename = paste0("bor_cpp_var_", label.type, ".png"), width = 800, height = 800)
+png(filename = paste0("Bortezomib/plots/cpp_var_", label.type, ".png"), width = 800, height = 800)
 
 if (label.type == "ic50") {
   ylim = c(0.5, 0.9)
@@ -110,6 +109,24 @@ if (label.type == "ic50") {
 } else if (label.type == "slope") {
   ylim = c(0.45, 1)
   yaxp = c(0.45, 0.85, 8)  
+} else if (label.type == "slope_p100") {
+  ylim = c(0.5, 0.9)
+  yaxp = c(0.5, 0.85, 7)
+} else if (label.type == "auc_p100") {
+  ylim = c(0.6, 0.85)
+  yaxp = c(0.6, 0.8, 4)
+} else if (label.type == "ic50_p100") {
+  ylim = c(0.55, 0.85)
+  yaxp = c(0.55, 0.8, 5)
+} else if (label.type == "ic50_p50") {
+  ylim = c(0.55, 0.75)
+  yaxp = c(0.55, 0.7, 3)
+} else if (label.type == "auc_p50") {
+  ylim = c(0.6, 0.8)
+  yaxp = c(0.6, 0.75, 3)
+} else if (label.type == "slope_p50") {
+  ylim = c(0.5, 0.85)
+  yaxp = c(0.5, 0.8, 6)
 } else {
   stop("label not defined!")
 }
@@ -117,7 +134,8 @@ if (label.type == "ic50") {
 par(mar=c(5.1,7,4.5,3.5))
 plot(0, 0, xlim = range(num_of_patients), ylim = ylim, type = "n", 
      ylab = "",
-     xlab = "# of Patient Samples in Training Data",
+     #xlab = "# of Patient Samples in Training Data",
+     xlab = "# of Cell line Samples in Training Data",
      #las = 1, cex.axis = 1.2, cex.lab = 1.5)
      las = 1, cex.axis = 1.2, cex.lab = 1.5, yaxp = yaxp)
 
