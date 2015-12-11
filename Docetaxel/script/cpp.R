@@ -7,7 +7,7 @@ args[1] = 1
 args[2] = 2
 PARTITION_BEGIN = as.integer(args[1])
 PARTITION_END = as.integer(args[2]) 
-args[3] = "slope"
+args[3] = "slope_p20_brca"
 args[4] = 10 
 ### End ###
 

@@ -231,7 +231,7 @@ generate_random_partition.cpp_var2 <- function(input_labels_cell_lines, input_la
     }
     
     stopifnot(length(temp.test_index) > 0)
-    stopifnot(length(temp.training_index.single) > 0)    
+    stopifnot(length(temp.training_index.single) == cell_line_training_amount + patient_training_amount)
     stopifnot(length(intersect(temp.test_index, temp.training_index.single)) == 0)
     stopifnot(temp.test_index %in% temp.patients)
     
@@ -252,8 +252,10 @@ generate_random_partition.cpp_var2 <- function(input_labels_cell_lines, input_la
 
 # generate random partitions for a given a number of cell lines and patients
 # cell line training data is added based on provided order
-generate_random_partition.cpp_var3 <- function(input_labels_cell_lines, input_labels_patient, 
-                                               cell_line_training_amount, patient_training_amount,
+generate_random_partition.cpp_var3 <- function(input_labels_cell_lines, 
+                                               input_labels_patient, 
+                                               cell_line_training_amount, 
+                                               patient_training_amount,
                                                cell_line_order) {
   
   require("doParallel")
@@ -267,7 +269,7 @@ generate_random_partition.cpp_var3 <- function(input_labels_cell_lines, input_la
   cpp.partition <- foreach (temp.run_ind = 1:100, .errorhandling="stop") %dopar% {        
     
     temp.patients_in_training <- sample(temp.patients, patient_training_amount)
-    temp.cell_lines_in_training <- temp.cell_lines[cell_line_order][cell_line_training_amount]
+    temp.cell_lines_in_training <- temp.cell_lines[cell_line_order][1:cell_line_training_amount]
     temp.training_index.single <- c(temp.cell_lines_in_training, temp.patients_in_training)
     temp.test_index <- setdiff(temp.patients, temp.patients_in_training)
     
@@ -278,7 +280,7 @@ generate_random_partition.cpp_var3 <- function(input_labels_cell_lines, input_la
     }
     
     stopifnot(length(temp.test_index) > 0)
-    stopifnot(length(temp.training_index.single) > 0)    
+    stopifnot(length(temp.training_index.single) == cell_line_training_amount + patient_training_amount)    
     stopifnot(length(intersect(temp.test_index, temp.training_index.single)) == 0)
     stopifnot(temp.test_index %in% temp.patients)
     

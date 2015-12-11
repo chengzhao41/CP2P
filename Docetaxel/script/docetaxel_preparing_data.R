@@ -459,33 +459,32 @@ load("CGP/cosmic.tcga.RData")
 
 cell_line_order <- list()
 cell_line_order$slope <- order(match(names(docetaxel.labels$slope), brca_ordered$cell.line))
+cell_line_order$AUC <- order(match(names(docetaxel.labels$AUC), brca_ordered$cell.line))
+cell_line_order$IC50 <- order(match(names(docetaxel.labels$IC50), brca_ordered$cell.line))
 stopifnot(!is.unsorted(match(brca_ordered$cell.line, names(docetaxel.labels$slope)[cell_line_order$slope] ), na.rm = TRUE))
 
 stopifnot( length(table(docetaxel.labels$slope[cell_line_order$slope][1:30])) == 2 )
 stopifnot( length(table(docetaxel.labels$AUC[cell_line_order$AUC][1:30])) == 2 )
 stopifnot( length(table(docetaxel.labels$IC50[cell_line_order$IC50][1:30])) == 2 )
 
-cell_line_order$AUC <- order(match(names(docetaxel.labels$AUC), brca_ordered$cell.line))
-cell_line_order$IC50 <- order(match(names(docetaxel.labels$IC50), brca_ordered$cell.line))
-
 temp.cpp <- foreach (cell_line_training_amount = seq(from = 30, to = 600, by = 30)) %do% {  
   
   temp.slope <- generate_random_partition.cpp_var3(input_labels_cell_lines = docetaxel.labels$slope, 
                                                    input_labels_patient = docetaxel.labels$patient, 
                                                    cell_line_training_amount = cell_line_training_amount,
-                                                   patient_training = 20,
+                                                   patient_training_amount = 20,
                                                    cell_line_order = cell_line_order$slope)
   
   temp.IC50 <- generate_random_partition.cpp_var3(input_labels_cell_lines = docetaxel.labels$IC50, 
                                                   input_labels_patient = docetaxel.labels$patient, 
                                                   cell_line_training_amount = cell_line_training_amount,
-                                                  patient_training = 20,
+                                                  patient_training_amount = 20,
                                                   cell_line_order = cell_line_order$IC50)
   
   temp.AUC <- generate_random_partition.cpp_var3(input_labels_cell_lines = docetaxel.labels$AUC, 
                                                  input_labels_patient = docetaxel.labels$patient, 
                                                  cell_line_training_amount = cell_line_training_amount,
-                                                 patient_training = 20,
+                                                 patient_training_amount = 20,
                                                  cell_line_order = cell_line_order$AUC)
   list(slope = temp.slope, IC50 = temp.IC50, AUC = temp.AUC)
 }
