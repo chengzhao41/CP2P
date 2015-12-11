@@ -7,6 +7,7 @@ source('Common/drug_cut/callingWaterfall.R')
 source('Common/drug_cut/distancePointLine.R')
 source('Common/drug_cut/distancePointSegment.R')
 source('Common/comGENE.R')
+source("Common/generate_random_partition.R")
 
 ###
 

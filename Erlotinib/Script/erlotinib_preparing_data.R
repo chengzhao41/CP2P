@@ -7,6 +7,7 @@ source('Common/drug_cut/callingWaterfall.R')
 source('Common/drug_cut/distancePointLine.R')
 source('Common/drug_cut/distancePointSegment.R')
 source('Common/comGENE.R')
+source("Common/generate_random_partition.R")
 
 ###
 
@@ -454,12 +455,12 @@ temp.cpp <- foreach (cell_line_training_amount = seq(from = 20, to = 310, by = 2
   temp.slope <- generate_random_partition.cpp_var2(input_labels_cell_lines = c(erlotinib.labels$GEO_IC50, erlotinib.labels$slope), 
                                                    input_labels_patient = erlotinib.labels$patient, 
                                                    cell_line_training_amount = cell_line_training_amount,
-                                                   patient_training = 20)
+                                                   patient_training_amount = 20)
   
   temp.IC50 <- generate_random_partition.cpp_var2(input_labels_cell_lines = c(erlotinib.labels$GEO_IC50, erlotinib.labels$IC50), 
                                                   input_labels_patient = erlotinib.labels$patient, 
                                                   cell_line_training_amount = cell_line_training_amount,
-                                                  patient_training = 20)
+                                                  patient_training_amount = 20)
   
   
   list(slope = temp.slope, IC50 = temp.IC50)
@@ -467,6 +468,37 @@ temp.cpp <- foreach (cell_line_training_amount = seq(from = 20, to = 310, by = 2
 
 partition_var$cVar_p20_p <- temp.cpp
 
+#######################
+
+load("CGP/cosmic.tcga.RData")
+
+cell_line_order <- list()
+cell_line_order$slope <- order(match(names(erlotinib.labels$slope), lusc_ordered$cell.line))
+cell_line_order$IC50 <- order(match(names(erlotinib.labels$IC50), lusc_ordered$cell.line))
+stopifnot(!is.unsorted(match(lusc_ordered$cell.line, names(erlotinib.labels$slope)[cell_line_order$slope] ), na.rm = TRUE))
+
+stopifnot( length(table(erlotinib.labels$slope[cell_line_order$slope][1:30])) == 2 )
+stopifnot( length(table(erlotinib.labels$IC50[cell_line_order$IC50][1:30])) == 2 )
+
+temp.cpp <- foreach (cell_line_training_amount = seq(from = 20, to = 310, by = 20)) %do% {  
+  
+  temp.slope <- generate_random_partition.cpp_var3(input_labels_cell_lines = c(erlotinib.labels$GEO_IC50, erlotinib.labels$slope), 
+                                                   input_labels_patient = erlotinib.labels$patient, 
+                                                   cell_line_training_amount = cell_line_training_amount,
+                                                   patient_training_amount = 20,
+                                                   cell_line_order = cell_line_order$slope)
+  
+  temp.IC50 <- generate_random_partition.cpp_var3(input_labels_cell_lines = c(erlotinib.labels$GEO_IC50, erlotinib.labels$IC50), 
+                                                  input_labels_patient = erlotinib.labels$patient, 
+                                                  cell_line_training_amount = cell_line_training_amount,
+                                                  patient_training_amount = 20,
+                                                  cell_line_order = cell_line_order$IC50)
+  
+  
+  list(slope = temp.slope, IC50 = temp.IC50)
+}
+
+partition_var$cVar_p20_p <- temp.cpp
 
 
 setwd("Erlotinib/WS")
