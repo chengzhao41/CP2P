@@ -1,10 +1,10 @@
+rm(list = ls())
 library("doParallel")
 library("RColorBrewer")
 library("ROCR")
 
 cpp.varying_training_matrix <- matrix(nrow = 0, ncol = 21)
-
-label.type <- "auc_p100"
+label.type <- "slope_p80"
 
 for (temp.num in 1:7) {
   #load(paste0("~/output_temp/Epirubicin/cpp_var/", label.type, "/epirubicin_cpp_1to100_", label.type, "_var", temp.num, ".RData"))   
@@ -100,12 +100,18 @@ png(filename = paste0("Epirubicin/plots/epi_cpp_var_", label.type, ".png"), widt
 if (label.type == "auc_p50") {
   ylim = c(0.4, 0.75)
   yaxp = c(0.4, 0.65, 5)
+} else if (label.type == "auc_p80") {
+  ylim = c(0.35, 0.85)
+  yaxp = c(0.35, 0.75, 8)
 } else if (label.type == "auc_p100") {
   ylim = c(0.35, 0.85)
   yaxp = c(0.35, 0.75, 8)
 } else if (label.type == "slope_p50") {
   ylim = c(0.4, 0.75)
   yaxp = c(0.4, 0.65, 5)
+} else if (label.type == "slope_p80") {
+  ylim = c(0.35, 0.8)
+  yaxp = c(0.35, 0.7, 7)
 } else if (label.type == "slope_p100") {
   ylim = c(0.35, 0.85)
   yaxp = c(0.35, 0.75, 8)
