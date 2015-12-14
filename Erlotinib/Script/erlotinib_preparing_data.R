@@ -473,12 +473,12 @@ partition_var$cVar_p20_p <- temp.cpp
 load("CGP/cosmic.tcga.RData")
 
 cell_line_order <- list()
-cell_line_order$slope <- order(match(names(erlotinib.labels$slope), lusc_ordered$cell.line))
-cell_line_order$IC50 <- order(match(names(erlotinib.labels$IC50), lusc_ordered$cell.line))
-stopifnot(!is.unsorted(match(lusc_ordered$cell.line, names(erlotinib.labels$slope)[cell_line_order$slope] ), na.rm = TRUE))
+cell_line_order$slope <- order(match(names(c(erlotinib.labels$GEO_IC50, erlotinib.labels$slope)), lusc_ordered$cell.line))
+cell_line_order$IC50 <- order(match(names(c(erlotinib.labels$GEO_IC50, erlotinib.labels$IC50)), lusc_ordered$cell.line))
+stopifnot(!is.unsorted(match(lusc_ordered$cell.line, names(c(erlotinib.labels$GEO_IC50, erlotinib.labels$slope))[cell_line_order$slope] ), na.rm = TRUE))
 
-stopifnot( length(table(erlotinib.labels$slope[cell_line_order$slope][1:30])) == 2 )
-stopifnot( length(table(erlotinib.labels$IC50[cell_line_order$IC50][1:30])) == 2 )
+stopifnot( length(table(c(erlotinib.labels$GEO_IC50, erlotinib.labels$slope)[cell_line_order$slope][1:30])) == 2 )
+stopifnot( length(table(c(erlotinib.labels$GEO_IC50, erlotinib.labels$IC50)[cell_line_order$IC50][1:30])) == 2 )
 
 temp.cpp <- foreach (cell_line_training_amount = seq(from = 20, to = 310, by = 20)) %do% {  
   
@@ -493,13 +493,9 @@ temp.cpp <- foreach (cell_line_training_amount = seq(from = 20, to = 310, by = 2
                                                   cell_line_training_amount = cell_line_training_amount,
                                                   patient_training_amount = 20,
                                                   cell_line_order = cell_line_order$IC50)
-  
-  
   list(slope = temp.slope, IC50 = temp.IC50)
 }
 
-partition_var$cVar_p20_p <- temp.cpp
+partition_var$cVar_p20_p_lusc <- temp.cpp
 
-
-setwd("Erlotinib/WS")
-#save(erlotinib, erlotinib.labels, sampleinfo.cgp, partition, feature.l1000, partition_var, file = "erlotinib_data.RData")
+#save(erlotinib, erlotinib.labels, sampleinfo.cgp, partition, feature.l1000, partition_var, file = "Erlotinib/WS/erlotinib_data.RData")
