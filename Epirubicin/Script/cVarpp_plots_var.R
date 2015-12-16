@@ -1,15 +1,15 @@
+rm(list = ls())
 library("doParallel")
 library("RColorBrewer")
+library("ROCR")
 
 cpp.varying_training_matrix <- matrix(nrow = 0, ncol = 21)
+label.type <- "slope_p80"
 
-label.type <- "slope_p50"
-
-for (temp.num in 1:30) {
-  #load(paste0("~/output_temp/Bortezomib/cpp_var/", label.type, "/bortezomib_cpp_1to100_", label.type, "_var", temp.num, ".RData")) 
-  #load(paste0("/Users/chengzhao/Dropbox/output_WS/bortezomib_cpp_1to100_", label.type, "_var", temp.num, ".RData")) 
-  load(paste0("/Users/chengzhao/Dropbox/output_WS/bortezomib_cpp_1to100_", label.type, "_var", temp.num, ".RData")) 
+for (temp.num in 1:7) {
+  #load(paste0("~/output_temp/Epirubicin/cpp_var/", label.type, "/epirubicin_cpp_1to100_", label.type, "_var", temp.num, ".RData"))   
   
+  load(paste0("/Users/chengzhao/Dropbox/output_WS/epirubicin_cpp_1to100_", label.type, "_var", temp.num, ".RData")) 
   
   # Boxplot Data ---------------------------------
   cpp.boxplot_matrix <- foreach (temp.ind = 1:100, .combine=rbind) %do% {
@@ -86,56 +86,43 @@ for (temp.num in 1:30) {
   cpp.varying_training_matrix <- rbind(cpp.varying_training_matrix, temp.median_results)
 }
 
-#setwd("~/Dropbox/Cell Line Drug Response Prediction Project/Ensemble Of Similarity Networks/Cheng/Bortezomib/WS")
-#num_of_patients = seq(10, 150, 10)
-num_of_patients = seq(10, 300, 10)
-save(cpp.varying_training_matrix, num_of_patients, label.type, file = paste0("Bortezomib/output_WS/cpp_var_", label.type, ".RData"))
+num_of_cell_lines = seq(5, 35, 5)
+stopifnot(dim(cpp.varying_training_matrix)[1] == length(num_of_cell_lines))
+save(cpp.varying_training_matrix, num_of_cell_lines, label.type, file = paste0("Epirubicin/output_WS/cpp_var_", label.type, ".RData"))
 
 ###
-load("Bortezomib/output_WS/cpp_var_slope_p100.RData")
-load("Bortezomib/output_WS/cpp_var_auc_p100.RData")
-load("Bortezomib/output_WS/cpp_var_ic50_p100.RData")
-
 stopifnot(dim(cpp.varying_training_matrix)[2] == 21)
 
-png(filename = paste0("Bortezomib/plots/cpp_var_", label.type, ".png"), width = 800, height = 800)
+range(cpp.varying_training_matrix)
 
-if (label.type == "ic50") {
-  ylim = c(0.5, 0.9)
-  yaxp = c(0.4, 0.8, 8)
-} else if (label.type == "auc") {
-  ylim = c(0.6, 0.85)
-  yaxp = c(0.4, 0.8, 8)
-} else if (label.type == "slope") {
-  ylim = c(0.45, 1)
-  yaxp = c(0.45, 0.85, 8)  
-} else if (label.type == "slope_p100") {
-  ylim = c(0.5, 0.9)
-  yaxp = c(0.5, 0.85, 7)
+png(filename = paste0("Epirubicin/plots/epi_cpp_var_", label.type, ".png"), width = 800, height = 800)
+
+if (label.type == "auc_p50") {
+  ylim = c(0.4, 0.75)
+  yaxp = c(0.4, 0.65, 5)
+} else if (label.type == "auc_p80") {
+  ylim = c(0.35, 0.85)
+  yaxp = c(0.35, 0.75, 8)
 } else if (label.type == "auc_p100") {
-  ylim = c(0.6, 0.85)
-  yaxp = c(0.6, 0.8, 4)
-} else if (label.type == "ic50_p100") {
-  ylim = c(0.55, 0.85)
-  yaxp = c(0.55, 0.8, 5)
-} else if (label.type == "ic50_p50") {
-  ylim = c(0.55, 0.75)
-  yaxp = c(0.55, 0.7, 3)
-} else if (label.type == "auc_p50") {
-  ylim = c(0.6, 0.8)
-  yaxp = c(0.6, 0.75, 3)
+  ylim = c(0.35, 0.85)
+  yaxp = c(0.35, 0.75, 8)
 } else if (label.type == "slope_p50") {
-  ylim = c(0.5, 0.85)
-  yaxp = c(0.5, 0.8, 6)
+  ylim = c(0.4, 0.75)
+  yaxp = c(0.4, 0.65, 5)
+} else if (label.type == "slope_p80") {
+  ylim = c(0.35, 0.8)
+  yaxp = c(0.35, 0.7, 7)
+} else if (label.type == "slope_p100") {
+  ylim = c(0.35, 0.85)
+  yaxp = c(0.35, 0.75, 8)
 } else {
   stop("label not defined!")
 }
 
 par(mar=c(5.1,7,4.5,3.5))
-plot(0, 0, xlim = range(num_of_patients), ylim = ylim, type = "n", 
+plot(0, 0, xlim = range(num_of_cell_lines), ylim = ylim, type = "n", 
      ylab = "",
-     #xlab = "# of Patient Samples in Training Data",
-     xlab = "# of Cell line Samples in Training Data",
+     xlab = "# of Cell Line Samples in Training Data",
      #las = 1, cex.axis = 1.2, cex.lab = 1.5)
      las = 1, cex.axis = 1.2, cex.lab = 1.5, yaxp = yaxp)
 
@@ -149,7 +136,7 @@ temp.points <- rep(1, 7)
 temp.points <- c(temp.points, rep(2, 7))
 temp.points <- c(temp.points, rep(3, 7))
 for (temp.ind in 1:21) {
-  lines(num_of_patients, cpp.varying_training_matrix[, temp.ind], col = cl[(temp.ind - 1) %% 7 + 1], type = 'b', pch=temp.points[temp.ind])
+  lines(num_of_cell_lines, cpp.varying_training_matrix[, temp.ind], col = cl[(temp.ind - 1) %% 7 + 1], type = 'b', pch=temp.points[temp.ind])
 }
 legend("topleft", legend = colnames(cpp.varying_training_matrix), col=cl, pch=temp.points, ncol=3, pt.cex = 1, cex = 1.3) # optional legend
 

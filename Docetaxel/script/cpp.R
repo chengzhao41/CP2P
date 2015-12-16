@@ -7,22 +7,22 @@ args[1] = 1
 args[2] = 2
 PARTITION_BEGIN = as.integer(args[1])
 PARTITION_END = as.integer(args[2]) 
-args[3] = "slope"
+args[3] = "slope_p20_brca"
 args[4] = 10 
 ### End ###
 
 load("Docetaxel/WS/docetaxel_data.RData")
 
 INPUT_NFOLDS = 5
-if (args[3] == "slope" || args[3] == "slope_p20") {
+if (args[3] == "slope" || args[3] == "slope_p20" || args[3] == "slope_p20_brca") {
   input_data <- docetaxel$combined_slope.ComBat
   input_label <- docetaxel.labels$slope_combined
   input_partition <- partition$slope
-} else if (args[3] == "auc" || args[3] == "auc_p20") {
+} else if (args[3] == "auc" || args[3] == "auc_p20" || args[3] == "auc_p20_brca") {
   input_data <- docetaxel$combined_AUC.ComBat
   input_label <- docetaxel.labels$AUC_combined
   input_partition <- partition$AUC
-} else if (args[3] == "ic50" || args[3] == "ic50_p20") {
+} else if (args[3] == "ic50" || args[3] == "ic50_p20" || args[3] == "ic50_p20_brca") {
   input_data <- docetaxel$combined_IC50.ComBat
   input_label <- docetaxel.labels$IC50_combined
   input_partition <- partition$IC50
@@ -72,6 +72,12 @@ if (length(args) == 4) {
     input_partition$cpp <- partition_var$cVar_p20_p[[training_var_amount]]$AUC
   } else if (args[3] == "ic50_p20") {    
     input_partition$cpp <- partition_var$cVar_p20_p[[training_var_amount]]$IC50
+  } else if (args[3] == "slope_p20_brca") {    
+    input_partition$cpp <- partition_var$cVar_p20_p_brca[[training_var_amount]]$slope
+  } else if (args[3] == "auc_p20_brca") {    
+    input_partition$cpp <- partition_var$cVar_p20_p_brca[[training_var_amount]]$AUC
+  } else if (args[3] == "ic50_p20_brca") {    
+    input_partition$cpp <- partition_var$cVar_p20_p_brca[[training_var_amount]]$IC50
   } else {
     stop("arg 3 is wrong")
   }  

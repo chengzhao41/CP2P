@@ -1,11 +1,16 @@
 library("doParallel")
+library("RColorBrewer")
+library("ROCR")
 
 cpp.varying_training_matrix <- matrix(nrow = 0, ncol = 21)
 
-label.type <- "auc"
+label.type <- "auc_p50"
 
 for (temp.num in 1:10) {
-  load(paste0("~/output_temp/Epirubicin/cpp_var/", label.type, "/epirubicin_cpp_1to100_", label.type, "_var", temp.num, ".RData"))   
+  #load(paste0("~/output_temp/Epirubicin/cpp_var/", label.type, "/epirubicin_cpp_1to100_", label.type, "_var", temp.num, ".RData"))   
+  
+  load(paste0("/Users/chengzhao/Dropbox/output_WS/epirubicin_cpp_1to100_", label.type, "_var", temp.num, ".RData")) 
+  
   # Boxplot Data ---------------------------------
   cpp.boxplot_matrix <- foreach (temp.ind = 1:100, .combine=rbind) %do% {
     c(

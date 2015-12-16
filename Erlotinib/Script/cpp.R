@@ -13,12 +13,14 @@ args[4] = 3
 
 load("Erlotinib/WS/erlotinib_data.RData")
 
-if (args[3] == "slope" || args[3] == "slope_p20") {
+if (args[3] == "slope" || args[3] == "slope_p20" || args[3] == "slope_p20_lusc") {
   input_data <- erlotinib$all.ComBat.slope
   input_label <- erlotinib.labels$all.slope
   input_partition <- partition$all.slope
   feature.l1000 <- feature.l1000$cp
-} else if (args[3] == "ic50" || args[3] == "auc" || args[3] == "ic50_p20" || args[3] == "auc_p20") {
+} else if (args[3] == "ic50" || args[3] == "auc" 
+           || args[3] == "ic50_p20" || args[3] == "auc_p20"
+           || args[3] == "ic50_p20_lusc" || args[3] == "auc_p20_lusc") {
   input_data <- erlotinib$all.ComBat.IC50
   input_label <- erlotinib.labels$all.IC50
   input_partition <- partition$all.IC50
@@ -57,6 +59,10 @@ if (length(args) == 4) {
     input_partition$cpp <- partition_var$cVar_p20_p[[training_var_amount]]$slope
   } else if (args[3] == "ic50_p20" || (args[3] == "auc_p20")) {    
     input_partition$cpp <- partition_var$cVar_p20_p[[training_var_amount]]$IC50
+  } else if (args[3] == "slope_p20_lusc") {    
+    input_partition$cpp <- partition_var$cVar_p20_p_lusc[[training_var_amount]]$slope
+  } else if (args[3] == "ic50_p20_lusc" || (args[3] == "auc_p20_lusc")) {    
+    input_partition$cpp <- partition_var$cVar_p20_p_lusc[[training_var_amount]]$IC50
   } else {
     stop("arg 3 is wrong")
   }
@@ -68,6 +74,7 @@ stopifnot(exists("training_var_amount"))
 rm(erlotinib)
 
 # do the computation 
+snf.parameter <- seq(from = 5, to = 30, by = 5)
 source("common/cpp_compute.R")
 ##
 
