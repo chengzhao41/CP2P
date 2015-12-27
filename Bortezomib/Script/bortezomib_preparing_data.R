@@ -123,12 +123,13 @@ sum(!is.na(temp.ind))
 ### END
 
 # Using sva to harmonize across different tissue types
-# show_pca(input_data = bortezomib$cgp_slope, label = bortezomib.labels$slope)
+# show_pca(input_data = bortezomib$cgp_slope, label = bortezomi b.labels$slope)
 # show_pca(input_data = bortezomib$cgp_AUC, label = bortezomib.labels$AUC)
 # show_pca(input_data = bortezomib$cgp_IC50, label = bortezomib.labels$IC50)
 # slope
 bortezomib$cgp_slope.sva <- sva_combine(batch = sampleinfo.cgp$tissue.type[bortezomib.labels$slope_ind],  
                                         label = bortezomib.labels$slope, input_data = scale(bortezomib$cgp_slope))
+
 #show_pca(input_data = bortezomib$cgp_slope.sva, label = bortezomib.labels$slope)
 #show_pca(input_data = bortezomib$cgp_slope.sva, label = sampleinfo.cgp$tissue.type[bortezomib.labels$slope_ind])
 
@@ -162,9 +163,12 @@ table(bortezomib.labels$patient)
 bortezomib.labels$slope_combined <- c(bortezomib.labels$slope, bortezomib.labels$patient)
 stopifnot(substring(colnames(bortezomib$cgp_slope.sva), 8) == annot.ge.cgp$EntrezGene.ID)
 colnames(bortezomib$cgp_slope.sva) <- annot.ge.cgp$symbol
-
+colnames(bortezomib$cgp_slope) <- annot.ge.cgp$symbol
 
 temp.data <- comGENE(bortezomib$cgp_slope.sva, bortezomib$patient.combat)
+#temp.data <- comGENE(scale(bortezomib$cgp_slope), bortezomib$patient.combat)
+temp.data <- comGENE(bortezomib$cgp_slope.sva, data$patient.combat)
+
 mean(temp.data[[1]])
 mean(temp.data[[2]])
 dim(temp.data[[1]])
@@ -174,7 +178,8 @@ bortezomib.labels$slope_combined.source <- c(rep("CGP", dim(temp.data[[1]])[1]),
 
 bortezomib$combined_slope.sva <- sva_combine(batch = bortezomib.labels$slope_combined.source,
                                              label = bortezomib.labels$slope_combined,
-                                             input_data = rbind(temp.data[[1]], temp.data[[2]]), n.sv = 2)
+                                             input_data = rbind(temp.data[[1]], scale(temp.data[[2]])), n.sv=2)
+mean(bortezomib$combined_slope.sva)
 
 show_pca(input_data = bortezomib$combined_slope.sva, label = bortezomib.labels$slope_combined)
 show_pca(input_data = bortezomib$combined_slope.sva, label = bortezomib.labels$slope_combined.source)

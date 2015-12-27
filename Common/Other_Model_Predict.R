@@ -25,7 +25,7 @@ Other_Model_Predict <- function(data, ground_truth, partition, selected_features
   type_measure.other_models = "ROC"
   type_measure.performance = "auc"   
   
-  if (length(partition[[run_ind]]$training_index.single) < 30) {
+  if (length(partition[[run_ind]]$training_index) < 30) {
     type_measure.glmnet = "class"
   }
   
@@ -49,8 +49,8 @@ Other_Model_Predict <- function(data, ground_truth, partition, selected_features
   temp.cv_error_matrix <- foreach (temp = 1:N_CV_REPEATS, .combine=rbind, .errorhandling="stop") %do% {      
     for (alpha_index in 1:length(elastic_net.ALPHA))
     {      
-      elastic_net.cv_model[[alpha_index]] = cv.glmnet(data[partition[[run_ind]]$training_index.single, selected_features],
-                                          ground_truth[partition[[run_ind]]$training_index.single],
+      elastic_net.cv_model[[alpha_index]] = cv.glmnet(data[partition[[run_ind]]$training_index, selected_features],
+                                          ground_truth[partition[[run_ind]]$training_index],
                                           alpha = elastic_net.ALPHA[alpha_index]
                                           , type.measure = type_measure.glmnet
                                           , family = "binomial"
@@ -78,8 +78,8 @@ Other_Model_Predict <- function(data, ground_truth, partition, selected_features
   temp.loop_count = 0
   while (temp.non_zero_coeff < 3) {
     elastic_net.cv_model = cv.glmnet(
-                          data[partition[[run_ind]]$training_index.single, selected_features]
-                          , ground_truth[partition[[run_ind]]$training_index.single]
+                          data[partition[[run_ind]]$training_index, selected_features]
+                          , ground_truth[partition[[run_ind]]$training_index]
                           , alpha = elastic_net.ALPHA[temp.best_alpha_index]
                           , type.measure = type_measure.glmnet
                           , family = "binomial"
@@ -102,8 +102,8 @@ Other_Model_Predict <- function(data, ground_truth, partition, selected_features
   } 
   print(temp.non_zero_coeff)  
   
-  elasticNet.model = glmnet(data[partition[[run_ind]]$training_index.single, selected_features], 
-                            ground_truth[partition[[run_ind]]$training_index.single], 
+  elasticNet.model = glmnet(data[partition[[run_ind]]$training_index, selected_features], 
+                            ground_truth[partition[[run_ind]]$training_index], 
                             alpha = elastic_net.ALPHA[temp.best_alpha_index],
                             standardize=FALSE,
                             nlambda = 100,
@@ -143,8 +143,8 @@ Other_Model_Predict <- function(data, ground_truth, partition, selected_features
   temp.non_zero_coeff = 0
   temp.loop_count = 0
   while (temp.non_zero_coeff < 3) {      
-    temp.cv_model = cv.glmnet(data[partition[[run_ind]]$training_index.single, selected_features]
-                         , ground_truth[partition[[run_ind]]$training_index.single]
+    temp.cv_model = cv.glmnet(data[partition[[run_ind]]$training_index, selected_features]
+                         , ground_truth[partition[[run_ind]]$training_index]
                          , alpha = 1
                          , type.measure = type_measure.glmnet
                          , family = "binomial"
@@ -167,8 +167,8 @@ Other_Model_Predict <- function(data, ground_truth, partition, selected_features
   }  
   print(temp.non_zero_coeff)  
   
-  lasso.model = glmnet(data[partition[[run_ind]]$training_index.single, selected_features], 
-                       ground_truth[partition[[run_ind]]$training_index.single], 
+  lasso.model = glmnet(data[partition[[run_ind]]$training_index, selected_features], 
+                       ground_truth[partition[[run_ind]]$training_index], 
                        alpha = 1,
                        standardize=FALSE,
                        nlambda = 100,
@@ -203,8 +203,8 @@ Other_Model_Predict <- function(data, ground_truth, partition, selected_features
   temp.non_zero_coeff = 0
   temp.loop_count = 0
   while (temp.non_zero_coeff < 3) {      
-    temp.cv_model = cv.glmnet(data[partition[[run_ind]]$training_index.single, selected_features]
-                              , ground_truth[partition[[run_ind]]$training_index.single]
+    temp.cv_model = cv.glmnet(data[partition[[run_ind]]$training_index, selected_features]
+                              , ground_truth[partition[[run_ind]]$training_index]
                               , alpha = 0
                               , type.measure = type_measure.glmnet
                               , family = "binomial"
@@ -228,8 +228,8 @@ Other_Model_Predict <- function(data, ground_truth, partition, selected_features
   } 
   print(temp.non_zero_coeff)  
   
-  ridge.model = glmnet(data[partition[[run_ind]]$training_index.single, selected_features], 
-                       ground_truth[partition[[run_ind]]$training_index.single], 
+  ridge.model = glmnet(data[partition[[run_ind]]$training_index, selected_features], 
+                       ground_truth[partition[[run_ind]]$training_index], 
                        alpha = 0,
                        standardize=FALSE,
                        nlambda = 100,
@@ -261,7 +261,7 @@ Other_Model_Predict <- function(data, ground_truth, partition, selected_features
   rm(list = ls(pattern="temp"))  
   
 # 4) Random Forest  
-  other_model.y = as.factor(ground_truth[partition[[run_ind]]$training_index.single])
+  other_model.y = as.factor(ground_truth[partition[[run_ind]]$training_index])
   levels(other_model.y) <- c("a", "b")
   
   fitControl <- trainControl(
@@ -272,7 +272,7 @@ Other_Model_Predict <- function(data, ground_truth, partition, selected_features
     allowParallel = TRUE,
     summaryFunction = twoClassSummary)   
   
-  rf.model <- train(x = data[partition[[run_ind]]$training_index.single, selected_features]
+  rf.model <- train(x = data[partition[[run_ind]]$training_index, selected_features]
                     , y = other_model.y
                     , method = "rf"
                     , trControl = fitControl                   
@@ -308,7 +308,7 @@ Other_Model_Predict <- function(data, ground_truth, partition, selected_features
   rm(list = ls(pattern="temp."))
   
   # 5) SVM with linear kernel  
-  svmLinear.model <- train(x = data[partition[[run_ind]]$training_index.single, selected_features]
+  svmLinear.model <- train(x = data[partition[[run_ind]]$training_index, selected_features]
                            , y = other_model.y
                            , method = "svmLinear"
                            , trControl = fitControl                   
@@ -345,7 +345,7 @@ Other_Model_Predict <- function(data, ground_truth, partition, selected_features
   rm(list = ls(pattern="temp."))
   
   # 6) SVM with radial kernel
-  svmRadial.model <- train(x = data[partition[[run_ind]]$training_index.single, selected_features]
+  svmRadial.model <- train(x = data[partition[[run_ind]]$training_index, selected_features]
                            , y = other_model.y
                            , method = "svmRadial"
                            , trControl = fitControl
