@@ -2,14 +2,18 @@ rm(list = ls())
 source("Common/load_library.R")
 
 ### User supplies these values ###
-args <- vector()
-
-args[1] = 1 # partition start
-args[2] = 1 # partition end
+args <- commandArgs(trailingOnly = TRUE)
+print(length(args))
 PARTITION_BEGIN = as.integer(args[1])
 PARTITION_END = as.integer(args[2]) 
-registerDoParallel(4)
-args[3] = 10 # index for training sets
+registerDoParallel(8)
+
+#args <- vector()
+#registerDoParallel(4)
+#args[1] = 1 # partition start
+#args[2] = 1 # partition end
+#args[3] = 10 # index for training sets
+
 ### End ###
 
 load("Bortezomib/WS/bortezomib_data.RData")
