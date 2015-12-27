@@ -43,6 +43,7 @@ stopifnot(!is.null(feature.l1000))
 
 # do the computation 
 input.type_measure = "auc"
+snf.parameter <- seq(from = 5, to = 30, by = 5)
 source("Common/pp_compute.R")
 ##
 

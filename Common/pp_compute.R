@@ -44,8 +44,6 @@ for (temp.run_ind in PARTITION_BEGIN:PARTITION_END) {
 }
 
 # Other models make predictions ---------------------------------
-snf.parameter <- seq(from = 5, to = 30, by = 5)
-
 pp.other_model.all = list()
 for (temp.run_ind in PARTITION_BEGIN:PARTITION_END) {
   print(Sys.time())
