@@ -27,7 +27,7 @@ for (temp.run_ind in PARTITION_BEGIN:PARTITION_END) {
   temp.mRMR_features <- as.integer(temp.mRMR_features)
   
   snf.single.mRMR1000[[temp.run_ind]] <- SNF_Single_Predict(feature.sets = temp.mRMR_features, 
-                                                               parameters = list(K = snf.parameter), 
+                                                               parameters = list(K = input_snf.parameter), 
                                                                data = input_data, 
                                                                partition = input_partition,
                                                                ground_truth = input_label,
@@ -84,7 +84,7 @@ for (temp.run_ind in PARTITION_BEGIN:PARTITION_END) {
   print(temp.run_ind)
   
   pp.snf.single.all[[temp.run_ind]] <- SNF_Single_Predict(feature.sets = NULL, 
-                                                          parameters = list(K = snf.parameter), 
+                                                          parameters = list(K = input_snf.parameter), 
                                                           data = input_data, 
                                                           partition = input_partition,
                                                           ground_truth = input_label,
@@ -99,7 +99,7 @@ for (temp.run_ind in PARTITION_BEGIN:PARTITION_END) {
   print(temp.run_ind)
   
   snf.single.l1000[[temp.run_ind]] <- SNF_Single_Predict(feature.sets = input_feature.l1000, 
-                                                            parameters = list(K = snf.parameter), 
+                                                            parameters = list(K = input_snf.parameter), 
                                                             data = input_data, 
                                                             partition = input_partition,
                                                             ground_truth = input_label,
