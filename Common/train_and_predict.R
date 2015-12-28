@@ -1,4 +1,4 @@
-stopifnot(!is.null(feature.l1000))
+stopifnot(!is.null(input_feature.l1000))
 stopifnot(mean(input_data) < 0.1)
 stopifnot(dim(input_data)[1] == length(input_label))
 stopifnot(rownames(input_data) == names(input_label))
@@ -70,7 +70,7 @@ for (temp.run_ind in PARTITION_BEGIN:PARTITION_END) {
   other_model.l1000[[temp.run_ind]] <- Other_Model_Predict(data = input_data, 
                                                               ground_truth = input_label, 
                                                               partition = input_partition,
-                                                              selected_features = feature.l1000, 
+                                                              selected_features = input_feature.l1000, 
                                                               NFOLDS = 5, 
                                                               N_CV_REPEATS = 1, 
                                                               run_ind = temp.run_ind, 
@@ -98,7 +98,7 @@ for (temp.run_ind in PARTITION_BEGIN:PARTITION_END) {
   print(Sys.time())
   print(temp.run_ind)
   
-  snf.single.l1000[[temp.run_ind]] <- SNF_Single_Predict(feature.sets = feature.l1000, 
+  snf.single.l1000[[temp.run_ind]] <- SNF_Single_Predict(feature.sets = input_feature.l1000, 
                                                             parameters = list(K = snf.parameter), 
                                                             data = input_data, 
                                                             partition = input_partition,

@@ -24,7 +24,7 @@ print(args)
 
 training_var_amount <- as.integer(args[[3]])
   
-if (args[4] == "Bortezomib") {
+if (args[4] == "bortezomib") {
   load("Bortezomib/WS/bortezomib_data.RData")
   
   if (args[5] == "p2p") {
@@ -33,28 +33,28 @@ if (args[4] == "Bortezomib") {
     input_data <- bortezomib$patient.combat
     input_label <- bortezomib.labels$patient
     input_partition = partition$cell_lines_all[[training_var_amount]]$p2p
-    feature.l1000 <- feature.l1000$pp
+    input_feature.l1000 <- feature.l1000$pp
   } else if (args[5] == "cp2p_slope") {
     stopifnot(training_var_amount > length(partition$cell_lines_all))
     
     input_data <- bortezomib$combined_slope.sva 
     input_label <- bortezomib.labels$slope_combined
     input_partition = partition$cell_lines_all[[training_var_amount]]$cp2p.slope
-    feature.l1000 <- feature.l1000$cp
+    input_feature.l1000 <- feature.l1000$cp
   } else if (args[5] == "cp2p_auc") {
     stopifnot(training_var_amount > length(partition$cell_lines_all))
     
     input_data <- bortezomib$combined_AUC.sva
     input_label <- bortezomib.labels$AUC_combined
     input_partition = partition$cell_lines_all[[training_var_amount]]$cp2p.AUC
-    feature.l1000 <- feature.l1000$cp
+    input_feature.l1000 <- feature.l1000$cp
   } else if (args[5] == "cp2p_ic50") {
     stopifnot(training_var_amount > length(partition$cell_lines_all))
     
     input_data <- bortezomib$combined_IC50.sva
     input_label <- bortezomib.labels$IC50_combined
     input_partition = partition$cell_lines_all[[training_var_amount]]$cp2p.IC50
-    feature.l1000 <- feature.l1000$cp
+    input_feature.l1000 <- feature.l1000$cp
   } else {
     stop(paste("args[5]", args[5], "is invalid."))
   }
