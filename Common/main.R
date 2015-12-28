@@ -67,8 +67,8 @@ if (args[4] == "Bortezomib") {
 }
 
 # do the computation
-print(paste0(args[4], "_", args[5], PARTITION_BEGIN, "to", PARTITION_END, "_", args[3], "_var", training_var_amount, ".RData"))
+print(paste0(args[4], "_", args[5], "_", PARTITION_BEGIN, "to", PARTITION_END, "_parInd", training_var_amount, ".RData"))
 source("Common/train_and_predict.R")
 ##
 
-save.image(paste0(args[4], "_", args[5], PARTITION_BEGIN, "to", PARTITION_END, "_", args[3], "_var", training_var_amount, ".RData"))
+save.image(paste0(args[4], "_", args[5], "_", PARTITION_BEGIN, "to", PARTITION_END, "_parInd", training_var_amount, ".RData"))
