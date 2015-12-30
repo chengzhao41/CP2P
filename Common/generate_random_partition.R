@@ -3,10 +3,10 @@ generate_random_partition <- function(
   input_labels_cell_lines, 
   input_labels_patient,
   training_amount.p,
-  leave_one_out,
+  leave_one_out = NULL,
   cell_line_order,
   training_amount.c, 
-  input_partition = NULL
+  input_partition = NULL # if the test set is given
   ) {
   
   stopifnot(length(input_labels_cell_lines) > 0)
@@ -15,19 +15,31 @@ generate_random_partition <- function(
   stopifnot(training_amount.p >= 10)
   stopifnot(!is.null(leave_one_out))
   stopifnot(length(input_labels_patient) > training_amount.p)
-  stopifnot(length(input_labels_cell_lines$slope) >= training_amount.c)
-  stopifnot(length(input_labels_cell_lines$AUC) >= training_amount.c)
-  stopifnot(length(input_labels_cell_lines$IC50) >= training_amount.c)
   
   require("doParallel")
 
   temp.patients <- 1:length(input_labels_patient)
-  
   temp.cell_lines <- list()
-  temp.cell_lines$slope <- length(temp.patients) + 1:length(input_labels_cell_lines$slope)
-  temp.cell_lines$AUC <- length(temp.patients) + 1:length(input_labels_cell_lines$AUC)
-  temp.cell_lines$IC50 <- length(temp.patients) + 1:length(input_labels_cell_lines$IC50)
   
+  if (!is.null(input_labels_cell_lines$slope)) {
+    stopifnot(length(input_labels_cell_lines$slope) >= training_amount.c)
+    temp.cell_lines$slope <- length(temp.patients) + 1:length(input_labels_cell_lines$slope)
+  } else {
+    warning("slope response labels are not provided")
+  }
+  if (!is.null(input_labels_cell_lines$AUC)) {
+    stopifnot(length(input_labels_cell_lines$AUC) >= training_amount.c)
+    temp.cell_lines$AUC <- length(temp.patients) + 1:length(input_labels_cell_lines$AUC)
+  } else {
+    warning("AUC response labels are not provided")
+  }
+  if (!is.null(input_labels_cell_lines$IC50)) {
+    stopifnot(length(input_labels_cell_lines$IC50) >= training_amount.c)
+    temp.cell_lines$IC50 <- length(temp.patients) + 1:length(input_labels_cell_lines$IC50)
+  } else {
+    warning("IC50 response labels are not provided")
+  }
+
   partition <- list()
   
   for (temp.run_ind in 1:100) {
@@ -52,19 +64,18 @@ generate_random_partition <- function(
       if (length(temp.cell_lines$slope) > 0) {
         temp.training_index.c2p$slope = temp.cell_lines$slope[cell_line_order$slope][1:training_amount.c]
         temp.training_index.cp2p$slope <- c(temp.training_index.c2p$slope, temp.training_index.p2p)
+        stopifnot(length(temp.training_index.c2p$slope) == training_amount.c)
       }
       if (length(temp.cell_lines$AUC) > 0) {
         temp.training_index.c2p$AUC = temp.cell_lines$AUC[cell_line_order$AUC][1:training_amount.c]
         temp.training_index.cp2p$AUC <- c(temp.training_index.c2p$AUC, temp.training_index.p2p)
+        stopifnot(length(temp.training_index.c2p$AUC) == training_amount.c)
       }
       if (length(temp.cell_lines$IC50) > 0) {
         temp.training_index.c2p$IC50 = temp.cell_lines$IC50[cell_line_order$IC50][1:training_amount.c]
         temp.training_index.cp2p$IC50 <- c(temp.training_index.c2p$IC50, temp.training_index.p2p)
+        stopifnot(length(temp.training_index.c2p$IC50) == training_amount.c)
       }
-      
-      stopifnot(length(temp.training_index.c2p$slope) == training_amount.c)
-      stopifnot(length(temp.training_index.c2p$AUC) == training_amount.c)
-      stopifnot(length(temp.training_index.c2p$IC50) == training_amount.c)
       
       if ((length(table(input_labels_patient[temp.test_index])) == 2 && min(table(input_labels_patient[temp.test_index])) >= 5
            && length(table(input_labels_patient[temp.training_index.p2p])) == 2 && min(table(input_labels_patient[temp.training_index.p2p])) >= 5)) {
@@ -75,47 +86,64 @@ generate_random_partition <- function(
     }
     
     stopifnot(length(temp.training_index.p2p) == training_amount.p)
-    stopifnot(length(temp.training_index.cp2p$slope) == training_amount.p + training_amount.c)
-    stopifnot(length(temp.training_index.cp2p$AUC) == training_amount.p + training_amount.c)
-    stopifnot(length(temp.training_index.cp2p$IC50) == training_amount.p + training_amount.c)
     stopifnot(length(intersect(temp.test_index, temp.training_index.p2p)) == 0)
-    stopifnot(length(intersect(temp.test_index, temp.training_index.cp2p$slope)) == 0)
-    stopifnot(length(intersect(temp.test_index, temp.training_index.cp2p$AUC)) == 0)
-    stopifnot(length(intersect(temp.test_index, temp.training_index.cp2p$IC50)) == 0)
-    stopifnot(length(intersect(temp.test_index, temp.training_index.c2p$slope)) == 0)
-    stopifnot(length(intersect(temp.test_index, temp.training_index.c2p$AUC)) == 0)
-    stopifnot(length(intersect(temp.test_index, temp.training_index.c2p$IC50)) == 0)
     stopifnot(temp.test_index %in% temp.patients)
+    if (length(temp.cell_lines$slope) > 0) {
+      stopifnot(length(temp.training_index.cp2p$slope) == training_amount.p + training_amount.c)
+      stopifnot(length(intersect(temp.test_index, temp.training_index.cp2p$slope)) == 0)
+      stopifnot(length(intersect(temp.test_index, temp.training_index.c2p$slope)) == 0)
+    }
+    if (length(temp.cell_lines$AUC) > 0) {
+      stopifnot(length(temp.training_index.cp2p$AUC) == training_amount.p + training_amount.c)      
+      stopifnot(length(intersect(temp.test_index, temp.training_index.cp2p$AUC)) == 0)      
+      stopifnot(length(intersect(temp.test_index, temp.training_index.c2p$AUC)) == 0)
+    }
+    if (length(temp.cell_lines$IC50) > 0) {
+      stopifnot(length(temp.training_index.cp2p$IC50) == training_amount.p + training_amount.c)
+      stopifnot(length(intersect(temp.test_index, temp.training_index.cp2p$IC50)) == 0)
+      stopifnot(length(intersect(temp.test_index, temp.training_index.c2p$IC50)) == 0)
+    }
     
     partition$p2p[[temp.run_ind]] <- list(test_index = temp.test_index
                                          , training_index = temp.training_index.p2p)
-    partition$c2p.slope[[temp.run_ind]] <- list(test_index = temp.test_index
-                                         , training_index = temp.training_index.c2p$slope)
-    partition$c2p.AUC[[temp.run_ind]] <- list(test_index = temp.test_index
+    
+    if (length(temp.cell_lines$slope) > 0) {
+      partition$c2p.slope[[temp.run_ind]] <- list(test_index = temp.test_index
+                                           , training_index = temp.training_index.c2p$slope)
+      partition$cp2p.slope[[temp.run_ind]] <- list(test_index = temp.test_index
+                                           , training_index = temp.training_index.cp2p$slope)
+    }
+    if (length(temp.cell_lines$AUC) > 0) {
+      partition$c2p.AUC[[temp.run_ind]] <- list(test_index = temp.test_index
                                                 , training_index = temp.training_index.c2p$AUC)
-    partition$c2p.IC50[[temp.run_ind]] <- list(test_index = temp.test_index
-                                                , training_index = temp.training_index.c2p$IC50)
-    partition$cp2p.slope[[temp.run_ind]] <- list(test_index = temp.test_index
-                                         , training_index = temp.training_index.cp2p$slope)
-    partition$cp2p.AUC[[temp.run_ind]] <- list(test_index = temp.test_index
-                                                 , training_index = temp.training_index.cp2p$AUC)
-    partition$cp2p.IC50[[temp.run_ind]] <- list(test_index = temp.test_index
-                                                 , training_index = temp.training_index.cp2p$IC50)
+      partition$cp2p.AUC[[temp.run_ind]] <- list(test_index = temp.test_index
+                                                   , training_index = temp.training_index.cp2p$AUC)
+    }
+    if (length(temp.cell_lines$IC50) > 0) {
+      partition$c2p.IC50[[temp.run_ind]] <- list(test_index = temp.test_index
+                                                 , training_index = temp.training_index.c2p$IC50)
+      partition$cp2p.IC50[[temp.run_ind]] <- list(test_index = temp.test_index
+                                                   , training_index = temp.training_index.cp2p$IC50)
+    }
   }
   
   for (temp.run_ind in 1:99) {
     stopifnot((partition$p2p[[temp.run_ind]]$test_index == partition$p2p[[temp.run_ind + 1]]$test_index) != length(partition$p2p[[temp.run_ind + 1]]$test_index))
     stopifnot((partition$p2p[[temp.run_ind]]$training_index == partition$p2p[[temp.run_ind + 1]]$training_index) != length(partition$p2p[[temp.run_ind + 1]]$training_index))
-    stopifnot((partition$c2p.slope[[temp.run_ind]]$training_index == partition$c2p.slope[[temp.run_ind + 1]]$training_index) != length(partition$c2p.slope[[temp.run_ind + 1]]$training_index))
-    stopifnot((partition$c2p.AUC[[temp.run_ind]]$training_index == partition$c2p.AUC[[temp.run_ind + 1]]$training_index) != length(partition$c2p.AUC[[temp.run_ind + 1]]$training_index))
-    stopifnot((partition$c2p.IC50[[temp.run_ind]]$training_index == partition$c2p.IC50[[temp.run_ind + 1]]$training_index) != length(partition$c2p.IC50[[temp.run_ind + 1]]$training_index))
-    stopifnot((partition$cp2p.slope[[temp.run_ind]]$training_index == partition$cp2p.slope[[temp.run_ind + 1]]$training_index) != length(partition$cp2p.slope[[temp.run_ind + 1]]$training_index))
-    stopifnot((partition$cp2p.AUC[[temp.run_ind]]$training_index == partition$cp2p.AUC[[temp.run_ind + 1]]$training_index) != length(partition$cp2p.AUC[[temp.run_ind + 1]]$training_index))
-    stopifnot((partition$cp2p.IC50[[temp.run_ind]]$training_index == partition$cp2p.IC50[[temp.run_ind + 1]]$training_index) != length(partition$cp2p.IC50[[temp.run_ind + 1]]$training_index))
+    
+    if (length(temp.cell_lines$slope) > 0) {
+      stopifnot((partition$c2p.slope[[temp.run_ind]]$training_index == partition$c2p.slope[[temp.run_ind + 1]]$training_index) != length(partition$c2p.slope[[temp.run_ind + 1]]$training_index))
+      stopifnot((partition$cp2p.slope[[temp.run_ind]]$training_index == partition$cp2p.slope[[temp.run_ind + 1]]$training_index) != length(partition$cp2p.slope[[temp.run_ind + 1]]$training_index))
+    }
+    if (length(temp.cell_lines$AUC) > 0) {
+      stopifnot((partition$c2p.AUC[[temp.run_ind]]$training_index == partition$c2p.AUC[[temp.run_ind + 1]]$training_index) != length(partition$c2p.AUC[[temp.run_ind + 1]]$training_index))
+      stopifnot((partition$cp2p.AUC[[temp.run_ind]]$training_index == partition$cp2p.AUC[[temp.run_ind + 1]]$training_index) != length(partition$cp2p.AUC[[temp.run_ind + 1]]$training_index))
+    }
+    if (length(temp.cell_lines$IC50) > 0) {
+      stopifnot((partition$c2p.IC50[[temp.run_ind]]$training_index == partition$c2p.IC50[[temp.run_ind + 1]]$training_index) != length(partition$c2p.IC50[[temp.run_ind + 1]]$training_index))
+      stopifnot((partition$cp2p.IC50[[temp.run_ind]]$training_index == partition$cp2p.IC50[[temp.run_ind + 1]]$training_index) != length(partition$cp2p.IC50[[temp.run_ind + 1]]$training_index))
+    }
   }
-  
-  #partition$patients = temp.patients
-  #partition$cell_lines = temp.cell_lines
   
   return(partition)
 }
