@@ -1,7 +1,7 @@
 # generates the random partitions with the test set common to all approaches
 generate_random_partition <- function(
-  input_labels_cell_lines, 
-  input_labels_patient,
+  labels_cell_lines, 
+  labels_patient,
   training_amount.p,
   leave_one_out = NULL,
   cell_line_order,
@@ -9,33 +9,33 @@ generate_random_partition <- function(
   input_partition = NULL # if the test set is given
   ) {
   
-  stopifnot(length(input_labels_cell_lines) > 0)
-  stopifnot(length(input_labels_cell_lines) == length(cell_line_order))
-  stopifnot(length(input_labels_patient) >= 10)
+  stopifnot(length(labels_cell_lines) > 0)
+  stopifnot(length(labels_cell_lines) == length(cell_line_order))
+  stopifnot(length(labels_patient) >= 10)
   stopifnot(training_amount.p >= 10)
   stopifnot(!is.null(leave_one_out))
-  stopifnot(length(input_labels_patient) > training_amount.p)
+  stopifnot(length(labels_patient) > training_amount.p)
   
   require("doParallel")
 
-  temp.patients <- 1:length(input_labels_patient)
+  temp.patients <- 1:length(labels_patient)
   temp.cell_lines <- list()
   
-  if (!is.null(input_labels_cell_lines$slope)) {
-    stopifnot(length(input_labels_cell_lines$slope) >= training_amount.c)
-    temp.cell_lines$slope <- length(temp.patients) + 1:length(input_labels_cell_lines$slope)
+  if (!is.null(labels_cell_lines$slope)) {
+    stopifnot(length(labels_cell_lines$slope) >= training_amount.c)
+    temp.cell_lines$slope <- length(temp.patients) + 1:length(labels_cell_lines$slope)
   } else {
     warning("slope response labels are not provided")
   }
-  if (!is.null(input_labels_cell_lines$AUC)) {
-    stopifnot(length(input_labels_cell_lines$AUC) >= training_amount.c)
-    temp.cell_lines$AUC <- length(temp.patients) + 1:length(input_labels_cell_lines$AUC)
+  if (!is.null(labels_cell_lines$AUC)) {
+    stopifnot(length(labels_cell_lines$AUC) >= training_amount.c)
+    temp.cell_lines$AUC <- length(temp.patients) + 1:length(labels_cell_lines$AUC)
   } else {
     warning("AUC response labels are not provided")
   }
-  if (!is.null(input_labels_cell_lines$IC50)) {
-    stopifnot(length(input_labels_cell_lines$IC50) >= training_amount.c)
-    temp.cell_lines$IC50 <- length(temp.patients) + 1:length(input_labels_cell_lines$IC50)
+  if (!is.null(labels_cell_lines$IC50)) {
+    stopifnot(length(labels_cell_lines$IC50) >= training_amount.c)
+    temp.cell_lines$IC50 <- length(temp.patients) + 1:length(labels_cell_lines$IC50)
   } else {
     warning("IC50 response labels are not provided")
   }
@@ -77,8 +77,8 @@ generate_random_partition <- function(
         stopifnot(length(temp.training_index.c2p$IC50) == training_amount.c)
       }
       
-      if ((length(table(input_labels_patient[temp.test_index])) == 2 && min(table(input_labels_patient[temp.test_index])) >= 5
-           && length(table(input_labels_patient[temp.training_index.p2p])) == 2 && min(table(input_labels_patient[temp.training_index.p2p])) >= 5)) {
+      if ((length(table(labels_patient[temp.test_index])) == 2 && min(table(labels_patient[temp.test_index])) >= 5
+           && length(table(labels_patient[temp.training_index.p2p])) == 2 && min(table(labels_patient[temp.training_index.p2p])) >= 5)) {
         break
       }
       temp.loop_count = temp.loop_count + 1
