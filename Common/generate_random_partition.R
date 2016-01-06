@@ -49,16 +49,17 @@ generate_random_partition <- function(
     temp.training_index.cp2p <- list()
     temp.training_index.c2p <- list()
     temp.training_index.p2p <- vector()
+    
     repeat {
       
       if (is.null(input_partition)) {
-      temp.training_index.p2p <- sample(temp.patients, training_amount.p)
-      stopifnot(length(temp.training_index.p2p) == training_amount.p)
-      temp.test_index <- setdiff(temp.patients, temp.training_index.p2p)
-      } else {
-        temp.training_index.p2p <- input_partition[[temp.run_ind]]$training_index.p2p
+        temp.training_index.p2p <- sample(temp.patients, training_amount.p)
         stopifnot(length(temp.training_index.p2p) == training_amount.p)
-        temp.test_index <- input_partition[[temp.run_ind]]$test_index
+        temp.test_index <- setdiff(temp.patients, temp.training_index.p2p)
+      } else {
+        temp.training_index.p2p <- input_partition$p2p[[temp.run_ind]]$training_index
+        stopifnot(length(temp.training_index.p2p) == training_amount.p)
+        temp.test_index <- input_partition$p2p[[temp.run_ind]]$test_index
       }
       
       if (length(temp.cell_lines$slope) > 0) {

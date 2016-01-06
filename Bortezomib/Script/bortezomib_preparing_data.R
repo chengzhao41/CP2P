@@ -8,6 +8,7 @@ source('Common/drug_cut/distancePointLine.R')
 source('Common/drug_cut/distancePointSegment.R')
 source('Common/comGENE.R')
 source("Common/generate_random_partition.R")
+source("Common/ordering_by_similarity.R")
 
 # Load CGP Cell line data --------------------------------------------
 load("CGP/cdrug2_cgp_ccle_all.RData")
@@ -276,6 +277,66 @@ cell_lines_all <- foreach(input.training_amount.p = seq(from = 10, to = 150, by 
 
 partition$cell_lines_all <- cell_lines_all
 
+# order cell lines by similarity using 100 and 50 patients ------------------------------------------
+input.labels_cell_lines = list()
+input.labels_cell_lines$slope = bortezomib.labels$slope
+input.labels_cell_lines$IC50 = bortezomib.labels$IC50
+input.labels_cell_lines$AUC = bortezomib.labels$AUC
+
+input.cell_line_order = list()
+
+temp.slope_combined_ind_common = c(1:length(bortezomib.labels$patient), 
+                                   length(bortezomib.labels$patient) + bortezomib.labels$slope_ind_common)
+stopifnot(max(table(temp.slope_combined_ind_common)) == 1)
+
+temp.auc_combined_ind_common = c(1:length(bortezomib.labels$patient), 
+                                   length(bortezomib.labels$patient) + bortezomib.labels$AUC_ind_common)
+stopifnot(max(table(temp.auc_combined_ind_common)) == 1)
+
+temp.ic50_combined_ind_common = c(1:length(bortezomib.labels$patient), 
+                                   length(bortezomib.labels$patient) + bortezomib.labels$IC50_ind_common)
+stopifnot(max(table(temp.ic50_combined_ind_common)) == 1)
+
+input.cell_line_order$slope =
+  order_by_similarity(data = bortezomib$combined_slope.sva[temp.slope_combined_ind_common, ],
+                      labels = bortezomib.labels$slope_combined[temp.slope_combined_ind_common],
+                      source_labels = bortezomib.labels$slope_combined.source[temp.slope_combined_ind_common])
+
+input.cell_line_order$AUC =
+  order_by_similarity(data = bortezomib$combined_AUC.sva[temp.auc_combined_ind_common, ],
+                      labels = bortezomib.labels$AUC_combined[temp.auc_combined_ind_common],
+                      source_labels = bortezomib.labels$AUC_combined.source[temp.auc_combined_ind_common])
+
+input.cell_line_order$IC50 =
+  order_by_similarity(data = bortezomib$combined_IC50.sva[temp.ic50_combined_ind_common, ],
+                      labels = bortezomib.labels$IC50_combined[temp.ic50_combined_ind_common],
+                      source_labels = bortezomib.labels$IC50_combined.source[temp.ic50_combined_ind_common])
+
+stopifnot(length(input.cell_line_order$slope) == length(input.cell_line_order$IC50))  
+stopifnot(length(input.cell_line_order$AUC) == length(input.cell_line_order$IC50))  
+
+patient_100 <- foreach(input.training_amount.c = seq(from = 20, to = 300, by = 20), .errorhandling = "stop") %dopar% {
+                            generate_random_partition(labels_cell_lines = input.labels_cell_lines, 
+                                                      labels_patient = bortezomib.labels$patient,
+                                                      training_amount.p = 100,
+                                                      leave_one_out = FALSE,
+                                                      cell_line_order = input.cell_line_order,
+                                                      training_amount.c = input.training_amount.c,
+                                                      input_partition = partition$cell_lines_all[[10]])
+  }
+partition$patient_100 <- patient_100
+
+patient_50 <- foreach(input.training_amount.c = seq(from = 20, to = 300, by = 20), .errorhandling = "stop") %dopar% {
+  generate_random_partition(labels_cell_lines = input.labels_cell_lines, 
+                            labels_patient = bortezomib.labels$patient,
+                            training_amount.p = 50,
+                            leave_one_out = FALSE,
+                            cell_line_order = input.cell_line_order,
+                            training_amount.c = input.training_amount.c,
+                            input_partition = partition$cell_lines_all[[5]])
+}
+partition$patient_50 <- patient_50
+
 # save worksapce ----------------------------------------------------------
-#save(sampleinfo.cgp, bortezomib, bortezomib.labels, feature.l1000, partition,
-#     file = "Bortezomib/WS/bortezomib_data.RData")
+save(sampleinfo.cgp, bortezomib, bortezomib.labels, feature.l1000, partition,
+     file = "Bortezomib/WS/bortezomib_data.RData")

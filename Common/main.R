@@ -55,6 +55,48 @@ if (args[4] == "bortezomib") {
     input_label <- bortezomib.labels$IC50_combined
     input_partition = partition$cell_lines_all[[training_var_amount]]$cp2p.IC50
     input_feature.l1000 <- feature.l1000$cp
+  } else if (args[5] == "c50p2p_ic50") {
+    stopifnot(training_var_amount <= length(partition$patient_50))
+    
+    input_data <- bortezomib$combined_IC50.sva
+    input_label <- bortezomib.labels$IC50_combined
+    input_partition = partition$patient_50[[training_var_amount]]$cp2p.IC50
+    input_feature.l1000 <- feature.l1000$cp
+  } else if (args[5] == "c50p2p_auc") {
+    stopifnot(training_var_amount <= length(partition$patient_50))
+    
+    input_data <- bortezomib$combined_AUC.sva
+    input_label <- bortezomib.labels$AUC_combined
+    input_partition = partition$patient_50[[training_var_amount]]$cp2p.AUC
+    input_feature.l1000 <- feature.l1000$cp
+  } else if (args[5] == "c50p2p_slope") {
+    stopifnot(training_var_amount <= length(partition$patient_50))
+    
+    input_data <- bortezomib$combined_slope.sva
+    input_label <- bortezomib.labels$slope_combined
+    input_partition = partition$patient_50[[training_var_amount]]$cp2p.slope
+    input_feature.l1000 <- feature.l1000$cp
+  } else if (args[5] == "c100p2p_slope") {
+    stopifnot(training_var_amount <= length(partition$patient_100))
+    
+    input_data <- bortezomib$combined_slope.sva
+    input_label <- bortezomib.labels$slope_combined
+    input_partition = partition$patient_100[[training_var_amount]]$cp2p.slope
+    input_feature.l1000 <- feature.l1000$cp
+  } else if (args[5] == "c100p2p_auc") {
+    stopifnot(training_var_amount <= length(partition$patient_100))
+    
+    input_data <- bortezomib$combined_AUC.sva
+    input_label <- bortezomib.labels$AUC_combined
+    input_partition = partition$patient_100[[training_var_amount]]$cp2p.AUC
+    input_feature.l1000 <- feature.l1000$cp
+  } else if (args[5] == "c100p2p_ic50") {
+    stopifnot(training_var_amount <= length(partition$patient_100))
+    
+    input_data <- bortezomib$combined_IC50.sva
+    input_label <- bortezomib.labels$IC50_combined
+    input_partition = partition$patient_100[[training_var_amount]]$cp2p.IC50
+    input_feature.l1000 <- feature.l1000$cp
   } else {
     stop(paste("args[5]", args[5], "is invalid."))
   }
