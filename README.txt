@@ -1,3 +1,8 @@
+Version 0.6
+
+Modified partitioning logic, such that it is common for all drugs and uses the same test set for p2p, c2p, and cp2p.
+Modified preparing for bortezomib data, such that it uses the new partitioning logic.
+
 Version 0.51
 
 Removed workspace files from repo.

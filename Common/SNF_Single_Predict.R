@@ -24,13 +24,13 @@ SNF_Single_Predict <- function(feature.sets, parameters, data, partition, ground
   f.ind <- feature.sets
   data.use = data[, f.ind]    
   
-  temp.folds = createFolds(partition[[run_ind]]$training_index.single, k = NFOLDS)
+  temp.folds = createFolds(partition[[run_ind]]$training_index, k = NFOLDS)
   
   auc.training <- foreach (i = 1:length(parameters$K), .combine=rbind, .errorhandling="stop") %dopar% {    
     auc.training.one_split  <- foreach (cv_ind = 1:NFOLDS, .combine=rbind, .errorhandling="stop") %do% {
       
-      temp.cv.index <- partition[[run_ind]]$training_index.single[temp.folds[[cv_ind]]]
-      temp.training.index <- setdiff(partition[[run_ind]]$training_index.single, temp.cv.index)        
+      temp.cv.index <- partition[[run_ind]]$training_index[temp.folds[[cv_ind]]]
+      temp.training.index <- setdiff(partition[[run_ind]]$training_index, temp.cv.index)        
       
       temp.test_data = data.use[c(temp.cv.index, partition[[run_ind]]$test_index), ]
       temp.training_data = data.use[temp.training.index, ]
@@ -82,15 +82,15 @@ SNF_Single_Predict <- function(feature.sets, parameters, data, partition, ground
     print(paste("Training accuracy: ", fs.training_acc))        
   }
   
-  temp.training_data = data.use[partition[[run_ind]]$training_index.single, ]
+  temp.training_data = data.use[partition[[run_ind]]$training_index, ]
   temp.test_data = data.use[c(partition[[run_ind]]$ES_index, partition[[run_ind]]$test_index), ]
   
   #stopifnot(length(unique(c(rownames(temp.training_data), rownames(temp.test_data)))) == dim(data.use)[1])  
   stopifnot(rownames(temp.test_data) == names(c(partition[[run_ind]]$ES_index, partition[[run_ind]]$test_index)))
   
-  temp.predicted_labels <- SNF_LP_Cheng(temp.training_data, temp.test_data, ground_truth[partition[[run_ind]]$training_index.single], 
+  temp.predicted_labels <- SNF_LP_Cheng(temp.training_data, temp.test_data, ground_truth[partition[[run_ind]]$training_index], 
                                         K = parameters$K[best_parameters.ind], alpha = 0.5, t = 20, method = 1)             
-  temp.all_predict <- temp.predicted_labels[[2]][-(1:(length(partition[[run_ind]]$training_index.single)))] 
+  temp.all_predict <- temp.predicted_labels[[2]][-(1:(length(partition[[run_ind]]$training_index)))] 
   fs.test_prediction <- tail(temp.all_predict, length(partition[[run_ind]]$test_index))
   fs.ES_prediction <- head(temp.all_predict, length(partition[[run_ind]]$ES_index))
   
