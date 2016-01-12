@@ -2,7 +2,7 @@ rootdir <- "~/Dropbox/CP2P"
 # rootdir <- "/dupa-filer/laci/CP2P"
 setwd(rootdir)
 
-source("Common/preparing_data_helper.R")
+source("SVA_plots/preparing_data_helper.R")
 source("Common/comGENE.R")
 
 generate_single_random_partition.cpp_var <- function(input_labels_cell_lines, input_labels_patient, training_amount) {
@@ -68,119 +68,6 @@ compute_preprocessing <- function(data, label, sampleinfo, n.sv, preprocessCLsva
   if (preprocessCLsva != 0) {
     cgp_AUC.sva <- sva_combine(batch = sampleinfo$tissue.type[label$AUC_ind],  
                                  label = label$AUC, input_data = scale(data$cgp_AUC), n.sv=preprocessCLsva)
-    temp.data <- comGENE(scale(cgp_AUC.sva), scale(data$patient))
-  } else {
-    temp.data <- comGENE(scale(data$cgp_AUC), scale(data$patient))
-  }
-  data.raw[[1]] <- rbind(temp.data[[1]], temp.data[[2]])
-  labels.combined[[1]] <- c(label$AUC, label$patient)
-  #IC50
-  if (preprocessCLsva != 0) {
-    cgp_IC50.sva <- sva_combine(batch = sampleinfo$tissue.type[label$IC50_ind],  
-                                label = label$IC50, input_data = scale(data$cgp_IC50), n.sv=preprocessCLsva)
-    temp.data <- comGENE(scale(cgp_IC50.sva), scale(data$patient))
-  } else {
-    temp.data <- comGENE(scale(data$cgp_IC50), scale(data$patient))
-  }
-  data.raw[[2]] <- rbind(temp.data[[1]], temp.data[[2]])
-  labels.combined[[2]] <- c(label$IC50, label$patient)
-  #Slope
-  if (preprocessCLsva != 0) {
-    cgp_slope.sva <- sva_combine(batch = sampleinfo$tissue.type[label$slope_ind],  
-                                 label = label$slope, input_data = scale(data$cgp_slope), n.sv=preprocessCLsva)
-    temp.data <- comGENE(scale(cgp_slope.sva), scale(data$patient))
-  } else {
-    temp.data <- comGENE(scale(data$cgp_slope), scale(data$patient))
-  }
-  data.raw[[3]] <- rbind(temp.data[[1]], temp.data[[2]])
-  labels.combined[[3]] <- c(label$slope, label$patient)
-  
-  pID <- 1
-  data.all <- list()
-  plabel.all <- list()
-  ## Store raw data as is
-  # temp.data <- comGENE(scale(data$cgp_AUC), scale(data$patient))
-  temp.data <- comGENE(scale(data$cgp_slope), scale(data$patient))
-  temp.data.raw <- rbind(temp.data[[1]], temp.data[[2]])
-  temp.label.combined <- c(label$slope, label$patient)
-  
-  ## Compensate for different number of cell lines with AUC/IC50/Slope labels
-  temp.ddiff <- length(labels.combined[[1]]) - length(temp.label.combined)
-  print(paste("adjusting", temp.ddiff))
-  temp.plot_label <- cpp.partition$cpp_flags[(temp.ddiff+1) : length(cpp.partition$cpp_flags)]
-  
-  data.all[[pID]] <- temp.data.raw
-  plabel.all[[pID]] <- temp.plot_label
-  pID <- pID + 1
-  
-  print("processing CL + patients")
-  for(outcomeID in 1:3) {
-    ## Get data and labels
-    temp.data.raw <- data.raw[[outcomeID]]
-    temp.labels.combined <- labels.combined[[outcomeID]]
-    # print(paste("len", length(temp.data.raw), length(temp.labels.combined)))
-    
-    ## Compensate for different number of cell lines with AUC/IC50/Slope labels
-    temp.ddiff <- length(labels.combined[[1]]) - length(labels.combined[[outcomeID]])
-    print(paste("adjusting", temp.ddiff))
-    temp.plot_label <- cpp.partition$cpp_flags[(temp.ddiff+1) : length(cpp.partition$cpp_flags)]
-    temp.cpp_source <- cpp.partition$cpp_source[(temp.ddiff+1) : length(cpp.partition$cpp_source)]
-    # print(paste("len2", length(temp.plot_label), length(temp.cpp_source)))
-    # print(paste("len22", length(cpp.partition$cpp_flags), length(cpp.partition$cpp_source)))
-    temp.train_index <- cpp.partition$training_index[cpp.partition$training_index <= cl.len - temp.ddiff]
-    temp.train_index <- c(temp.train_index, cpp.partition$training_index[cpp.partition$training_index > cl.len] - temp.ddiff)
-    temp.test_index <- cpp.partition$test_index - temp.ddiff
-    # print(paste("len3", length(temp.train_index), length(temp.test_index)))
-    
-    ## Store Combat processed data
-    temp.data.ComBat <- ComBat_combine(batch = temp.cpp_source,
-                                       label = temp.labels.combined,
-                                       input_data = temp.data.raw)
-    data.all[[pID]] <- temp.data.ComBat
-    plabel.all[[pID]] <- temp.plot_label
-    pID <- pID + 1
-    
-    ## Store SVA processed data
-    temp.data.sva <- sva_combine(batch = temp.cpp_source,
-                                 label = temp.labels.combined,
-                                 input_data = temp.data.raw,
-                                 n.sv = n.sv)
-    data.all[[pID]] <- temp.data.sva
-    plabel.all[[pID]] <- temp.plot_label
-    pID <- pID + 1
-    
-    ## Store frozen SVA processed data
-    temp.data.fsva <- fsva_combine(batch = temp.cpp_source,
-                                   label = temp.labels.combined,
-                                   input_data = temp.data.raw,
-                                   training_ind = temp.train_index,
-                                   test_ind = temp.test_index,
-                                   n.sv = n.sv)
-    #num_sv_method = "leek"
-    data.all[[pID]] <- temp.data.fsva
-    plabel.all[[pID]] <- temp.plot_label
-    pID <- pID + 1
-  }
-  return(list(data.all, plabel.all))
-}
-
-compute_preprocessing_erlotinib <- function(data, label, sampleinfo, n.sv, preprocessCLsva = 0){
-  ## Split to training set and patient-only test set
-  labels_cell_lines <- label$AUC
-  cl.len <- length(label$AUC)
-  labels_patient <- label$patient
-  training_amount <- round(length(labels_patient) * 0.7) #30% test set
-  cpp.partition <- generate_single_random_partition.cpp_var(labels_cell_lines, labels_patient, training_amount)
-  #print(length(cpp.partition$test_index))
-  #print(length(cpp.partition$training_index))
-  
-  print("preprocessing cell lines only")
-  data.raw <- list()
-  labels.combined <- list()
-  ## Pool AUC, IC50, Slope data and labels together, preprocess cell lines with SVA first
-  if (preprocessCLsva != 0) {
-    cgp_AUC.sva <- sva_combine(batch = sampleinfo$tissue.type[label$AUC_ind],  
-                               label = label$AUC, input_data = scale(data$cgp_AUC), n.sv=preprocessCLsva)
     temp.data <- comGENE(scale(cgp_AUC.sva), scale(data$patient))
   } else {
     temp.data <- comGENE(scale(data$cgp_AUC), scale(data$patient))
@@ -354,4 +241,8 @@ plot_processed_data_all <- function(data.all, plabel.all, name="drugX"){
 
 #### Erlotinib
 load("Erlotinib/WS/erlotinib_data.RData")
-# plot_processed_data_all(erlotinib, erlotinib.labels, name="erlotinib", n.sv = 2)
+colnames(erlotinib$cgp_AUC) <- colnames(erlotinib$cgp_IC50) # fix gene names
+erl.processed.data <- compute_preprocessing(erlotinib, erlotinib.labels, sampleinfo.cgp, n.sv = 2, preprocessCLsva = 0)
+save(erl.processed.data, file = "erl.processed.data.RData")
+# load("erl.processed.data.RData")
+plot_processed_data_all(erl.processed.data[[1]], erl.processed.data[[2]], name="erlotinib_2sva")
