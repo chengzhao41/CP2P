@@ -1,16 +1,19 @@
+# Load Libraries ----------------------------------------------------------
 library("doParallel")
 library("sva")
 
-source('Docetaxel/Script/generate_random_partition.R')
 source('Common/preparing_data_helper.R')
 source('Common/drug_cut/callingWaterfall.R')
 source('Common/drug_cut/distancePointLine.R')
 source('Common/drug_cut/distancePointSegment.R')
 source('Common/comGENE.R')
+source("Common/generate_random_partition.R")
 
+# Load CGP Cell line data --------------------------------------------
 docetaxel.labels <- list()
 load("CGP/cdrug2_cgp_ccle_all.RData")
-#### Get the new Sensitivity Data
+
+# Get Slope Summary Statistics --------------------------------------------
 cgp_sensitivity_1 <- read.csv("CGP/cgp_sensitivity_1.csv")
 
 temp.docetaxel_ind <- which(cgp_sensitivity_1$drug.name == "Docetaxel")
@@ -36,8 +39,7 @@ length(docetaxel.labels$slope_ind)
 
 stopifnot(names(docetaxel.labels$slope) == rownames(data.ge.cgp)[docetaxel.labels$slope_ind])
 
-### END
-###
+# Get IC50 and AUC Summary Statistics -------------------------------------
 temp.drug_ind <- which(druginfo.cgp$drug.name == "DOCETAXEL")
 
 temp.ic50 <- drugpheno.cgp$IC50[, temp.drug_ind]
@@ -62,10 +64,10 @@ names(temp.label_auc) <- names(temp.response_auc)
 
 # check agreement between AUC and IC50
 stopifnot(names(temp.label_auc) == names(temp.label_IC50))
-sum(temp.label_auc == temp.label_IC50)
+print(paste(sum(temp.label_auc == temp.label_IC50), "/", length(temp.label_IC50)))
 ## 548 / 663 for AUC and IC50
 
-#### Getting the docetaxel labels from IC50
+# Getting the docetaxel labels from IC50 ----------------------------------
 docetaxel.labels$IC50_ind <- which(rownames(data.ge.cgp) %in% names(temp.label_IC50))
 docetaxel.labels$AUC_ind <- which(rownames(data.ge.cgp) %in% names(temp.label_auc))
 
@@ -83,7 +85,9 @@ length(docetaxel.labels$IC50[temp.ind])
 length(docetaxel.labels$slope)
 temp.slope_include <- which(!is.na(docetaxel.labels$slope))
 stopifnot(names(docetaxel.labels$slope[temp.slope_include]) == names(docetaxel.labels$IC50[temp.ind]))
-sum(docetaxel.labels$slope[temp.slope_include] == docetaxel.labels$IC50[temp.ind])
+
+print(paste(sum(docetaxel.labels$slope[temp.slope_include] == docetaxel.labels$IC50[temp.ind]), 
+            "/", length(docetaxel.labels$IC50[temp.ind])))
 # 458 / 650 in with IC50 and slope
 
 ## check how much of the labels agree with each other for IC50 and slope
@@ -96,12 +100,12 @@ length(docetaxel.labels$slope)
 temp.slope_include <- which(!is.na(docetaxel.labels$slope))
 
 stopifnot(names(docetaxel.labels$slope[temp.slope_include]) == names(docetaxel.labels$AUC[temp.ind]))
-sum(docetaxel.labels$slope[temp.slope_include] == docetaxel.labels$AUC[temp.ind])
+
+print(paste(sum(docetaxel.labels$slope[temp.slope_include] == docetaxel.labels$AUC[temp.ind]),
+      "/", length(docetaxel.labels$AUC[temp.ind])))
 # 567 / 650 with AUC and slope
 
-###################### 
-
-## get the data for slopes
+# get the data for slopes -------------------------------------------------
 docetaxel <- list()
 docetaxel$cgp_slope <- data.ge.cgp[docetaxel.labels$slope_ind,  ]
 docetaxel$cgp_IC50 <- data.ge.cgp[docetaxel.labels$IC50_ind,  ]
@@ -130,26 +134,19 @@ docetaxel.labels$AUC <- temp$label
 ## check agreement
 temp.ind <- match(names(docetaxel.labels$slope), names(docetaxel.labels$AUC))
 stopifnot(names(docetaxel.labels$AUC)[temp.ind] == names(docetaxel.labels$slope))
-sum(docetaxel.labels$AUC[temp.ind] == docetaxel.labels$slope)
-sum(!is.na(temp.ind))
+
+print(paste(sum(docetaxel.labels$AUC[temp.ind] == docetaxel.labels$slope), "/", sum(!is.na(temp.ind))))
 # 528 / 605 for slope vs. AUC
+
 temp.ind <- match(names(docetaxel.labels$slope), names(docetaxel.labels$IC50))
-sum(docetaxel.labels$IC50[temp.ind] == docetaxel.labels$slope)
-sum(!is.na(temp.ind))
+print(paste(sum(docetaxel.labels$IC50[temp.ind] == docetaxel.labels$slope), "/", sum(!is.na(temp.ind))))
 # 427 / 605 for slope vs. IC50
+
 temp.ind <- match(names(docetaxel.labels$AUC), names(docetaxel.labels$IC50))
-sum(docetaxel.labels$IC50[temp.ind] == docetaxel.labels$AUC)
-sum(!is.na(temp.ind))
+print(paste(sum(docetaxel.labels$IC50[temp.ind] == docetaxel.labels$AUC), "/", sum(!is.na(temp.ind))))
 # 511 / 618 for AUC vs. IC50 
 
-#getwd()
-#save(docetaxel, docetaxel.labels, sampleinfo.cgp, file = "Docetaxel/WS/docetaxel_data.RData")
-
-# Using sva to harmonize across different tissue types
-library("sva")
-
-
-# get patient data 
+# get patient data --------------------------------------------------------
 load("Docetaxel/WS/pp.RData")
 docetaxel$patient <- docetaxel.patient
 docetaxel.labels$patient <- pp.ground_truth == 1
@@ -159,80 +156,84 @@ show_pca(input_data = docetaxel$cgp_slope, label = docetaxel.labels$slope)
 show_pca(input_data = docetaxel$cgp_AUC, label = docetaxel.labels$AUC)
 show_pca(input_data = docetaxel$cgp_IC50, label = docetaxel.labels$IC50)
 
-## Slopes
-# Using sva to harmonize patients and cell lines
-docetaxel.labels$slope_combined <- c(docetaxel.labels$slope, docetaxel.labels$patient)
+# Using sva to harmonize patients and cell lines - Slopes -----------------
+docetaxel.labels$slope_combined <- c(docetaxel.labels$patient, docetaxel.labels$slope)
 stopifnot(substring(colnames(docetaxel$cgp_slope), 8) == annot.ge.cgp$EntrezGene.ID)
 colnames(docetaxel$cgp_slope) <- annot.ge.cgp$symbol
 
-temp.data <- comGENE(scale(docetaxel$cgp_slope), docetaxel$patient)
-mean(temp.data[[1]])
-mean(temp.data[[2]])
+temp.data <- comGENE(docetaxel$patient, scale(docetaxel$cgp_slope))
+mean(temp.data[[1]]) #-3.25391e-18
+mean(temp.data[[2]]) #1.134142e-18
 
-docetaxel.labels$slope_combined.source <- c(rep("cgp", dim(temp.data[[1]])[1]), rep("patient", dim(temp.data[[2]])[1]))
-
+docetaxel.labels$slope_combined.source <- c(rep("patient", dim(temp.data[[1]])[1]), rep("cgp", dim(temp.data[[2]])[1]))
 docetaxel$combined_slope.ComBat <- ComBat_combine(batch = docetaxel.labels$slope_combined.source,
                                                   label = docetaxel.labels$slope_combined,
                                                   input_data = rbind(temp.data[[1]], temp.data[[2]]))
+mean(docetaxel$combined_slope.ComBat) #-1.32049e-07
 show_pca(input_data = docetaxel$combined_slope.ComBat, label = docetaxel.labels$slope_combined)
-show_pca(input_data = docetaxel$combined_slope.ComBat, label = c(sampleinfo.cgp$tissue.type[docetaxel.labels$slope_ind], rep("patient", dim(temp.data[[2]])[1])) == "patient")         
+show_pca(input_data = docetaxel$combined_slope.ComBat, 
+         label = c(rep("patient", dim(temp.data[[1]])[1]), 
+                   sampleinfo.cgp$tissue.type[docetaxel.labels$slope_ind]))
 rm(temp.data)
 
-## IC50
-# Using sva to harmonize patients and cell lines
-docetaxel.labels$IC50_combined <- c(docetaxel.labels$IC50, docetaxel.labels$patient)
+# Using sva to harmonize patients and cell lines - IC50 -----------------
+docetaxel.labels$IC50_combined <- c(docetaxel.labels$patient, docetaxel.labels$IC50)
 stopifnot(substring(colnames(docetaxel.labels$IC50), 8) == annot.ge.cgp$EntrezGene.ID)
 colnames(docetaxel$cgp_IC50) <- annot.ge.cgp$symbol
 
-temp.data <- comGENE(scale(docetaxel$cgp_IC50), docetaxel$patient)
-mean(temp.data[[1]])
-mean(temp.data[[2]])
+temp.data <- comGENE(docetaxel$patient, scale(docetaxel$cgp_IC50))
+mean(temp.data[[1]]) #-3.25391e-18
+mean(temp.data[[2]]) #-3.049527e-18
 
-docetaxel.labels$IC50_combined.source <- c(rep("cgp", dim(temp.data[[1]])[1]), rep("patient", dim(temp.data[[2]])[1]))
+docetaxel.labels$IC50_combined.source <- c(rep("patient", dim(temp.data[[1]])[1]), rep("cgp", dim(temp.data[[2]])[1]))
 docetaxel$combined_IC50 <- rbind(temp.data[[1]], temp.data[[2]])
-show_pca(input_data = docetaxel$combined_IC50, label = c(rep("cgp", dim(temp.data[[1]])[1]), rep("patient", dim(temp.data[[2]])[1])))
+show_pca(input_data = docetaxel$combined_IC50, label = c(rep("patient", dim(temp.data[[1]])[1]), rep("cgp", dim(temp.data[[2]])[1])))
 
 docetaxel$combined_IC50.ComBat <- ComBat_combine(batch = docetaxel.labels$IC50_combined.source,
                                                  label = docetaxel.labels$IC50_combined,
                                                  input_data = docetaxel$combined_IC50)
+mean(docetaxel$combined_IC50.ComBat) #-9.550229e-07
 show_pca(input_data = docetaxel$combined_IC50.ComBat, label = docetaxel.labels$IC50_combined)
 show_pca(input_data = docetaxel$combined_IC50.ComBat, label = docetaxel.labels$IC50_combined.source)
 
 rm(temp.data)
-getwd()
 
-## AUC
-# Using sva to harmonize patients and cell lines
-docetaxel.labels$AUC_combined <- c(docetaxel.labels$AUC, docetaxel.labels$patient)
+# Using sva to harmonize patients and cell lines - AUC -----------------
+docetaxel.labels$AUC_combined <- c(docetaxel.labels$patient, docetaxel.labels$AUC)
 stopifnot(substring(colnames(docetaxel.labels$AUC), 8) == annot.ge.cgp$EntrezGene.ID)
 colnames(docetaxel$cgp_AUC) <- annot.ge.cgp$symbol
 
-temp.data <- comGENE(scale(docetaxel$cgp_AUC), docetaxel$patient)
-mean(temp.data[[1]])
-mean(temp.data[[2]])
+temp.data <- comGENE(docetaxel$patient, scale(docetaxel$cgp_AUC))
+mean(temp.data[[1]]) #-3.049506e-18
+mean(temp.data[[2]]) #-3.253883e-18
+
+docetaxel.labels$AUC_combined.source <- c(rep("patient", dim(temp.data[[1]])[1]), rep("cgp", dim(temp.data[[2]])[1]))
+docetaxel$combined_AUC <- rbind(temp.data[[1]], temp.data[[2]])
 
 docetaxel$combined_AUC.ComBat <- ComBat_combine(batch = docetaxel.labels$AUC_combined.source,
                                                 label = docetaxel.labels$AUC_combined, 
-                                                input_data = rbind(temp.data[[1]], temp.data[[2]]))
+                                                input_data = docetaxel$combined_AUC)
+mean(docetaxel$combined_AUC.ComBat) #-5.052369e-07
 show_pca(input_data = docetaxel$combined_AUC.ComBat, label = docetaxel.labels$AUC_combined)
-show_pca(input_data = docetaxel$combined_AUC.ComBat, label = docetaxel.labels$AUC_combined.source == "patient")
+show_pca(input_data = docetaxel$combined_AUC.ComBat, label = docetaxel.labels$AUC_combined.source)
 
 rm(temp.data)
 
-### Breast Cell lines only
+# Breast Cell lines only --------------------------------------------------
 ## IC50
 temp.ind <- which(sampleinfo.cgp$tissue.type[docetaxel.labels$IC50_ind] == "breast")
-temp.data <- comGENE(scale(docetaxel$cgp_IC50[temp.ind, ]), docetaxel$patient)
-mean(temp.data[[1]])
-mean(temp.data[[2]])
+temp.data <- comGENE(docetaxel$patient, scale(docetaxel$cgp_IC50[temp.ind, ]))
+mean(temp.data[[1]]) #-3.25391e-18
+mean(temp.data[[2]]) #-6.222348e-18
 
-docetaxel.labels$IC50_breast.source <- c(rep("cgp", dim(temp.data[[1]])[1]), rep("patient", dim(temp.data[[2]])[1]))
+docetaxel.labels$IC50_breast.source <- c(rep("patient", dim(temp.data[[1]])[1]), rep("cgp", dim(temp.data[[2]])[1]))
 docetaxel.labels$IC50_breast_only <- docetaxel.labels$IC50[temp.ind]
-docetaxel.labels$IC50_breast <- c(docetaxel.labels$IC50[temp.ind], docetaxel.labels$patient)
+docetaxel.labels$IC50_breast <- c(docetaxel.labels$patient, docetaxel.labels$IC50[temp.ind])
 
 docetaxel$breast_IC50.ComBat <- ComBat_combine(batch = docetaxel.labels$IC50_breast.source,
                                                label = docetaxel.labels$IC50_breast,
                                                input_data = rbind(temp.data[[1]], temp.data[[2]]))
+mean(docetaxel$breast_IC50.ComBat) #-1.961629e-05
 show_pca(input_data = docetaxel$breast_IC50.ComBat, label = docetaxel.labels$IC50_breast)
 show_pca(input_data = docetaxel$breast_IC50.ComBat, label = docetaxel.labels$IC50_breast.source)
 rm(temp.data)
@@ -240,17 +241,18 @@ getwd()
 
 # AUC
 temp.ind <- which(sampleinfo.cgp$tissue.type[docetaxel.labels$AUC_ind] == "breast")
-temp.data <- comGENE(scale(docetaxel$cgp_AUC[temp.ind, ]), docetaxel$patient)
-mean(temp.data[[1]])
-mean(temp.data[[2]])
+temp.data <- comGENE(docetaxel$patient, scale(docetaxel$cgp_AUC[temp.ind, ]))
+mean(temp.data[[1]]) #-3.253883e-18
+mean(temp.data[[2]]) #-6.222309e-18
 
-docetaxel.labels$AUC_breast.source <- c(rep("cgp", dim(temp.data[[1]])[1]), rep("patient", dim(temp.data[[2]])[1]))
+docetaxel.labels$AUC_breast.source <- c(rep("patient", dim(temp.data[[1]])[1]), rep("cgp", dim(temp.data[[2]])[1]))
 docetaxel.labels$AUC_breast_only <- docetaxel.labels$AUC[temp.ind]
-docetaxel.labels$AUC_breast <- c(docetaxel.labels$AUC[temp.ind], docetaxel.labels$patient)
+docetaxel.labels$AUC_breast <- c(docetaxel.labels$patient, docetaxel.labels$AUC[temp.ind])
 
 docetaxel$breast_AUC.ComBat <- ComBat_combine(batch = docetaxel.labels$AUC_breast.source,
                                               label = docetaxel.labels$AUC_breast,
                                               input_data = rbind(temp.data[[1]], temp.data[[2]]))
+mean(docetaxel$breast_AUC.ComBat) # -1.174055e-05
 show_pca(input_data = docetaxel$breast_AUC.ComBat, label = docetaxel.labels$AUC_breast)
 show_pca(input_data = docetaxel$breast_AUC.ComBat, label = docetaxel.labels$AUC_breast.source)
 rm(temp.data)
@@ -258,239 +260,149 @@ getwd()
 
 # Slope
 temp.ind <- which(sampleinfo.cgp$tissue.type[docetaxel.labels$slope_ind] == "breast")
-temp.data <- comGENE(scale(docetaxel$cgp_slope[temp.ind, ]), docetaxel$patient)
-mean(temp.data[[1]])
-mean(temp.data[[2]])
+temp.data <- comGENE(docetaxel$patient, scale(docetaxel$cgp_slope[temp.ind, ]))
+mean(temp.data[[1]]) #-3.253883e-18
+mean(temp.data[[2]]) #-1.43896e-17
 
-docetaxel.labels$slope_breast.source <- c(rep("cgp", dim(temp.data[[1]])[1]), rep("patient", dim(temp.data[[2]])[1]))
+docetaxel.labels$slope_breast.source <- c(rep("patient", dim(temp.data[[1]])[1]), rep("cgp", dim(temp.data[[2]])[1]))
 docetaxel.labels$slope_breast_only <- docetaxel.labels$slope[temp.ind]
-docetaxel.labels$slope_breast <- c(docetaxel.labels$slope[temp.ind], docetaxel.labels$patient)
+docetaxel.labels$slope_breast <- c(docetaxel.labels$patient, docetaxel.labels$slope[temp.ind])
 
 docetaxel$breast_slope.ComBat <- ComBat_combine(batch = docetaxel.labels$slope_breast.source,
                                                 label = docetaxel.labels$slope_breast,
                                                 input_data = rbind(temp.data[[1]], temp.data[[2]]))
+mean(docetaxel$breast_slope.ComBat) #-7.523195e-06
 show_pca(input_data = docetaxel$breast_slope.ComBat, label = docetaxel.labels$slope_breast)
 show_pca(input_data = docetaxel$breast_slope.ComBat, label = docetaxel.labels$slope_breast.source)
 rm(temp.data)
 
-
-### get the partitioning
-partition <- list()
-
-partition$slope <- generate_random_partition(input_labels_cell_lines = docetaxel.labels$slope, 
-                                             input_labels_patient = docetaxel.labels$patient, 
-                                             test_amount = temp.test_amount)
-
-temp.test_amount <- list(cc = round(0.2 * length(docetaxel.labels$IC50)))
-partition$IC50 <- generate_random_partition(input_labels_cell_lines = docetaxel.labels$IC50, 
-                                            input_labels_patient = docetaxel.labels$patient, 
-                                            test_amount = temp.test_amount)
-
-temp.test_amount <- list(cc = round(0.2 * length(docetaxel.labels$AUC)))
-partition$AUC <- generate_random_partition(input_labels_cell_lines = docetaxel.labels$AUC, 
-                                           input_labels_patient = docetaxel.labels$patient, 
-                                           test_amount = temp.test_amount)
-
-temp.test_amount <- list(cc = 10)
-partition$slope_breast <- generate_random_partition(input_labels_cell_lines = docetaxel.labels$slope_breast_only, 
-                                                    input_labels_patient = docetaxel.labels$patient, 
-                                                    test_amount = temp.test_amount)
-
-partition$IC50_breast <- generate_random_partition(input_labels_cell_lines = docetaxel.labels$IC50_breast_only, 
-                                                   input_labels_patient = docetaxel.labels$patient, 
-                                                   test_amount = temp.test_amount)
-
-partition$AUC_breast <- generate_random_partition(input_labels_cell_lines = docetaxel.labels$AUC_breast_only, 
-                                                  input_labels_patient = docetaxel.labels$patient, 
-                                                  test_amount = temp.test_amount)
-
-### get l1000 features
+# get l1000 features ------------------------------------------------------
 Landmark_Genes_n978 <- read.csv("Common/Landmark_Genes_n978.csv")
 stopifnot(colnames(docetaxel$cgp_IC50) == colnames(docetaxel$cgp_AUC))
 stopifnot(colnames(docetaxel$cgp_slope) == colnames(docetaxel$cgp_AUC))
 feature.l1000 <- list()
-feature.l1000$cc <- which(colnames(docetaxel$cgp_slope) %in% Landmark_Genes_n978$Gene.Symbol)
 feature.l1000$cp <- which(colnames(docetaxel$combined_slope.ComBat) %in% Landmark_Genes_n978$Gene.Symbol)
 feature.l1000$pp <- which(colnames(docetaxel$patient) %in% Landmark_Genes_n978$Gene.Symbol)
-length(feature.l1000$cc)
 length(feature.l1000$cp)
 length(feature.l1000$pp)
 getwd()
 
-####
-partition_var <- list()
+# find the common cell lines that exists for all 3 response labels --------
+docetaxel.labels$IC50_ind_common = intersect(
+  which(names(docetaxel.labels$IC50) %in% names(docetaxel.labels$AUC)),
+  which(names(docetaxel.labels$IC50) %in% names(docetaxel.labels$slope)))
+docetaxel.labels$AUC_ind_common = intersect(
+  which(names(docetaxel.labels$AUC) %in% names(docetaxel.labels$IC50)),
+  which(names(docetaxel.labels$AUC) %in% names(docetaxel.labels$slope)))
+docetaxel.labels$slope_ind_common = intersect(
+  which(names(docetaxel.labels$slope) %in% names(docetaxel.labels$IC50)),
+  which(names(docetaxel.labels$slope) %in% names(docetaxel.labels$AUC)))
 
-temp.cp <- foreach (training_amount.cp = seq(from = 10, to = 600, by = 30)) %do% {    
-  
-  temp.slope <- generate_random_partition.cp_var(input_labels_cell_lines = docetaxel.labels$slope, 
-                                                 input_labels_patient = docetaxel.labels$patient, 
-                                                 training_amount = training_amount.cp)
-  
-  temp.IC50 <- generate_random_partition.cp_var(input_labels_cell_lines = docetaxel.labels$IC50, 
-                                                input_labels_patient = docetaxel.labels$patient, 
-                                                training_amount = training_amount.cp)
-  
-  temp.AUC <- generate_random_partition.cp_var(input_labels_cell_lines = docetaxel.labels$AUC, 
-                                               input_labels_patient = docetaxel.labels$patient, 
-                                               training_amount = training_amount.cp)
-  list(slope = temp.slope, IC50 = temp.IC50, AUC = temp.AUC)
-}
+stopifnot(names(docetaxel.labels$IC50[docetaxel.labels$IC50_ind_common]) 
+          == names(docetaxel.labels$AUC[docetaxel.labels$AUC_ind_common]))
+stopifnot(names(docetaxel.labels$IC50[docetaxel.labels$IC50_ind_common]) 
+          == names(docetaxel.labels$slope[docetaxel.labels$slope_ind_common]))
 
-# double check
-for (temp.ind in 1:20) {
-  stopifnot(length(temp.cp[[temp.ind]]$slope[[100]]$test_index) == length(docetaxel.labels$patient))
-  stopifnot(length(temp.cp[[temp.ind]]$slope[[100]]$training_index.single) == 10 + (temp.ind - 1) * 30)
-}
+# for breast only
+docetaxel.labels$IC50_breast_ind_common = intersect(
+  which(names(docetaxel.labels$IC50_breast) %in% names(docetaxel.labels$AUC_breast)),
+  which(names(docetaxel.labels$IC50_breast) %in% names(docetaxel.labels$slope_breast)))
+docetaxel.labels$AUC_breast_ind_common = intersect(
+  which(names(docetaxel.labels$AUC_breast) %in% names(docetaxel.labels$IC50_breast)),
+  which(names(docetaxel.labels$AUC_breast) %in% names(docetaxel.labels$slope_breast)))
+docetaxel.labels$slope_breast_ind_common = intersect(
+  which(names(docetaxel.labels$slope_breast) %in% names(docetaxel.labels$IC50_breast)),
+  which(names(docetaxel.labels$slope_breast) %in% names(docetaxel.labels$AUC_breast)))
 
-partition_var$cp <- temp.cp
+stopifnot(names(docetaxel.labels$IC50_breast[docetaxel.labels$IC50_breast_ind_common]) 
+          == names(docetaxel.labels$AUC_breast[docetaxel.labels$AUC_breast_ind_common]))
+stopifnot(names(docetaxel.labels$IC50_breast[docetaxel.labels$IC50_breast_ind_common]) 
+          == names(docetaxel.labels$slope_breast[docetaxel.labels$slope_breast_ind_common]))
 
-############ breast only cp
-temp.cp <- foreach (training_amount.cp = seq(from = 10, to = 30, by = 5)) %do% {    
-  
-  temp.slope <- generate_random_partition.cp_var(input_labels_cell_lines = docetaxel.labels$slope_breast_only, 
-                                                 input_labels_patient = docetaxel.labels$patient, 
-                                                 training_amount = training_amount.cp)
-  
-  temp.IC50 <- generate_random_partition.cp_var(input_labels_cell_lines = docetaxel.labels$IC50_breast_only, 
-                                                input_labels_patient = docetaxel.labels$patient, 
-                                                training_amount = training_amount.cp)
-  
-  temp.AUC <- generate_random_partition.cp_var(input_labels_cell_lines = docetaxel.labels$AUC_breast_only, 
-                                               input_labels_patient = docetaxel.labels$patient, 
-                                               training_amount = training_amount.cp)
-  list(slope = temp.slope, IC50 = temp.IC50, AUC = temp.AUC)
-}
+# create partitions -------------------------------------------------------
+partition <- list()
 
-# double check
-for (temp.ind in 1:5) {
-  stopifnot(length(temp.cp[[temp.ind]]$slope[[100]]$test_index) == length(docetaxel.labels$patient))
-  stopifnot(length(temp.cp[[temp.ind]]$slope[[100]]$training_index.single) == 10 + (temp.ind - 1) * 5)
-}
+input.labels_cell_lines = list()
+input.labels_cell_lines$slope = docetaxel.labels$slope[docetaxel.labels$slope_ind_common]
+input.labels_cell_lines$IC50 = docetaxel.labels$IC50[docetaxel.labels$IC50_ind_common]
+input.labels_cell_lines$AUC = docetaxel.labels$AUC[docetaxel.labels$AUC_ind_common]
 
-partition_var$cp_breast_only <- temp.cp
-###################
-temp.cpp <- foreach (training_amount.cpp = seq(from = 1, to = 22, by = 1)) %do% {    
-  
-  temp.slope <- generate_random_partition.cpp_var(input_labels_cell_lines = docetaxel.labels$slope, 
-                                                  input_labels_patient = docetaxel.labels$patient, 
-                                                  training_amount = training_amount.cpp)
-  
-  temp.IC50 <- generate_random_partition.cpp_var(input_labels_cell_lines = docetaxel.labels$IC50, 
-                                                 input_labels_patient = docetaxel.labels$patient, 
-                                                 training_amount = training_amount.cpp)
-  
-  temp.AUC <- generate_random_partition.cpp_var(input_labels_cell_lines = docetaxel.labels$AUC, 
-                                                input_labels_patient = docetaxel.labels$patient, 
-                                                training_amount = training_amount.cpp)
-  list(slope = temp.slope, IC50 = temp.IC50, AUC = temp.AUC)
-}
+input.cell_line_order = list()
+input.cell_line_order$slope = 1:length(input.labels_cell_lines$slope)
+input.cell_line_order$IC50 = 1:length(input.labels_cell_lines$IC50)
+input.cell_line_order$AUC = 1:length(input.labels_cell_lines$AUC)
 
-# double check
-for (temp.ind in 1:15) {
-  stopifnot(length(temp.cpp[[temp.ind]]$slope[[100]]$test_index) == length(docetaxel.labels$patient) - temp.ind)
-  stopifnot(length(temp.cpp[[temp.ind]]$slope[[100]]$training_index.single) == temp.ind + length(docetaxel.labels$slope))
-}
+stopifnot(input.cell_line_order$slope == input.cell_line_order$IC50)  
+stopifnot(input.cell_line_order$AUC == input.cell_line_order$IC50)
 
-partition_var$cpp <- temp.cpp
-####################
+cell_lines_all <- foreach(input.training_amount.p = seq(from = 14, to = 23, by = 1)
+                          , .errorhandling = "stop") %dopar% {
+                generate_random_partition(labels_cell_lines = input.labels_cell_lines, 
+                                          labels_patient = docetaxel.labels$patient,
+                                          training_amount.p = input.training_amount.p,
+                                          cell_line_order = input.cell_line_order,
+                                          acc_training = TRUE,
+                                          training_amount.c = length(input.cell_line_order$AUC))
+                          }
 
-temp.cpp <- foreach (training_amount.cpp = seq(from = 1, to = 22, by = 1)) %do% {    
-  
-  temp.slope <- generate_random_partition.cpp_var(input_labels_cell_lines = docetaxel.labels$slope_breast_only, 
-                                                  input_labels_patient = docetaxel.labels$patient, 
-                                                  training_amount = training_amount.cpp)
-  
-  temp.IC50 <- generate_random_partition.cpp_var(input_labels_cell_lines = docetaxel.labels$IC50_breast_only, 
-                                                 input_labels_patient = docetaxel.labels$patient, 
-                                                 training_amount = training_amount.cpp)
-  
-  temp.AUC <- generate_random_partition.cpp_var(input_labels_cell_lines = docetaxel.labels$AUC_breast_only, 
-                                                input_labels_patient = docetaxel.labels$patient, 
-                                                training_amount = training_amount.cpp)
-  list(slope = temp.slope, IC50 = temp.IC50, AUC = temp.AUC)
-}
+partition$cell_lines_all <- cell_lines_all
 
-# double check
-for (temp.ind in 1:22) {
-  stopifnot(length(temp.cpp[[temp.ind]]$slope[[100]]$test_index) == length(docetaxel.labels$patient) - temp.ind)
-  stopifnot(length(temp.cpp[[temp.ind]]$slope[[100]]$training_index.single) == temp.ind + length(docetaxel.labels$slope_breast_only))
-}
+# Breast Only -------------------------------------------------------------
+input.labels_cell_lines = list()
+input.labels_cell_lines$slope = docetaxel.labels$slope_breast[docetaxel.labels$slope_breast_ind_common]
+input.labels_cell_lines$IC50 = docetaxel.labels$IC50_breast[docetaxel.labels$IC50_breast_ind_common]
+input.labels_cell_lines$AUC = docetaxel.labels$AUC_breast[docetaxel.labels$AUC_breast_ind_common]
 
-partition_var$cpp_breast_only <- temp.cpp
+input.cell_line_order = list()
+input.cell_line_order$slope = 1:length(input.labels_cell_lines$slope)
+input.cell_line_order$IC50 = 1:length(input.labels_cell_lines$IC50)
+input.cell_line_order$AUC = 1:length(input.labels_cell_lines$AUC)
 
-## patients
-temp.pp <- foreach (training_amount.cpp = seq(from = 2, to = 22, by = 1)) %do% {      
-  generate_random_partition.pp_var(input_labels_patient = docetaxel.labels$patient, 
-                                   training_amount = training_amount.cpp)
-}
+stopifnot(input.cell_line_order$slope == input.cell_line_order$IC50)  
+stopifnot(input.cell_line_order$AUC == input.cell_line_order$IC50)
 
-# double check
-for (temp.ind in 1:22) {
-  stopifnot(length(temp.pp[[temp.ind]][[100]]$test_index) == length(docetaxel.labels$patient) - temp.ind - 1)
-  stopifnot(length(temp.pp[[temp.ind]][[100]]$training_index.single) == temp.ind)
-}
+cell_lines_breast <- foreach(input.training_amount.p = seq(from = 14, to = 23, by = 1)
+                          , .errorhandling = "stop") %dopar% {
+    generate_random_partition(labels_cell_lines = input.labels_cell_lines, 
+                              labels_patient = docetaxel.labels$patient,
+                              training_amount.p = input.training_amount.p,
+                              cell_line_order = input.cell_line_order,
+                              acc_training = TRUE,
+                              training_amount.c = length(input.cell_line_order$AUC),
+                              input_partition = cell_lines_all[[input.training_amount.p - 13]])
+                          }
 
-partition_var$pp <- temp.pp
+partition$cell_lines_breast <- cell_lines_breast
 
-###################
-temp.cpp <- foreach (cell_line_training_amount = seq(from = 30, to = 600, by = 30)) %do% {  
-  
-  temp.slope <- generate_random_partition.cpp_var2(input_labels_cell_lines = docetaxel.labels$slope, 
-                                                  input_labels_patient = docetaxel.labels$patient, 
-                                                  cell_line_training_amount = cell_line_training_amount,
-                                                  patient_training = 20)
-  
-  temp.IC50 <- generate_random_partition.cpp_var2(input_labels_cell_lines = docetaxel.labels$IC50, 
-                                                 input_labels_patient = docetaxel.labels$patient, 
-                                                 cell_line_training_amount = cell_line_training_amount,
-                                                 patient_training = 20)
-  
-  temp.AUC <- generate_random_partition.cpp_var2(input_labels_cell_lines = docetaxel.labels$AUC, 
-                                                input_labels_patient = docetaxel.labels$patient, 
-                                                cell_line_training_amount = cell_line_training_amount,
-                                                patient_training = 20)
-  list(slope = temp.slope, IC50 = temp.IC50, AUC = temp.AUC)
-}
-
-partition_var$cVar_p20_p <- temp.cpp
-
-####### using cell lines based on brca similarities
+# using cell lines based on brca similarities -----------------------------
 load("CGP/cosmic.tcga.RData")
 
-cell_line_order <- list()
-cell_line_order$slope <- order(match(names(docetaxel.labels$slope), brca_ordered$cell.line))
-cell_line_order$AUC <- order(match(names(docetaxel.labels$AUC), brca_ordered$cell.line))
-cell_line_order$IC50 <- order(match(names(docetaxel.labels$IC50), brca_ordered$cell.line))
-stopifnot(!is.unsorted(match(brca_ordered$cell.line, names(docetaxel.labels$slope)[cell_line_order$slope] ), na.rm = TRUE))
+input.labels_cell_lines = list()
+input.labels_cell_lines$slope = docetaxel.labels$slope[docetaxel.labels$slope_ind_common]
+input.labels_cell_lines$IC50 = docetaxel.labels$IC50[docetaxel.labels$IC50_ind_common]
+input.labels_cell_lines$AUC = docetaxel.labels$AUC[docetaxel.labels$AUC_ind_common]
 
-stopifnot( length(table(docetaxel.labels$slope[cell_line_order$slope][1:30])) == 2 )
-stopifnot( length(table(docetaxel.labels$AUC[cell_line_order$AUC][1:30])) == 2 )
-stopifnot( length(table(docetaxel.labels$IC50[cell_line_order$IC50][1:30])) == 2 )
+input.cell_line_order = list()
+input.cell_line_order$slope <- order(match(names(input.labels_cell_lines$slope), brca_ordered$cell.line))
+input.cell_line_order$IC50 <- order(match(names(input.labels_cell_lines$IC50), brca_ordered$cell.line))
+input.cell_line_order$AUC <- order(match(names(input.labels_cell_lines$AUC), brca_ordered$cell.line))
 
-temp.cpp <- foreach (cell_line_training_amount = seq(from = 30, to = 600, by = 30)) %do% {  
-  
-  temp.slope <- generate_random_partition.cpp_var3(input_labels_cell_lines = docetaxel.labels$slope, 
-                                                   input_labels_patient = docetaxel.labels$patient, 
-                                                   cell_line_training_amount = cell_line_training_amount,
-                                                   patient_training_amount = 20,
-                                                   cell_line_order = cell_line_order$slope)
-  
-  temp.IC50 <- generate_random_partition.cpp_var3(input_labels_cell_lines = docetaxel.labels$IC50, 
-                                                  input_labels_patient = docetaxel.labels$patient, 
-                                                  cell_line_training_amount = cell_line_training_amount,
-                                                  patient_training_amount = 20,
-                                                  cell_line_order = cell_line_order$IC50)
-  
-  temp.AUC <- generate_random_partition.cpp_var3(input_labels_cell_lines = docetaxel.labels$AUC, 
-                                                 input_labels_patient = docetaxel.labels$patient, 
-                                                 cell_line_training_amount = cell_line_training_amount,
-                                                 patient_training_amount = 20,
-                                                 cell_line_order = cell_line_order$AUC)
-  list(slope = temp.slope, IC50 = temp.IC50, AUC = temp.AUC)
+stopifnot(!is.unsorted(match(brca_ordered$cell.line, 
+                             names(input.labels_cell_lines$slope)[input.cell_line_order$slope] ), na.rm = TRUE))
+stopifnot( length(table(input.labels_cell_lines$slope[input.cell_line_order$slope][1:30])) == 2 )
+stopifnot( length(table(input.labels_cell_lines$AUC[input.cell_line_order$AUC][1:30])) == 2 )
+stopifnot( length(table(input.labels_cell_lines$IC50[input.cell_line_order$IC50][1:30])) == 2 )
+
+patient_23 <- foreach(input.training_amount.c = seq(from = 30, to = 605, by = 30), .errorhandling = "stop") %dopar% {
+  generate_random_partition(labels_cell_lines = input.labels_cell_lines, 
+                            labels_patient = docetaxel.labels$patient,
+                            training_amount.p = 23,
+                            acc_training = TRUE,
+                            cell_line_order = input.cell_line_order,
+                            training_amount.c = input.training_amount.c)
 }
+partition$patient_23 <- patient_23
 
-partition_var$cVar_p20_p_brca <- temp.cpp
-
-
-### UNCOMMENT if you want to save the homogenized dataset
-#save(docetaxel, docetaxel.labels, sampleinfo.cgp, partition, feature.l1000, partition_var, file = "Docetaxel/WS/docetaxel_data.RData")
+# save worksapce ----------------------------------------------------------
+save(docetaxel, docetaxel.labels, sampleinfo.cgp, partition, feature.l1000, partition, 
+     file = "Docetaxel/WS/docetaxel_data.RData")

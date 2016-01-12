@@ -77,13 +77,13 @@ for (temp.run_ind in PARTITION_BEGIN:PARTITION_END) {
                                                               type_measure = input.type_measure)
 }
 
-pp.snf.single.all = list()
+snf.single.all = list()
 
 for (temp.run_ind in PARTITION_BEGIN:PARTITION_END) {  
   print(Sys.time())
   print(temp.run_ind)
   
-  pp.snf.single.all[[temp.run_ind]] <- SNF_Single_Predict(feature.sets = NULL, 
+  snf.single.all[[temp.run_ind]] <- SNF_Single_Predict(feature.sets = NULL, 
                                                           parameters = list(K = input_snf.parameter), 
                                                           data = input_data, 
                                                           partition = input_partition,
