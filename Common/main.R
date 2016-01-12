@@ -138,84 +138,84 @@ if (args[4] == "bortezomib") {
   } else if (args[5] == "cp2p_slope") {
     stopifnot(training_var_amount <= length(partition$cell_lines_all))
     
-    input_data <- docetaxel$combined_slope.sva 
+    input_data <- docetaxel$combined_slope.ComBat 
     input_label <- docetaxel.labels$slope_combined
     input_partition = partition$cell_lines_all[[training_var_amount]]$cp2p.slope
     input_feature.l1000 <- feature.l1000$cp
   } else if (args[5] == "cp2p_auc") {
     stopifnot(training_var_amount <= length(partition$cell_lines_all))
     
-    input_data <- docetaxel$combined_AUC.sva
+    input_data <- docetaxel$combined_AUC.ComBat
     input_label <- docetaxel.labels$AUC_combined
     input_partition = partition$cell_lines_all[[training_var_amount]]$cp2p.AUC
     input_feature.l1000 <- feature.l1000$cp
   } else if (args[5] == "cp2p_ic50") {
     stopifnot(training_var_amount <= length(partition$cell_lines_all))
     
-    input_data <- docetaxel$combined_IC50.sva
+    input_data <- docetaxel$combined_IC50.ComBat
     input_label <- docetaxel.labels$IC50_combined
     input_partition = partition$cell_lines_all[[training_var_amount]]$cp2p.IC50
     input_feature.l1000 <- feature.l1000$cp
   } else if (args[5] == "cp2p_slope_breast") {
     stopifnot(training_var_amount <= length(partition$cell_lines_all))
     
-    input_data <- docetaxel$combined_slope.sva 
+    input_data <- docetaxel$combined_slope.ComBat 
     input_label <- docetaxel.labels$slope_combined
     input_partition = partition$cell_lines_breast[[training_var_amount]]$cp2p.slope
     input_feature.l1000 <- feature.l1000$cp
   } else if (args[5] == "cp2p_auc_breast") {
     stopifnot(training_var_amount <= length(partition$cell_lines_all))
     
-    input_data <- docetaxel$combined_AUC.sva
+    input_data <- docetaxel$combined_AUC.ComBat
     input_label <- docetaxel.labels$AUC_combined
     input_partition = partition$cell_lines_breast[[training_var_amount]]$cp2p.AUC
     input_feature.l1000 <- feature.l1000$cp
   } else if (args[5] == "cp2p_ic50_breast") {
     stopifnot(training_var_amount <= length(partition$cell_lines_all))
     
-    input_data <- docetaxel$combined_IC50.sva
+    input_data <- docetaxel$combined_IC50.ComBat
     input_label <- docetaxel.labels$IC50_combined
     input_partition = partition$cell_lines_breast[[training_var_amount]]$cp2p.IC50
     input_feature.l1000 <- feature.l1000$cp
   } else if (args[5] == "cp2p_ic50_p23") {
     stopifnot(training_var_amount <= length(partition$patient_23))
     
-    input_data <- docetaxel$combined_IC50.sva
+    input_data <- docetaxel$combined_IC50.ComBat
     input_label <- docetaxel.labels$IC50_combined
     input_partition = partition$patient_23[[training_var_amount]]$cp2p.IC50
     input_feature.l1000 <- feature.l1000$cp
   } else if (args[5] == "cp2p_auc_p23") {
     stopifnot(training_var_amount <= length(partition$patient_23))
     
-    input_data <- docetaxel$combined_AUC.sva
+    input_data <- docetaxel$combined_AUC.ComBat
     input_label <- docetaxel.labels$AUC_combined
     input_partition = partition$patient_23[[training_var_amount]]$cp2p.AUC
     input_feature.l1000 <- feature.l1000$cp
   } else if (args[5] == "cp2p_slope_p23") {
     stopifnot(training_var_amount <= length(partition$patient_23))
     
-    input_data <- docetaxel$combined_slope.sva
+    input_data <- docetaxel$combined_slope.ComBat
     input_label <- docetaxel.labels$slope_combined
     input_partition = partition$patient_23[[training_var_amount]]$cp2p.slope
     input_feature.l1000 <- feature.l1000$cp
   } else if (args[5] == "c2p_ic50_p23") {
     stopifnot(training_var_amount <= length(partition$patient_23))
     
-    input_data <- docetaxel$combined_IC50.sva
+    input_data <- docetaxel$combined_IC50.ComBat
     input_label <- docetaxel.labels$IC50_combined
     input_partition = partition$patient_23[[training_var_amount]]$c2p.IC50
     input_feature.l1000 <- feature.l1000$cp
   } else if (args[5] == "c2p_auc_p23") {
     stopifnot(training_var_amount <= length(partition$patient_23))
     
-    input_data <- docetaxel$combined_AUC.sva
+    input_data <- docetaxel$combined_AUC.ComBat
     input_label <- docetaxel.labels$AUC_combined
     input_partition = partition$patient_23[[training_var_amount]]$c2p.AUC
     input_feature.l1000 <- feature.l1000$cp
   } else if (args[5] == "c2p_slope_p23") {
     stopifnot(training_var_amount <= length(partition$patient_23))
     
-    input_data <- docetaxel$combined_slope.sva
+    input_data <- docetaxel$combined_slope.ComBat
     input_label <- docetaxel.labels$slope_combined
     input_partition = partition$patient_23[[training_var_amount]]$c2p.slope
     input_feature.l1000 <- feature.l1000$cp
@@ -229,6 +229,10 @@ if (args[4] == "bortezomib") {
 } else {
   stop(paste("args[4]", args[4], "is invalid."))
 }
+
+stopifnot(!is.null(input_data))
+stopifnot(!is.null(input_label))
+stopifnot(!is.null(input_partition))
 
 rm(partition, feature.l1000)
 
