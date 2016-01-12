@@ -15,7 +15,7 @@ registerDoParallel(8)
 # args[1] = 1 # partition start
 # args[2] = 1 # partition end
 # args[3] = 10 # index for training sets
-# args[4] = "Bortezomib"
+# args[4] = "bortezomib"
 # args[5] = "c50p2p_slope"
 
 ### End ###
@@ -226,8 +226,6 @@ if (args[4] == "bortezomib") {
   input.type_measure = "acc"
   input_snf.parameter <- seq(from = 5, to = 30, by = 5)
   rm(docetaxel, docetaxel.labels)
-} else if (args[4] == "docetaxel") {
-  load("Docetaxel/WS/docetaxel_data.RData")
 } else {
   stop(paste("args[4]", args[4], "is invalid."))
 }
