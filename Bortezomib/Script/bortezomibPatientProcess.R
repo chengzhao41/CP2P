@@ -2,6 +2,7 @@
 library("doParallel")
 library("sva")
 library(hgu133a.db) # unload "GEOquery" if this fails to load
+library(jetset)
 
 source('Common/preparing_data_helper.R')
 source('Common/drug_cut/callingWaterfall.R')
@@ -24,22 +25,29 @@ p <- rbind(pData(phenoData(bortezomib_mas5[[1]])), pData(phenoData(bortezomib_ma
 bortIndex <- which(p$"characteristics_ch1.1" == "treatment = PS341")
 
 # get the gene symbol -----------------------------------------------------
-x <- hgu133aSYMBOL
-mapped_probes <- mappedkeys(x)
-names(mapped_probes) <- as.character(x[mapped_probes])
-affy2sym <- as.character(x[mapped_probes])
-sym2affy <- names(affy2sym)
-rownames(exprDataU133a) <- affy2sym[rownames(exprDataU133a)]
+mapped_probes <- mappedkeys(hgu133aENSEMBL)
+affy2ensg <- as.list(hgu133aENSEMBL[mapped_probes])
+
+ensembl_vector <- unlist(affy2ensg)
+names(ensembl_vector) <- gsub("_at[0-9]*", "_at", names(ensembl_vector))
+
+best_probesets <- jmap("hgu133a", ensembl = ensembl_vector)
+affyBest2ensg <- names(best_probesets)
+names(affyBest2ensg) <- best_probesets
+
+rownames(exprDataU133a) <- affyBest2ensg[rownames(exprDataU133a)]
 
 # get the expression level ------------------------------------------------
-nonNARows <- which(!is.na(rownames(exprDataU133a)))
-bortezomibExpr <- exprDataU133a[nonNARows, bortIndex]
+NARows <- which(is.na(rownames(exprDataU133a)))
+bortezomibExpr <- exprDataU133a[-NARows, bortIndex]
 bortezomibExpr = t(log2(bortezomibExpr))
+stopifnot(sum(is.na(colnames(bortezomibExpr))) == 0)
+dim(bortezomibExpr)
 
-# deal with duplicate gene symbols by taking the mean ---------------------
+# double check that there are no duplicate gene symbols ---------------------
 temp.data = comGENE(bortezomibExpr, bortezomibExpr)
 dim(temp.data[[1]])
-bortezomibExpr = temp.data[[1]]
+stopifnot(dim(bortezomibExpr) == temp.data[[1]])
 
 # get the binary response -------------------------------------------------
 response = as.vector(p$"characteristics_ch1.8")[bortIndex]
