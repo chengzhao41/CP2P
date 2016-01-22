@@ -1,38 +1,34 @@
 library(Biobase)
 library(PharmacoGx)
-
+setwd("~/Dropbox/CP2P")
 ## to download the datasets from server
 #GDSC <- downloadPSet("GDSC")
 #CCLE <- downloadPSet("CCLE")
 
 ## small dataset for testing & debugging
-data("GDSCsmall")
-data("CCLEsmall")
-GDSC <- GDSCsmall
-CCLE <- CCLEsmall
+# data("GDSCsmall")
+# data("CCLEsmall")
+# GDSC <- GDSCsmall
+# CCLE <- CCLEsmall
 
 ## use local files
-#load("PSets/GDSC.RData")
-# load("PSets/CCLE.RData")
+load("GatherData/PSets/GDSC.RData")
+# load("GatherData/PSets/CCLE.RData")
 
 extractDrugData <- function (drugID, dataPset) {
   ## get AUC for the drug
-  drug.auc <- summarizeSensitivityProfiles(dataPset,
+  label.auc <- summarizeSensitivityProfiles(dataPset,
                                            drugs=c(drugID),
-                                           sensitivity.measure="auc_recomputed",
+                                           sensitivity.measure="auc_published",
                                            summary.stat="median")
-  drug.auc <- drug.auc[1, !is.na(drug.auc)]
+  label.auc <- label.auc[1, !is.na(label.auc)]
   
   ## get IC50 for the drug
-  drug.IC50 <- summarizeSensitivityProfiles(dataPset,
+  label.IC50 <- summarizeSensitivityProfiles(dataPset,
                                            drugs=c(drugID),
-                                           sensitivity.measure="ic50_recomputed",
+                                           sensitivity.measure="ic50_published",
                                            summary.stat="median")
-  drug.IC50 <- drug.IC50[1, !is.na(drug.IC50)]
-  
-  ## get list of cell lines
-  cc.auc <- names(drug.auc)
-  cc.IC50 <- names(drug.IC50)
+  label.IC50 <- label.IC50[1, !is.na(label.IC50)]
   
   ## get expression data of cell lines with sensitivity measurement for the drug
   data.expression <- summarizeMolecularProfiles(dataPset,
@@ -41,32 +37,74 @@ extractDrugData <- function (drugID, dataPset) {
                                                verbose=FALSE)
   ## rename genes to EnsemblGeneId
   gInfo <- featureInfo(dataPset, 'rna')
-  rna <- exprs(data.expression)
-  rownames(rna) <- gInfo[rownames(rna),]$EnsemblGeneId
+  rna.all <- exprs(data.expression)
+  rownames(rna.all) <- gInfo[rownames(rna.all),]$EnsemblGeneId
   
-  ## TODO: filter for cell lines with both expression and measurement data
-  auc.rna <- rna
-  IC50.rna <- rna
+  ## get list of cell lines
+  cl.all <- colnames(rna.all)
+  cl.auc <- intersect(names(label.auc), cl.all)
+  cl.IC50 <- intersect(names(label.IC50), cl.all)
   
-  return(list('auc.rna'=auc.rna, 'auc.cont'=drug.auc, 'IC50.rna'=IC50.rna, 'IC50.cont'=drug.IC50))
+  ## filter for cell lines with both expression and measurement data
+  rna.auc <- rna.all[, cl.auc]
+  rna.auc <- rna.auc[, colSums(is.na(rna.auc))==0]
+  cl.auc <- colnames(rna.auc)
+  label.auc <- label.auc[cl.auc]
+  
+  rna.IC50 <- rna.all[, cl.IC50]
+  rna.IC50 <- rna.IC50[, colSums(is.na(rna.IC50))==0]
+  cl.IC50 <- colnames(rna.IC50)
+  label.IC50 <- label.IC50[cl.IC50]
+  
+  stopifnot(all(colnames(rna.auc) == colnames(label.auc)))
+  stopifnot(all(colnames(rna.IC50) == colnames(label.IC50)))
+  
+  return(list('rna.auc'=rna.auc, 'rna.IC50'=rna.IC50, 'auc.cont'=label.auc, 'IC50.cont'=label.IC50))
 }
 
 ### Bortezomib
-bortezomib <- extractDrugData('Bortezomib', GDSC)
+sampleinfo.gdsc <- cellInfo(GDSC)
+temp <- extractDrugData('Bortezomib', GDSC)
+bortezomib <- list('gdsc_AUC'=temp$rna.auc, 'gdsc_IC50'=temp$rna.IC50)
+bortezomib.labels <- list('AUC.cont'=temp$auc.cont, 'IC50.cont'=temp$IC50.cont)
 
-## binarize the sensitivity measure
-source("callSensitivity.R")
-bortezomib$auc.bin <- callSensitivity(t(data.frame(bortezomib$auc.cont)))
+# ## binarize the sensitivity measure, the new (as of jan2016) way
+# source("GatherData/callSensitivity.R")
+# bortezomib.labels$AUCnew <- sapply(callSensitivity(t(data.frame(bortezomib.labels$AUC.cont)))[1, ], as.logical)
+# bortezomib.labels$IC50new <- sapply(callSensitivity(t(data.frame(bortezomib.labels$IC50.cont)))[1, ], as.logical)
 
+## binarize the sensitivity measure, using the old "water fall" method
+source("Common/drug_cut/callingWaterfall.R")
+source('Common/drug_cut/distancePointLine.R')
+source('Common/drug_cut/distancePointSegment.R')
+bortezomib.labels$AUC <- callingWaterfall(t(data.frame(bortezomib.labels$AUC.cont)), type="AUC")
+bortezomib.labels$AUC <- bortezomib.labels$AUC != "resistant"
+table(bortezomib.labels$AUC)
+names(bortezomib.labels$AUC) <- names(bortezomib.labels$AUC.cont)
 
-dim(bortezomib$auc.rna)
-dim(bortezomib$auc.cont)
-dim(bortezomib$auc.bin)
-View(bortezomib$auc.rna)
-View(bortezomib$auc.cont)
-View(bortezomib$auc.bin)
+bortezomib.labels$IC50 <- callingWaterfall(t(data.frame(bortezomib.labels$IC50.cont)), type="IC50")
+bortezomib.labels$IC50 <- bortezomib.labels$IC50 != "resistant"
+table(bortezomib.labels$IC50)
+names(bortezomib.labels$IC50) <- names(bortezomib.labels$IC50.cont)
 
+# indices of cell lines to the sampleinfo table
+bortezomib.labels$AUC_ind <- which(rownames(sampleinfo.gdsc) %in% colnames(bortezomib$rna.auc))
+bortezomib.labels$IC50_ind <- which(rownames(sampleinfo.gdsc) %in% colnames(bortezomib$rna.IC50))
 
+## save the data set to RData
+# save(bortezomib, bortezomib.labels, sampleinfo.gdsc, file='bortezomib_new.RData')
+
+# debug out
+dim(bortezomib$gdsc_AUC)
+length(bortezomib.labels$AUC.cont)
+length(bortezomib.labels$AUC)
+dim(bortezomib$gdsc_IC50)
+length(bortezomib.labels$IC50.cont)
+length(bortezomib.labels$IC50)
+
+View(bortezomib$gdsc_AUC)
+View(sampleinfo.gdsc)
+View(bortezomib.labels$AUC)
 
 
 
