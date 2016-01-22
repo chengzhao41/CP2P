@@ -1,6 +1,6 @@
 library(Biobase)
 library(PharmacoGx)
-
+setwd("~/Dropbox/CP2P")
 ## to download the datasets from server
 #GDSC <- downloadPSet("GDSC")
 #CCLE <- downloadPSet("CCLE")
@@ -12,8 +12,8 @@ library(PharmacoGx)
 # CCLE <- CCLEsmall
 
 ## use local files
-load("PSets/GDSC.RData")
-# load("PSets/CCLE.RData")
+load("GatherData/PSets/GDSC.RData")
+# load("GatherData/PSets/CCLE.RData")
 
 extractDrugData <- function (drugID, dataPset) {
   ## get AUC for the drug
@@ -68,10 +68,24 @@ temp <- extractDrugData('Bortezomib', GDSC)
 bortezomib <- list('gdsc_AUC'=temp$rna.auc, 'gdsc_IC50'=temp$rna.IC50)
 bortezomib.labels <- list('AUC.cont'=temp$auc.cont, 'IC50.cont'=temp$IC50.cont)
 
-## binarize the sensitivity measure, the new (as of jan2016) way
-source("callSensitivity.R")
-bortezomib.labels$AUC <- sapply(callSensitivity(t(data.frame(bortezomib.labels$AUC.cont)))[1, ], as.logical)
-bortezomib.labels$IC50 <- sapply(callSensitivity(t(data.frame(bortezomib.labels$IC50.cont)))[1, ], as.logical)
+# ## binarize the sensitivity measure, the new (as of jan2016) way
+# source("GatherData/callSensitivity.R")
+# bortezomib.labels$AUCnew <- sapply(callSensitivity(t(data.frame(bortezomib.labels$AUC.cont)))[1, ], as.logical)
+# bortezomib.labels$IC50new <- sapply(callSensitivity(t(data.frame(bortezomib.labels$IC50.cont)))[1, ], as.logical)
+
+## binarize the sensitivity measure, using the old "water fall" method
+source("Common/drug_cut/callingWaterfall.R")
+source('Common/drug_cut/distancePointLine.R')
+source('Common/drug_cut/distancePointSegment.R')
+bortezomib.labels$AUC <- callingWaterfall(t(data.frame(bortezomib.labels$AUC.cont)), type="AUC")
+bortezomib.labels$AUC <- bortezomib.labels$AUC != "resistant"
+table(bortezomib.labels$AUC)
+names(bortezomib.labels$AUC) <- names(bortezomib.labels$AUC.cont)
+
+bortezomib.labels$IC50 <- callingWaterfall(t(data.frame(bortezomib.labels$IC50.cont)), type="IC50")
+bortezomib.labels$IC50 <- bortezomib.labels$IC50 != "resistant"
+table(bortezomib.labels$IC50)
+names(bortezomib.labels$IC50) <- names(bortezomib.labels$IC50.cont)
 
 # indices of cell lines to the sampleinfo table
 bortezomib.labels$AUC_ind <- which(rownames(sampleinfo.gdsc) %in% colnames(bortezomib$rna.auc))
