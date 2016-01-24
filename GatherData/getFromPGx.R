@@ -46,7 +46,11 @@ bortezomib.labels$IC50_ind <- which(rownames(sampleinfo.gdsc) %in% colnames(bort
 bortezomib.labels$slope_ind <- which(rownames(sampleinfo.gdsc) %in% colnames(bortezomib$gdsc_slope))
 
 ## save the data set to RData
-# save(bortezomib, bortezomib.labels, sampleinfo.gdsc, file='bortezomib_gdsc.RData')
+# transpose
+bortezomib.labels$AUC_ind <- t(bortezomib.labels$AUC_ind)
+bortezomib.labels$IC50_ind <- t(bortezomib.labels$IC50_ind)
+bortezomib.labels$slope_ind <- t(bortezomib.labels$slope_ind)
+save(bortezomib, bortezomib.labels, sampleinfo.gdsc, file='Bortezomib/WS/bortezomib_gdsc.RData')
 
 # debug out
 table(bortezomib.labels$AUC)
