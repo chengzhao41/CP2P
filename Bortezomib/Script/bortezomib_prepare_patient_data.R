@@ -1,19 +1,13 @@
 # Load Libraries ----------------------------------------------------------
-library("doParallel")
 library("sva")
-library(hgu133a.db) # unload "GEOquery" if this fails to load
-library(jetset)
+
+setwd("~/Git/CP2P/")
 
 source('Common/preparing_data_helper.R')
-source('Common/drug_cut/callingWaterfall.R')
-source('Common/drug_cut/distancePointLine.R')
-source('Common/drug_cut/distancePointSegment.R')
 source('Common/comGENE.R')
-source("Common/generate_random_partition.R")
-source("Common/ordering_by_similarity.R")
 
 # Load Data ---------------------------------------------------------------
-# uncomment this line to download the data directly from GEO.
+# uncomment these 2 line to download the data directly from GEO.
 # library(GEOquery)
 # bortezomib_mas5 <- getGEO("GSE9782")
 load("Bortezomib/WS/bortGeo.RData")
@@ -25,29 +19,25 @@ p <- rbind(pData(phenoData(bortezomib_mas5[[1]])), pData(phenoData(bortezomib_ma
 bortIndex <- which(p$"characteristics_ch1.1" == "treatment = PS341")
 
 # get the gene symbol -----------------------------------------------------
-mapped_probes <- mappedkeys(hgu133aENSEMBL)
-affy2ensg <- as.list(hgu133aENSEMBL[mapped_probes])
+HGU133A_Hs_ENSG_mapping <- read.delim("GatherData/BrainArray/HGU133A_Hs_ENSG_20.0.0/HGU133A_Hs_ENSG_mapping.txt")
 
-ensembl_vector <- unlist(affy2ensg)
-names(ensembl_vector) <- gsub("_at[0-9]*", "_at", names(ensembl_vector))
-
-best_probesets <- jmap("hgu133a", ensembl = ensembl_vector)
-affyBest2ensg <- names(best_probesets)
-names(affyBest2ensg) <- best_probesets
-
-rownames(exprDataU133a) <- affyBest2ensg[rownames(exprDataU133a)]
+affy2ensembl <- gsub("_at", "", HGU133A_Hs_ENSG_mapping$Probe.Set.Name)
+names(affy2ensembl) <- HGU133A_Hs_ENSG_mapping$Affy.Probe.Set.Name
+affy2ensembl <- affy2ensembl[which(!duplicated(affy2ensembl))]
+rownames(exprDataU133a) <- affy2ensembl[rownames(exprDataU133a)]
 
 # get the expression level ------------------------------------------------
 NARows <- which(is.na(rownames(exprDataU133a)))
+print(length(NARows))
 bortezomibExpr <- exprDataU133a[-NARows, bortIndex]
 bortezomibExpr = t(log2(bortezomibExpr))
-stopifnot(sum(is.na(colnames(bortezomibExpr))) == 0)
+stopifnot(sum(is.na(rownames(bortezomibExpr))) == 0)
 dim(bortezomibExpr)
 
 # double check that there are no duplicate gene symbols ---------------------
 temp.data = comGENE(bortezomibExpr, bortezomibExpr)
 dim(temp.data[[1]])
-stopifnot(dim(bortezomibExpr) == temp.data[[1]])
+stopifnot(dim(bortezomibExpr) == dim(temp.data[[1]]))
 
 # get the binary response -------------------------------------------------
 response = as.vector(p$"characteristics_ch1.8")[bortIndex]
