@@ -12,11 +12,11 @@ registerDoParallel(8)
 
 # args <- vector()
 # registerDoParallel(4)
-# args[1] = 1 # partition start
-# args[2] = 1 # partition end
-# args[3] = 10 # index for training sets
+# args[1] = "1" # partition start
+# args[2] = "2" # partition end
+# args[3] = "10" # index for training sets
 # args[4] = "bortezomib"
-# args[5] = "c50p2p_slope"
+# args[5] = "cp2p_slope"
 
 ### End ###
 
@@ -37,84 +37,84 @@ if (args[4] == "bortezomib") {
   } else if (args[5] == "cp2p_slope") {
     stopifnot(training_var_amount <= length(partition$cell_lines_all))
     
-    input_data <- bortezomib$combined_slope.sva 
+    input_data <- bortezomib$slope_combined.sva 
     input_label <- bortezomib.labels$slope_combined
     input_partition = partition$cell_lines_all[[training_var_amount]]$cp2p.slope
     input_feature.l1000 <- feature.l1000$cp
   } else if (args[5] == "cp2p_auc") {
     stopifnot(training_var_amount <= length(partition$cell_lines_all))
     
-    input_data <- bortezomib$combined_AUC.sva
+    input_data <- bortezomib$AUC_combined.sva
     input_label <- bortezomib.labels$AUC_combined
     input_partition = partition$cell_lines_all[[training_var_amount]]$cp2p.AUC
     input_feature.l1000 <- feature.l1000$cp
   } else if (args[5] == "cp2p_ic50") {
     stopifnot(training_var_amount <= length(partition$cell_lines_all))
     
-    input_data <- bortezomib$combined_IC50.sva
+    input_data <- bortezomib$IC50_combined.sva
     input_label <- bortezomib.labels$IC50_combined
     input_partition = partition$cell_lines_all[[training_var_amount]]$cp2p.IC50
     input_feature.l1000 <- feature.l1000$cp
   } else if (args[5] == "cp2p_ic50_p50") {
     stopifnot(training_var_amount <= length(partition$patient_50))
     
-    input_data <- bortezomib$combined_IC50.sva
+    input_data <- bortezomib$IC50_combined.sva
     input_label <- bortezomib.labels$IC50_combined
     input_partition = partition$patient_50[[training_var_amount]]$cp2p.IC50
     input_feature.l1000 <- feature.l1000$cp
   } else if (args[5] == "cp2p_auc_p50") {
     stopifnot(training_var_amount <= length(partition$patient_50))
     
-    input_data <- bortezomib$combined_AUC.sva
+    input_data <- bortezomib$AUC_combined.sva
     input_label <- bortezomib.labels$AUC_combined
     input_partition = partition$patient_50[[training_var_amount]]$cp2p.AUC
     input_feature.l1000 <- feature.l1000$cp
   } else if (args[5] == "cp2p_slope_p50") {
     stopifnot(training_var_amount <= length(partition$patient_50))
     
-    input_data <- bortezomib$combined_slope.sva
+    input_data <- bortezomib$slope_combined.sva
     input_label <- bortezomib.labels$slope_combined
     input_partition = partition$patient_50[[training_var_amount]]$cp2p.slope
     input_feature.l1000 <- feature.l1000$cp
   } else if (args[5] == "c2p_ic50_p50") {
     stopifnot(training_var_amount <= length(partition$patient_50))
     
-    input_data <- bortezomib$combined_IC50.sva
+    input_data <- bortezomib$IC50_combined.sva
     input_label <- bortezomib.labels$IC50_combined
     input_partition = partition$patient_50[[training_var_amount]]$c2p.IC50
     input_feature.l1000 <- feature.l1000$cp
   } else if (args[5] == "c2p_auc_p50") {
     stopifnot(training_var_amount <= length(partition$patient_50))
     
-    input_data <- bortezomib$combined_AUC.sva
+    input_data <- bortezomib$AUC_combined.sva
     input_label <- bortezomib.labels$AUC_combined
     input_partition = partition$patient_50[[training_var_amount]]$c2p.AUC
     input_feature.l1000 <- feature.l1000$cp
   } else if (args[5] == "c2p_slope_p50") {
     stopifnot(training_var_amount <= length(partition$patient_50))
     
-    input_data <- bortezomib$combined_slope.sva
+    input_data <- bortezomib$slope_combined.sva
     input_label <- bortezomib.labels$slope_combined
     input_partition = partition$patient_50[[training_var_amount]]$c2p.slope
     input_feature.l1000 <- feature.l1000$cp
   } else if (args[5] == "cp2p_slope_p100") {
     stopifnot(training_var_amount <= length(partition$patient_100))
     
-    input_data <- bortezomib$combined_slope.sva
+    input_data <- bortezomib$slope_combined.sva
     input_label <- bortezomib.labels$slope_combined
     input_partition = partition$patient_100[[training_var_amount]]$cp2p.slope
     input_feature.l1000 <- feature.l1000$cp
   } else if (args[5] == "cp2p_auc_p100") {
     stopifnot(training_var_amount <= length(partition$patient_100))
     
-    input_data <- bortezomib$combined_AUC.sva
+    input_data <- bortezomib$AUC_combined.sva
     input_label <- bortezomib.labels$AUC_combined
     input_partition = partition$patient_100[[training_var_amount]]$cp2p.AUC
     input_feature.l1000 <- feature.l1000$cp
   } else if (args[5] == "cp2p_ic50_p100") {
     stopifnot(training_var_amount <= length(partition$patient_100))
     
-    input_data <- bortezomib$combined_IC50.sva
+    input_data <- bortezomib$IC50_combined.sva
     input_label <- bortezomib.labels$IC50_combined
     input_partition = partition$patient_100[[training_var_amount]]$cp2p.IC50
     input_feature.l1000 <- feature.l1000$cp
@@ -138,84 +138,84 @@ if (args[4] == "bortezomib") {
   } else if (args[5] == "cp2p_slope") {
     stopifnot(training_var_amount <= length(partition$cell_lines_all))
     
-    input_data <- docetaxel$combined_slope.ComBat 
+    input_data <- docetaxel$slope_combined.ComBat 
     input_label <- docetaxel.labels$slope_combined
     input_partition = partition$cell_lines_all[[training_var_amount]]$cp2p.slope
     input_feature.l1000 <- feature.l1000$cp
   } else if (args[5] == "cp2p_auc") {
     stopifnot(training_var_amount <= length(partition$cell_lines_all))
     
-    input_data <- docetaxel$combined_AUC.ComBat
+    input_data <- docetaxel$AUC_combined.ComBat
     input_label <- docetaxel.labels$AUC_combined
     input_partition = partition$cell_lines_all[[training_var_amount]]$cp2p.AUC
     input_feature.l1000 <- feature.l1000$cp
   } else if (args[5] == "cp2p_ic50") {
     stopifnot(training_var_amount <= length(partition$cell_lines_all))
     
-    input_data <- docetaxel$combined_IC50.ComBat
+    input_data <- docetaxel$IC50_combined.ComBat
     input_label <- docetaxel.labels$IC50_combined
     input_partition = partition$cell_lines_all[[training_var_amount]]$cp2p.IC50
     input_feature.l1000 <- feature.l1000$cp
   } else if (args[5] == "cp2p_slope_breast") {
     stopifnot(training_var_amount <= length(partition$cell_lines_all))
     
-    input_data <- docetaxel$combined_slope.ComBat 
+    input_data <- docetaxel$slope_combined.ComBat 
     input_label <- docetaxel.labels$slope_combined
     input_partition = partition$cell_lines_breast[[training_var_amount]]$cp2p.slope
     input_feature.l1000 <- feature.l1000$cp
   } else if (args[5] == "cp2p_auc_breast") {
     stopifnot(training_var_amount <= length(partition$cell_lines_all))
     
-    input_data <- docetaxel$combined_AUC.ComBat
+    input_data <- docetaxel$AUC_combined.ComBat
     input_label <- docetaxel.labels$AUC_combined
     input_partition = partition$cell_lines_breast[[training_var_amount]]$cp2p.AUC
     input_feature.l1000 <- feature.l1000$cp
   } else if (args[5] == "cp2p_ic50_breast") {
     stopifnot(training_var_amount <= length(partition$cell_lines_all))
     
-    input_data <- docetaxel$combined_IC50.ComBat
+    input_data <- docetaxel$IC50_combined.ComBat
     input_label <- docetaxel.labels$IC50_combined
     input_partition = partition$cell_lines_breast[[training_var_amount]]$cp2p.IC50
     input_feature.l1000 <- feature.l1000$cp
   } else if (args[5] == "cp2p_ic50_p23") {
     stopifnot(training_var_amount <= length(partition$patient_23))
     
-    input_data <- docetaxel$combined_IC50.ComBat
+    input_data <- docetaxel$IC50_combined.ComBat
     input_label <- docetaxel.labels$IC50_combined
     input_partition = partition$patient_23[[training_var_amount]]$cp2p.IC50
     input_feature.l1000 <- feature.l1000$cp
   } else if (args[5] == "cp2p_auc_p23") {
     stopifnot(training_var_amount <= length(partition$patient_23))
     
-    input_data <- docetaxel$combined_AUC.ComBat
+    input_data <- docetaxel$AUC_combined.ComBat
     input_label <- docetaxel.labels$AUC_combined
     input_partition = partition$patient_23[[training_var_amount]]$cp2p.AUC
     input_feature.l1000 <- feature.l1000$cp
   } else if (args[5] == "cp2p_slope_p23") {
     stopifnot(training_var_amount <= length(partition$patient_23))
     
-    input_data <- docetaxel$combined_slope.ComBat
+    input_data <- docetaxel$slope_combined.ComBat
     input_label <- docetaxel.labels$slope_combined
     input_partition = partition$patient_23[[training_var_amount]]$cp2p.slope
     input_feature.l1000 <- feature.l1000$cp
   } else if (args[5] == "c2p_ic50_p23") {
     stopifnot(training_var_amount <= length(partition$patient_23))
     
-    input_data <- docetaxel$combined_IC50.ComBat
+    input_data <- docetaxel$IC50_combined.ComBat
     input_label <- docetaxel.labels$IC50_combined
     input_partition = partition$patient_23[[training_var_amount]]$c2p.IC50
     input_feature.l1000 <- feature.l1000$cp
   } else if (args[5] == "c2p_auc_p23") {
     stopifnot(training_var_amount <= length(partition$patient_23))
     
-    input_data <- docetaxel$combined_AUC.ComBat
+    input_data <- docetaxel$AUC_combined.ComBat
     input_label <- docetaxel.labels$AUC_combined
     input_partition = partition$patient_23[[training_var_amount]]$c2p.AUC
     input_feature.l1000 <- feature.l1000$cp
   } else if (args[5] == "c2p_slope_p23") {
     stopifnot(training_var_amount <= length(partition$patient_23))
     
-    input_data <- docetaxel$combined_slope.ComBat
+    input_data <- docetaxel$slope_combined.ComBat
     input_label <- docetaxel.labels$slope_combined
     input_partition = partition$patient_23[[training_var_amount]]$c2p.slope
     input_feature.l1000 <- feature.l1000$cp
