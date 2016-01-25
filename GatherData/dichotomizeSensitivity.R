@@ -17,11 +17,15 @@ dichotomizeSensitivity <- function(labels) {
   labels$IC50 <- labels$IC50 != "resistant"
   names(labels$IC50) <- names(labels$IC50.cont)
   
-  slope_cutoff <- 0.27
-  labels$slope <- labels$slope.cont
-  labels$slope[which(labels$slope.cont < slope_cutoff)] <- 0
-  labels$slope[which(labels$slope.cont >= slope_cutoff)] <- 1
-  labels$slope <- as.logical(labels$slope)
+  labels$slope <- callingWaterfall(t(data.frame(labels$slope.cont)), type="AUC") # there is no "type" for slope
+  labels$slope <- labels$slope != "resistant"
+  names(labels$slope) <- names(labels$slope.cont)
+  
+#   slope_cutoff <- 0.27
+#   labels$slope <- labels$slope.cont
+#   labels$slope[which(labels$slope.cont < slope_cutoff)] <- 0
+#   labels$slope[which(labels$slope.cont >= slope_cutoff)] <- 1
+#   labels$slope <- as.logical(labels$slope)
   
   return(labels)
 }
