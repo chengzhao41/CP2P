@@ -7,7 +7,7 @@ order_by_similarity <- function(
   alpha = 0.5) 
 {
   stopifnot(length(which(source_labels == "patient")) > 0)
-  stopifnot(length(which(source_labels == "cgp")) > 0)
+  stopifnot(length(which(source_labels == "gdsc")) > 0)
   stopifnot(dim(data)[1] == length(labels))
   stopifnot(length(labels) == length(source_labels))
   
@@ -53,7 +53,7 @@ order_by_similarity <- function(
   W <- rowMeans(A[, source_labels == 'patient'])
   
   # subset cell lines only and order them by mean affinity to patients
-  W <- W[source_labels == 'cgp']
+  W <- W[source_labels == 'gdsc']
   
   similarity.order <- rev(order(W))
   return (similarity.order)
