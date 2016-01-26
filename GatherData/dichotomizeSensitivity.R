@@ -2,7 +2,7 @@ dichotomizeSensitivity <- function(labels) {
   ## binarize the sensitivity measure, the new (as of jan2016) way
   source("GatherData/callSensitivity.R")
   labels$AUCnew <- sapply(callSensitivity(t(data.frame(labels$AUC.cont)))[1, ], as.logical)
-  labels$IC50new <- sapply(callSensitivity(t(data.frame(labels$IC50.cont)))[1, ], as.logical)
+  labels$IC50new <- !sapply(callSensitivity(t(data.frame(labels$IC50.cont)))[1, ], as.logical)
   labels$slopenew <- sapply(callSensitivity(t(data.frame(labels$slope.cont)))[1, ], as.logical)
   
   ## binarize the sensitivity measure, using the old "water fall" method

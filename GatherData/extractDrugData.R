@@ -1,6 +1,6 @@
 require(PharmacoGx)
 
-extractDrugData <- function (drugID, dataPset) {
+extractDrugData <- function (drugID, dataPset, mDataType='rna') {
   ## get AUC for the drug
   label.auc <- summarizeSensitivityProfiles(dataPset,
                                             drugs=c(drugID),
@@ -25,10 +25,10 @@ extractDrugData <- function (drugID, dataPset) {
   ## get expression data of cell lines with sensitivity measurement for the drug
   data.expression <- summarizeMolecularProfiles(dataPset,
                                                 # cell.lines=cc,
-                                                mDataType="rna",
+                                                mDataType=mDataType,
                                                 verbose=FALSE)
   ## rename genes to EnsemblGeneId
-  gInfo <- featureInfo(dataPset, 'rna')
+  gInfo <- featureInfo(dataPset, mDataType)
   rna.all <- exprs(data.expression)
   rownames(rna.all) <- gInfo[rownames(rna.all),]$EnsemblGeneId
   
