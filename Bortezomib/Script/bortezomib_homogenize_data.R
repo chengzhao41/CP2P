@@ -18,13 +18,13 @@ mean(scale(bortezomib$gdsc_IC50)) # 5.995254e-18
 # slope
 # before sva
 # show_pca(input_data = bortezomib$gdsc_slope, label = bortezomib.labels$slope)
-show_pca(input_data = bortezomib$gdsc_slope, label = sampleinfo.gdsc$tissue.type[bortezomib.labels$slope_ind])
+show_pca(input_data = scale(bortezomib$gdsc_slope), label = sampleinfo.gdsc$tissue.type[bortezomib.labels$slope_ind])
 # sva
 bortezomib$gdsc_slope.sva <- sva_combine(batch = sampleinfo.gdsc$tissue.type[bortezomib.labels$slope_ind],  
                                         label = bortezomib.labels$slope, 
-                                        input_data = bortezomib$gdsc_slope,
+                                        input_data = scale(bortezomib$gdsc_slope),
                                         n.sv = 3)
-mean(bortezomib$gdsc_slope.sva) # 6.293544
+mean(bortezomib$gdsc_slope.sva) # 6.587135e-18
 # after sva
 # show_pca(input_data = bortezomib$gdsc_slope.sva, label = bortezomib.labels$slope)
 show_pca(input_data = bortezomib$gdsc_slope.sva, label = sampleinfo.gdsc$tissue.type[bortezomib.labels$slope_ind])
@@ -32,13 +32,13 @@ show_pca(input_data = bortezomib$gdsc_slope.sva, label = sampleinfo.gdsc$tissue.
 # IC50
 # before sva
 # show_pca(input_data = bortezomib$gdsc_IC50, label = bortezomib.labels$IC50)
-show_pca(input_data = bortezomib$gdsc_IC50, label = sampleinfo.gdsc$tissue.type[bortezomib.labels$slope_ind])
+show_pca(input_data = scale(bortezomib$gdsc_IC50), label = sampleinfo.gdsc$tissue.type[bortezomib.labels$IC50_ind])
 # sva
 bortezomib$gdsc_IC50.sva <- sva_combine(batch = sampleinfo.gdsc$tissue.type[bortezomib.labels$IC50_ind],  
                                        label = bortezomib.labels$IC50, 
-                                       input_data = bortezomib$gdsc_IC50,
+                                       input_data = scale(bortezomib$gdsc_IC50),
                                        n.sv = 3)
-mean(bortezomib$gdsc_IC50.sva) # 6.293544
+mean(bortezomib$gdsc_IC50.sva) # 2.748525e-18
 # after sva
 # show_pca(input_data = bortezomib$gdsc_IC50.sva, label = bortezomib.labels$IC50)
 show_pca(input_data = bortezomib$gdsc_IC50.sva, label = sampleinfo.gdsc$tissue.type[bortezomib.labels$IC50_ind])
@@ -46,13 +46,13 @@ show_pca(input_data = bortezomib$gdsc_IC50.sva, label = sampleinfo.gdsc$tissue.t
 # AUC
 # before sva
 # show_pca(input_data = bortezomib$gdsc_AUC, label = bortezomib.labels$AUC)
-show_pca(input_data = bortezomib$gdsc_AUC, label = sampleinfo.gdsc$tissue.type[bortezomib.labels$AUC_ind])
+show_pca(input_data = scale(bortezomib$gdsc_AUC), label = sampleinfo.gdsc$tissue.type[bortezomib.labels$AUC_ind])
 # sva
 bortezomib$gdsc_AUC.sva <- sva_combine(batch = sampleinfo.gdsc$tissue.type[bortezomib.labels$AUC_ind],  
                                       label = bortezomib.labels$AUC, 
-                                      input_data = bortezomib$gdsc_AUC,
+                                      input_data = scale(bortezomib$gdsc_AUC),
                                       n.sv = 3)
-mean(bortezomib$gdsc_AUC.sva) # 6.293544
+mean(bortezomib$gdsc_AUC.sva) # 1.632235e-17
 # show_pca(input_data = bortezomib$gdsc_AUC.sva, label = bortezomib.labels$AUC)
 show_pca(input_data = bortezomib$gdsc_AUC.sva, label = sampleinfo.gdsc$tissue.type[bortezomib.labels$AUC_ind])
 
@@ -69,10 +69,10 @@ table(bortezomib.labels$patient)
 
 # Using slope labels for SVA  ---------------------------------
 bortezomib.labels$slope_combined <- c(bortezomib.labels$patient, bortezomib.labels$slope)
-temp.data <- comGENE(bortezomib$patient.combat, scale(bortezomib$gdsc_slope.sva))
+temp.data <- comGENE(bortezomib$patient.combat, bortezomib$gdsc_slope.sva)
 
 mean(temp.data[[1]]) #-6.211426e-19
-mean(temp.data[[2]]) #2.863043e-18
+mean(temp.data[[2]]) #6.601375e-18
 dim(temp.data[[1]])
 dim(temp.data[[2]])
 
@@ -81,7 +81,7 @@ stopifnot(names(bortezomib.labels$slope_combined) == rownames(rbind(temp.data[[1
 
 # before sva
 bortezomib$slope_combined <- rbind(temp.data[[1]], temp.data[[2]])
-show_pca(input_data = bortezomib$slope_combined, label = bortezomib.labels$slope_combined)
+#show_pca(input_data = bortezomib$slope_combined, label = bortezomib.labels$slope_combined)
 show_pca(input_data = bortezomib$slope_combined, label = bortezomib.labels$slope_combined.source)
 
 # sva
@@ -89,19 +89,19 @@ bortezomib$slope_combined.sva <- sva_combine(batch = bortezomib.labels$slope_com
                                              label = bortezomib.labels$slope_combined,
                                              input_data = bortezomib$slope_combined,
                                              n.sv = 2)
-mean(bortezomib$slope_combined.sva) # 5.696989e-18
+mean(bortezomib$slope_combined.sva) # -2.077194e-18
 
 # after sva
-show_pca(input_data = bortezomib$slope_combined.sva, label = bortezomib.labels$slope_combined)
+#show_pca(input_data = bortezomib$slope_combined.sva, label = bortezomib.labels$slope_combined)
 show_pca(input_data = bortezomib$slope_combined.sva, label = bortezomib.labels$slope_combined.source)
 rm(temp.data)
 
 # Using IC50 labels for SVA  ---------------------------------
 bortezomib.labels$IC50_combined <- c(bortezomib.labels$patient, bortezomib.labels$IC50)
 
-temp.data <- comGENE(bortezomib$patient.combat, scale(bortezomib$gdsc_IC50.sva))
+temp.data <- comGENE(bortezomib$patient.combat, bortezomib$gdsc_IC50.sva)
 mean(temp.data[[1]]) # -6.211426e-19
-mean(temp.data[[2]]) # 5.654714e-18
+mean(temp.data[[2]]) # 2.758975e-18
 dim(temp.data[[1]])
 dim(temp.data[[2]])
 
@@ -110,7 +110,7 @@ stopifnot(names(bortezomib.labels$IC50_combined.source) == rownames(rbind(temp.d
 
 # before sva
 bortezomib$IC50_combined <- rbind(temp.data[[1]], temp.data[[2]])
-show_pca(input_data = bortezomib$IC50_combined, label = bortezomib.labels$IC50_combined)
+#show_pca(input_data = bortezomib$IC50_combined, label = bortezomib.labels$IC50_combined)
 show_pca(input_data = bortezomib$IC50_combined, label = bortezomib.labels$IC50_combined.source)
 
 # sva
@@ -118,16 +118,16 @@ bortezomib$IC50_combined.sva <- sva_combine(batch = bortezomib.labels$IC50_combi
                                             label = bortezomib.labels$IC50_combined, 
                                             input_data = bortezomib$IC50_combined, 
                                             n.sv = 2)
-mean(bortezomib$IC50_combined.sva) #5.402913e-18
-show_pca(input_data = bortezomib$IC50_combined.sva, label = bortezomib.labels$IC50_combined)
+mean(bortezomib$IC50_combined.sva) #6.221986e-18
+#show_pca(input_data = bortezomib$IC50_combined.sva, label = bortezomib.labels$IC50_combined)
 show_pca(input_data = bortezomib$IC50_combined.sva, label = bortezomib.labels$IC50_combined.source)
 rm(temp.data)
 
 # Using AUC labels for SVA  ---------------------------------
 bortezomib.labels$AUC_combined <- c(bortezomib.labels$patient, bortezomib.labels$AUC)
-temp.data <- comGENE(bortezomib$patient.combat, scale(bortezomib$gdsc_AUC.sva))
+temp.data <- comGENE(bortezomib$patient.combat, bortezomib$gdsc_AUC.sva)
 mean(temp.data[[1]]) #-6.211426e-19
-mean(temp.data[[2]]) #5.764783e-18
+mean(temp.data[[2]]) #1.632534e-17
 
 bortezomib.labels$AUC_combined.source <- c(rep("patient", dim(temp.data[[1]])[1]), rep("gdsc", dim(temp.data[[2]])[1]))
 stopifnot(names(bortezomib.labels$AUC_combined.source) == rownames(rbind(temp.data[[1]], temp.data[[2]])))
@@ -135,16 +135,16 @@ stopifnot(names(bortezomib.labels$AUC_combined.source) == rownames(rbind(temp.da
 # before sva
 bortezomib$AUC_combined <- rbind(temp.data[[1]], temp.data[[2]])
 #show_pca(input_data = bortezomib$AUC_combined, label = bortezomib.labels$AUC_combined)
-#show_pca(input_data = bortezomib$AUC_combined, label = bortezomib.labels$AUC_combined.source)
+show_pca(input_data = bortezomib$AUC_combined, label = bortezomib.labels$AUC_combined.source)
 
 bortezomib.labels$AUC_combined.source <- c(rep("patient", dim(temp.data[[1]])[1]), rep("gdsc", dim(temp.data[[2]])[1]))
 bortezomib$AUC_combined.sva <- sva_combine(batch = bortezomib.labels$AUC_combined.source,
                                            label = bortezomib.labels$AUC_combined, 
                                            input_data = bortezomib$AUC_combined, 
                                            n.sv = 2)
-mean(bortezomib$AUC_combined.sva) # -1.514244e-17
+mean(bortezomib$AUC_combined.sva) # 1.357833e-17
 
-show_pca(input_data = bortezomib$AUC_combined.sva, label = bortezomib.labels$AUC_combined)
+#show_pca(input_data = bortezomib$AUC_combined.sva, label = bortezomib.labels$AUC_combined)
 show_pca(input_data = bortezomib$AUC_combined.sva, label = bortezomib.labels$AUC_combined.source)
 rm(temp.data)
 
