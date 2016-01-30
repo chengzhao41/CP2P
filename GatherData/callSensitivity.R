@@ -25,20 +25,20 @@ bimod <- function (data, model=c("E", "V"), do.scale=TRUE, verbose=FALSE)
 callSensitivity <- function (cs) {
   xx <- as.vector(cs)
   xx <- xx[which(!is.na(xx))]
-  gdsc.bimod <- bimod(xx, model=c("E", "V"), do.scale=TRUE, verbose=FALSE) 
-  gdsc.cutoff <- qnorm(.99, mean = gdsc.bimod$gaussians["mean","cluster.1"], sd = sqrt(gdsc.bimod$gaussians["variance","cluster.1"]))
+  data.bimod <- bimod(xx, model=c("E", "V"), do.scale=TRUE, verbose=FALSE) 
+  data.cutoff <- qnorm(.99, mean = data.bimod$gaussians["mean","cluster.1"], sd = sqrt(data.bimod$gaussians["variance","cluster.1"]))
   
   sensitivity.call <- matrix(NA, ncol=ncol(cs), nrow=nrow(cs), dimnames=list(rownames(cs), colnames((cs))))
-  sensitivity.call[which(cs < gdsc.cutoff)] <- 0
-  sensitivity.call[which(cs >= gdsc.cutoff)] <- 1
+  sensitivity.call[which(cs < data.cutoff)] <- 0
+  sensitivity.call[which(cs >= data.cutoff)] <- 1
   
-  return(sensitivity.call)
+  return(list('sensitivity.call'=sensitivity.call, 'cutoff'=data.cutoff))
 }
 
 ### Example
 # library(PharmacoGx)
 # data("GDSCsmall")
-# #load("PSets/GDSC.RData")
+# #load("GatherData/PSets/GDSC.RData")
 # 
-# gdsc.auc <- summarizeSensitivityProfiles(GDSCsmall, sensitivity.measure="auc_published")
-# gdsc.auc.bin <- callSensitivity(gdsc.auc)
+# auc <- summarizeSensitivityProfiles(GDSCsmall, sensitivity.measure="auc_recomputed")
+# auc.bin <- callSensitivity(auc)
