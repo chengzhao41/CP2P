@@ -26,6 +26,7 @@ GDSC@sensitivity$profiles[tt, "ic50_recomputed"] <- GDSC@sensitivity$info[tt, "m
 
 ## compute "slope_recomputed" measure
 if (! "slope_recomputed" %in% names(GDSC@sensitivity$profiles)) {
+  print("Slope not found in the PSet, computing it now..")
   GDSC <- computeSlopeMeasure(GDSC)
   #length(GDSC@sensitivity$profiles$slope_recomputed)
   #length(GDSC@sensitivity$profiles$auc_recomputed)
@@ -36,8 +37,11 @@ temp <- extractDrugData('Docetaxel', GDSC)
 docetaxel <- list('gdsc_AUC'=temp$rna.auc, 'gdsc_IC50'=temp$rna.IC50, 'gdsc_slope'=temp$rna.slope)
 docetaxel.labels <- list('AUC.cont'=temp$auc.cont, 'IC50.cont'=temp$IC50.cont, 'slope.cont'=temp$slope.cont)
 
-# dichotomize
-docetaxel.labels <- dichotomizeSensitivity(docetaxel.labels)
+## Dichotomize
+# old-style waterfall
+docetaxel.labels <- c(dichotomizeSensitivityWaterfall(docetaxel.labels), docetaxel.labels)
+# new-style
+docetaxel.labels <- c(dichotomizeSensitivityNew(docetaxel.labels, GDSC, 'Docetaxel'), docetaxel.labels)
 
 # indices of cell lines to the sampleinfo table
 sampleinfo.gdsc <- cellInfo(GDSC)
@@ -56,12 +60,12 @@ save(docetaxel, docetaxel.labels, sampleinfo.gdsc, file='Docetaxel/WS/docetaxel_
 table(docetaxel.labels$AUC)
 table(docetaxel.labels$IC50)
 table(docetaxel.labels$slope)
-table(docetaxel.labels$AUCnew)
-table(docetaxel.labels$IC50new)
-table(docetaxel.labels$slopenew)
-sum(docetaxel.labels$AUC == docetaxel.labels$AUCnew) / length(docetaxel.labels$AUC)
-sum(docetaxel.labels$IC50 == docetaxel.labels$IC50new) / length(docetaxel.labels$IC50)
-sum(docetaxel.labels$slope == docetaxel.labels$slopenew) / length(docetaxel.labels$slope)
+table(docetaxel.labels$AUC.new)
+table(docetaxel.labels$IC50.new)
+table(docetaxel.labels$slope.new)
+sum(docetaxel.labels$AUC == docetaxel.labels$AUC.new) / length(docetaxel.labels$AUC)
+sum(docetaxel.labels$IC50 == docetaxel.labels$IC50.new) / length(docetaxel.labels$IC50)
+sum(docetaxel.labels$slope == docetaxel.labels$slope.new) / length(docetaxel.labels$slope)
 
 dim(docetaxel$gdsc_AUC)
 length(docetaxel.labels$AUC.cont)
@@ -73,9 +77,7 @@ dim(docetaxel$gdsc_slope)
 length(docetaxel.labels$slope.cont)
 length(docetaxel.labels$slope)
 
-#View(docetaxel$gdsc_AUC)
-#View(sampleinfo.gdsc)
-View(docetaxel.labels$AUC)
-View(docetaxel.labels$slope)
-
-
+# View(docetaxel$gdsc_AUC)
+# View(sampleinfo.gdsc)
+# View(docetaxel.labels$AUC)
+# View(docetaxel.labels$slope)

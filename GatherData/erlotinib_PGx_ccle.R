@@ -26,6 +26,7 @@ CCLE@sensitivity$profiles[tt, "ic50_recomputed"] <- CCLE@sensitivity$info[tt, "D
 
 ## compute "slope_recomputed" measure
 if (! "slope_recomputed" %in% names(CCLE@sensitivity$profiles)) {
+  print("Slope not found in the PSet, computing it now..")
   CCLE <- computeSlopeMeasure(CCLE)
   #length(CCLE@sensitivity$profiles$slope_recomputed)
   #length(CCLE@sensitivity$profiles$auc_recomputed)
@@ -36,8 +37,11 @@ temp <- extractDrugData('Erlotinib', CCLE)
 erlotinib <- list('ccle_AUC'=temp$rna.auc, 'ccle_IC50'=temp$rna.IC50, 'ccle_slope'=temp$rna.slope)
 erlotinib.labels <- list('AUC.cont'=temp$auc.cont, 'IC50.cont'=temp$IC50.cont, 'slope.cont'=temp$slope.cont)
 
-# dichotomize
-erlotinib.labels <- dichotomizeSensitivity(erlotinib.labels)
+## Dichotomize
+# old-style waterfall
+erlotinib.labels <- c(dichotomizeSensitivityWaterfall(erlotinib.labels), erlotinib.labels)
+# new-style
+erlotinib.labels <- c(dichotomizeSensitivityNew(erlotinib.labels, CCLE, 'Erlotinib'), erlotinib.labels)
 
 # indices of cell lines to the sampleinfo table
 sampleinfo.ccle <- cellInfo(CCLE)
@@ -56,12 +60,12 @@ save(erlotinib, erlotinib.labels, sampleinfo.ccle, file='Erlotinib/WS/erlotinib_
 table(erlotinib.labels$AUC)
 table(erlotinib.labels$IC50)
 table(erlotinib.labels$slope)
-table(erlotinib.labels$AUCnew)
-table(erlotinib.labels$IC50new)
-table(erlotinib.labels$slopenew)
-sum(erlotinib.labels$AUC == erlotinib.labels$AUCnew) / length(erlotinib.labels$AUC)
-sum(erlotinib.labels$IC50 == erlotinib.labels$IC50new) / length(erlotinib.labels$IC50)
-sum(erlotinib.labels$slope == erlotinib.labels$slopenew) / length(erlotinib.labels$slope)
+table(erlotinib.labels$AUC.new)
+table(erlotinib.labels$IC50.new)
+table(erlotinib.labels$slope.new)
+sum(erlotinib.labels$AUC == erlotinib.labels$AUC.new) / length(erlotinib.labels$AUC)
+sum(erlotinib.labels$IC50 == erlotinib.labels$IC50.new) / length(erlotinib.labels$IC50)
+sum(erlotinib.labels$slope == erlotinib.labels$slope.new) / length(erlotinib.labels$slope)
 
 dim(erlotinib$ccle_AUC)
 length(erlotinib.labels$AUC.cont)
@@ -73,9 +77,7 @@ dim(erlotinib$ccle_slope)
 length(erlotinib.labels$slope.cont)
 length(erlotinib.labels$slope)
 
-#View(erlotinib$ccle_AUC)
-#View(sampleinfo.ccle)
-View(erlotinib.labels$AUC)
-View(erlotinib.labels$slope)
-
-
+# View(erlotinib$ccle_AUC)
+# View(sampleinfo.ccle)
+# View(erlotinib.labels$AUC)
+# View(erlotinib.labels$slope)

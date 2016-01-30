@@ -26,6 +26,7 @@ GDSC@sensitivity$profiles[tt, "ic50_recomputed"] <- GDSC@sensitivity$info[tt, "m
 
 ## compute "slope_recomputed" measure
 if (! "slope_recomputed" %in% names(GDSC@sensitivity$profiles)) {
+  print("Slope not found in the PSet, computing it now..")
   GDSC <- computeSlopeMeasure(GDSC)
   #length(GDSC@sensitivity$profiles$slope_recomputed)
   #length(GDSC@sensitivity$profiles$auc_recomputed)
@@ -36,8 +37,11 @@ temp <- extractDrugData('Bortezomib', GDSC)
 bortezomib <- list('gdsc_AUC'=temp$rna.auc, 'gdsc_IC50'=temp$rna.IC50, 'gdsc_slope'=temp$rna.slope)
 bortezomib.labels <- list('AUC.cont'=temp$auc.cont, 'IC50.cont'=temp$IC50.cont, 'slope.cont'=temp$slope.cont)
 
-# dichotomize
-bortezomib.labels <- dichotomizeSensitivity(bortezomib.labels)
+## Dichotomize
+# old-style waterfall
+bortezomib.labels <- c(dichotomizeSensitivityWaterfall(bortezomib.labels), bortezomib.labels)
+# new-style
+bortezomib.labels <- c(dichotomizeSensitivityNew(bortezomib.labels, GDSC, 'Bortezomib'), bortezomib.labels)
 
 # indices of cell lines to the sampleinfo table
 sampleinfo.gdsc <- cellInfo(GDSC)
@@ -56,12 +60,12 @@ save(bortezomib, bortezomib.labels, sampleinfo.gdsc, file='Bortezomib/WS/bortezo
 table(bortezomib.labels$AUC)
 table(bortezomib.labels$IC50)
 table(bortezomib.labels$slope)
-table(bortezomib.labels$AUCnew)
-table(bortezomib.labels$IC50new)
-table(bortezomib.labels$slopenew)
-sum(bortezomib.labels$AUC == bortezomib.labels$AUCnew) / length(bortezomib.labels$AUC)
-sum(bortezomib.labels$IC50 == bortezomib.labels$IC50new) / length(bortezomib.labels$IC50)
-sum(bortezomib.labels$slope == bortezomib.labels$slopenew) / length(bortezomib.labels$slope)
+table(bortezomib.labels$AUC.new)
+table(bortezomib.labels$IC50.new)
+table(bortezomib.labels$slope.new)
+sum(bortezomib.labels$AUC == bortezomib.labels$AUC.new) / length(bortezomib.labels$AUC)
+sum(bortezomib.labels$IC50 == bortezomib.labels$IC50.new) / length(bortezomib.labels$IC50)
+sum(bortezomib.labels$slope == bortezomib.labels$slope.new) / length(bortezomib.labels$slope)
 
 dim(bortezomib$gdsc_AUC)
 length(bortezomib.labels$AUC.cont)
@@ -73,9 +77,7 @@ dim(bortezomib$gdsc_slope)
 length(bortezomib.labels$slope.cont)
 length(bortezomib.labels$slope)
 
-#View(bortezomib$gdsc_AUC)
-#View(sampleinfo.gdsc)
-View(bortezomib.labels$AUC)
-View(bortezomib.labels$slope)
-
-
+# View(bortezomib$gdsc_AUC)
+# View(sampleinfo.gdsc)
+# View(bortezomib.labels$AUC)
+# View(bortezomib.labels$slope)
