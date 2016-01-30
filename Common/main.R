@@ -1,6 +1,7 @@
 rm(list = ls())
 setwd("/home/zhaoche7/drp3")
 source("Common/load_library.R")
+registerDoParallel(8)
 
 ### User supplies these values ###
 args <- commandArgs(trailingOnly = TRUE)
@@ -8,7 +9,6 @@ stopifnot(length(args) == 5)
 
 PARTITION_BEGIN = as.integer(args[1])
 PARTITION_END = as.integer(args[2])
-registerDoParallel(8)
 
 # args <- vector()
 # registerDoParallel(4)
