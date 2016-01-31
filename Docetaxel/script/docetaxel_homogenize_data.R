@@ -10,15 +10,28 @@ source("Common/ordering_by_similarity.R")
 # Load GDSC Cell line data --------------------------------------------
 load("Docetaxel/WS/docetaxel_gdsc.RData")
 
-mean(scale(docetaxel$gdsc_slope)) # -8.198368e-18
-mean(scale(docetaxel$gdsc_AUC)) # -8.198368e-18
-mean(scale(docetaxel$gdsc_IC50)) # -8.198368e-18
+mean(docetaxel$gdsc_slope) # 6.293791
+mean(docetaxel$gdsc_AUC) # 6.293791
+mean(docetaxel$gdsc_IC50) # 6.293791
+dim(docetaxel$gdsc_slope) #  618 11833
+stopifnot(dim(docetaxel$gdsc_slope) == dim(docetaxel$gdsc_AUC))
+stopifnot(dim(docetaxel$gdsc_slope) == dim(docetaxel$gdsc_IC50))
+table(docetaxel.labels$slope)
+# FALSE  TRUE 
+# 231   387 
+table(docetaxel.labels$AUC)
+# FALSE  TRUE 
+# 253   365 
+table(docetaxel.labels$IC50)
+# FALSE  TRUE 
+# 219   399
 
 # get patient data --------------------------------------------------------
 load("Docetaxel/WS/docetaxel.patient.RData")
 
 docetaxel$patient <- scale(docetaxel.patient)
 mean(docetaxel$patient) #-1.359742e-17
+dim(docetaxel$patient) #24 8147
 docetaxel.labels$patient <- binaryResponse
 names(docetaxel.labels$patient) <- rownames(docetaxel.patient)
 table(docetaxel.labels$patient)
@@ -26,17 +39,15 @@ table(docetaxel.labels$patient)
 #14    10 
 
 # Using ComBat to harmonize patients and cell lines - Slopes -----------------
-docetaxel.labels$slope_combined <- c(docetaxel.labels$patient, docetaxel.labels$slope)
-
 temp.data <- comGENE(docetaxel$patient, scale(docetaxel$gdsc_slope))
 mean(temp.data[[1]]) #-1.290866e-17
 mean(temp.data[[2]]) #-1.006278e-17
 dim(temp.data[[1]]) #24 7969
 dim(temp.data[[2]]) #618 7969
 
-docetaxel.labels$slope_combined.source <- c(rep("patient", dim(temp.data[[1]])[1]), rep("gdsc", dim(temp.data[[2]])[1]))
-
 # before ComBat
+docetaxel.labels$slope_combined <- c(docetaxel.labels$patient, docetaxel.labels$slope)
+docetaxel.labels$slope_combined.source <- c(rep("patient", dim(temp.data[[1]])[1]), rep("gdsc", dim(temp.data[[2]])[1]))
 docetaxel$slope_combined <- rbind(temp.data[[1]], temp.data[[2]])
 #show_pca(input_data = docetaxel$slope_combined, label = docetaxel.labels$slope_combined)
 show_pca(input_data = docetaxel$slope_combined, label = docetaxel.labels$slope_combined.source)
@@ -52,8 +63,6 @@ show_pca(input_data = docetaxel$slope_combined.ComBat, label = docetaxel.labels$
 rm(temp.data)
 
 # Using ComBat to harmonize patients and cell lines - IC50 -----------------
-docetaxel.labels$IC50_combined <- c(docetaxel.labels$patient, docetaxel.labels$IC50)
-
 temp.data <- comGENE(docetaxel$patient, scale(docetaxel$gdsc_IC50))
 mean(temp.data[[1]]) #-1.290866e-17
 mean(temp.data[[2]]) #-1.006278e-17
@@ -61,6 +70,7 @@ dim(temp.data[[1]]) #24 7969
 dim(temp.data[[2]]) #618 7969
 
 # before ComBat
+docetaxel.labels$IC50_combined <- c(docetaxel.labels$patient, docetaxel.labels$IC50)
 docetaxel.labels$IC50_combined.source <- c(rep("patient", dim(temp.data[[1]])[1]), rep("gdsc", dim(temp.data[[2]])[1]))
 docetaxel$IC50_combined <- rbind(temp.data[[1]], temp.data[[2]])
 show_pca(input_data = docetaxel$IC50_combined, label = docetaxel.labels$IC50_combined.source)
@@ -76,8 +86,6 @@ show_pca(input_data = docetaxel$IC50_combined.ComBat, label = docetaxel.labels$I
 rm(temp.data)
 
 # Using sva to harmonize patients and cell lines - AUC -----------------
-docetaxel.labels$AUC_combined <- c(docetaxel.labels$patient, docetaxel.labels$AUC)
-
 temp.data <- comGENE(docetaxel$patient, scale(docetaxel$gdsc_AUC))
 mean(temp.data[[1]]) #-1.290866e-17
 mean(temp.data[[2]]) #-1.006278e-17
@@ -85,6 +93,7 @@ dim(temp.data[[1]]) #24 7969
 dim(temp.data[[2]]) #618 7969
 
 # before ComBat
+docetaxel.labels$AUC_combined <- c(docetaxel.labels$patient, docetaxel.labels$AUC)
 docetaxel.labels$AUC_combined.source <- c(rep("patient", dim(temp.data[[1]])[1]), rep("gdsc", dim(temp.data[[2]])[1]))
 docetaxel$AUC_combined <- rbind(temp.data[[1]], temp.data[[2]])
 show_pca(input_data = docetaxel$AUC_combined, label = docetaxel.labels$AUC_combined.source)
@@ -107,12 +116,11 @@ mean(temp.data[[1]]) #-1.290866e-17
 mean(temp.data[[2]]) #-9.652955e-18
 dim(temp.data[[2]]) #35 7969
 
+# before ComBat
 docetaxel.labels$IC50_breast.source <- c(rep("patient", dim(temp.data[[1]])[1]), rep("gdsc", dim(temp.data[[2]])[1]))
 docetaxel.labels$IC50_breast_only <- docetaxel.labels$IC50[temp.ind]
 docetaxel.labels$IC50_breast <- c(docetaxel.labels$patient, docetaxel.labels$IC50[temp.ind])
 docetaxel$IC50_breast <- rbind(temp.data[[1]], temp.data[[2]])
-
-# before ComBat
 show_pca(input_data = docetaxel$IC50_breast, label = docetaxel.labels$IC50_breast.source)
 
 # ComBat
@@ -132,12 +140,11 @@ mean(temp.data[[1]]) #-1.290866e-17
 mean(temp.data[[2]]) #-9.652955e-18
 dim(temp.data[[2]]) #35 7969
 
+# before ComBat
 docetaxel.labels$AUC_breast.source <- c(rep("patient", dim(temp.data[[1]])[1]), rep("gdsc", dim(temp.data[[2]])[1]))
 docetaxel.labels$AUC_breast_only <- docetaxel.labels$AUC[temp.ind]
 docetaxel.labels$AUC_breast <- c(docetaxel.labels$patient, docetaxel.labels$AUC[temp.ind])
 docetaxel$AUC_breast <- rbind(temp.data[[1]], temp.data[[2]])
-
-# before ComBat
 show_pca(input_data = docetaxel$AUC_breast, label = docetaxel.labels$AUC_breast.source)
 
 # ComBat
@@ -157,12 +164,11 @@ mean(temp.data[[1]]) #-1.290866e-17
 mean(temp.data[[2]]) #-9.652955e-18
 dim(temp.data[[2]]) #35 7969
 
+# before ComBat
 docetaxel.labels$slope_breast.source <- c(rep("patient", dim(temp.data[[1]])[1]), rep("gdsc", dim(temp.data[[2]])[1]))
 docetaxel.labels$slope_breast_only <- docetaxel.labels$slope[temp.ind]
 docetaxel.labels$slope_breast <- c(docetaxel.labels$patient, docetaxel.labels$slope[temp.ind])
 docetaxel$slope_breast <- rbind(temp.data[[1]], temp.data[[2]])
-
-# before ComBat
 show_pca(input_data = docetaxel$slope_breast, label = docetaxel.labels$slope_breast.source)
 
 # ComBat

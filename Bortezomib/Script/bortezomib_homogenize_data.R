@@ -144,7 +144,6 @@ bortezomib$AUC_combined <- rbind(temp.data[[1]], temp.data[[2]])
 #show_pca(input_data = bortezomib$AUC_combined, label = bortezomib.labels$AUC_combined)
 show_pca(input_data = bortezomib$AUC_combined, label = bortezomib.labels$AUC_combined.source)
 
-bortezomib.labels$AUC_combined.source <- c(rep("patient", dim(temp.data[[1]])[1]), rep("gdsc", dim(temp.data[[2]])[1]))
 bortezomib$AUC_combined.sva <- sva_combine(batch = bortezomib.labels$AUC_combined.source,
                                            label = bortezomib.labels$AUC_combined, 
                                            input_data = bortezomib$AUC_combined, 
