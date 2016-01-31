@@ -7,16 +7,16 @@ registerDoParallel(8)
 args <- commandArgs(trailingOnly = TRUE)
 stopifnot(length(args) == 5)
 
-PARTITION_BEGIN = as.integer(args[1])
-PARTITION_END = as.integer(args[2])
-
 # args <- vector()
 # registerDoParallel(4)
 # args[1] = "1" # partition start
 # args[2] = "2" # partition end
-# args[3] = "10" # index for training sets
-# args[4] = "bortezomib"
-# args[5] = "cp2p_slope"
+# args[3] = "4" # index for training sets
+# args[4] = "docetaxel"
+# args[5] = "p2p"
+
+PARTITION_BEGIN = as.integer(args[1])
+PARTITION_END = as.integer(args[2])
 
 ### End ###
 
@@ -26,6 +26,9 @@ training_var_amount <- as.integer(args[[3]])
   
 if (args[4] == "bortezomib") {
   load("Bortezomib/WS/bortezomib_data.RData")
+  
+  input.type_measure = "auc"
+  input_snf.parameter <- seq(from = 5, to = 30, by = 5)
   
   if (args[5] == "p2p") {
     stopifnot(training_var_amount <= length(partition$cell_lines_all))
@@ -121,20 +124,21 @@ if (args[4] == "bortezomib") {
   } else {
     stop(paste("args[5]", args[5], "is invalid."))
   }
-  
-  input.type_measure = "auc"
-  input_snf.parameter <- seq(from = 5, to = 30, by = 5)
   rm(bortezomib, bortezomib.labels)
 } else if (args[4] == "docetaxel") {
   load("Docetaxel/WS/docetaxel_data.RData")
   
+  input.type_measure = "acc"
+  input_snf.parameter <- seq(from = 5, to = 30, by = 5)
+  
   if (args[5] == "p2p") {
     stopifnot(training_var_amount <= length(partition$cell_lines_all))
     
-    input_data <- docetaxel$patient.combat
+    input_data <- docetaxel$patient
     input_label <- docetaxel.labels$patient
     input_partition <- partition$cell_lines_all[[training_var_amount]]$p2p
     input_feature.l1000 <- feature.l1000$pp
+    input_snf.parameter <- seq(from = 5, to = length(input_partition[[1]]$training_index), by = 3)
   } else if (args[5] == "cp2p_slope") {
     stopifnot(training_var_amount <= length(partition$cell_lines_all))
     
@@ -222,9 +226,6 @@ if (args[4] == "bortezomib") {
   } else {
     stop(paste("args[5]", args[5], "is invalid."))
   }
-  
-  input.type_measure = "acc"
-  input_snf.parameter <- seq(from = 5, to = 30, by = 5)
   rm(docetaxel, docetaxel.labels)
 } else {
   stop(paste("args[4]", args[4], "is invalid."))
