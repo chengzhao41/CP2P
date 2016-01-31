@@ -28,15 +28,15 @@ rownames(exprDataU133a) <- affy2ensembl[rownames(exprDataU133a)]
 
 # get the expression level ------------------------------------------------
 NARows <- which(is.na(rownames(exprDataU133a)))
-print(length(NARows))
+print(length(NARows)) # 10463
 bortezomibExpr <- exprDataU133a[-NARows, bortIndex]
 bortezomibExpr = t(log2(bortezomibExpr))
 stopifnot(sum(is.na(rownames(bortezomibExpr))) == 0)
-dim(bortezomibExpr)
+dim(bortezomibExpr) # 188 11820
 
 # double check that there are no duplicate gene symbols ---------------------
 temp.data = comGENE(bortezomibExpr, bortezomibExpr)
-dim(temp.data[[1]])
+dim(temp.data[[1]]) # 188 11820
 stopifnot(dim(bortezomibExpr) == dim(temp.data[[1]]))
 
 # get the binary response -------------------------------------------------
