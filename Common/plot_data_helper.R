@@ -3,11 +3,16 @@ create_plot <- function(input.output_file_name_plot,
                         input.xlab, 
                         output_dir
                         ) {
+  stopifnot(!is.null(input.output_file_name_plot))
+  stopifnot(!is.null(varying_training_matrix))
+  stopifnot(!is.null(input.x_axis))
+  stopifnot(!is.null(output_dir))
+  
   # create the png file
   png(filename = paste0(output_dir, input.output_file_name_plot), width = 800, height = 800)
-  input.ylim = c((round(range(varying_training_matrix)*10)/10)[1] - 0.05, 
-                 (round(range(varying_training_matrix)*10)/10)[2] + 0.1)
-  input.yaxp = c(input.ylim, (input.ylim[2] - input.ylim[1]) / 0.05 + 1)
+  input.ylim = c((round(range(varying_training_matrix$mean)*10)/10)[1] - 0.05, 
+                 (round(range(varying_training_matrix$mean)*10)/10)[2] + 0.15)
+  input.yaxp = c(input.ylim, round((input.ylim[2] - input.ylim[1]) / 0.05))
   
   par(mar=c(5.1,7,4.5,3.5))
   plot(0, 0, xlim = range(input.x_axis), ylim = input.ylim, type = "n", 
@@ -22,17 +27,26 @@ create_plot <- function(input.output_file_name_plot,
   temp.points <- c(temp.points, rep(2, 7))
   temp.points <- c(temp.points, rep(3, 7))
   for (temp.ind in 1:21) {
-    lines(input.x_axis, varying_training_matrix[, temp.ind], col = cl[(temp.ind - 1) %% 7 + 1], type = 'b', pch=temp.points[temp.ind])  
+    lines(input.x_axis, varying_training_matrix$mean[, temp.ind], col = cl[(temp.ind - 1) %% 7 + 1], type = 'b', pch=temp.points[temp.ind])  
   }
-  legend("topleft", legend = colnames(varying_training_matrix), col=cl, pch=temp.points, ncol=3, pt.cex = 1, cex = 1.3)
+  legend("topleft", legend = colnames(varying_training_matrix$mean), col=cl, pch=temp.points, ncol=3, pt.cex = 1, cex = 1.3)
   dev.off()
 }
 
 create_plot_WS <- function(input.seq, input.num_partitions, input.x_axis, 
                            input.WS_path, input.output_file_name_WS, output_dir)
 {
+  stopifnot(!is.null(input.seq))
+  stopifnot(!is.null(input.num_partitions))
+  stopifnot(!is.null(input.x_axis))
+  stopifnot(!is.null(input.WS_path))
+  stopifnot(!is.null(input.output_file_name_WS))
+  stopifnot(!is.null(output_dir))
+  
   # processing each WS ------------------------------------------------------
-  varying_training_matrix <- matrix(nrow = 0, ncol = 21)
+  varying_training_matrix <- list()
+  varying_training_matrix$mean <- matrix(nrow = 0, ncol = 21)
+  varying_training_matrix$std <- matrix(nrow = 0, ncol = 21)
   
   for (temp.num in input.seq) {
     load(paste0(input.WS_path, temp.num, ".RData"))
@@ -102,14 +116,16 @@ create_plot_WS <- function(input.seq, input.num_partitions, input.x_axis,
     axis(las=1, side = 4)
     temp.order <- order(apply(temp.boxplot_data, 2, mean))
     temp.mean_results <- apply(temp.boxplot_data, 2, mean)
+    temp.std_results <- apply(temp.boxplot_data, 2, sd)
     names(temp.mean_results) <- temp.names
     temp.mean_results[temp.order]
     
     temp.mean_results
-    varying_training_matrix <- rbind(varying_training_matrix, temp.mean_results)
+    varying_training_matrix$mean <- rbind(varying_training_matrix$mean, temp.mean_results)
+    varying_training_matrix$std <- rbind(varying_training_matrix$std, temp.std_results)
   }
-  stopifnot(dim(varying_training_matrix)[1] == length(input.seq))
-  stopifnot(dim(varying_training_matrix)[2] == 21)
+  stopifnot(dim(varying_training_matrix$mean)[1] == length(input.seq))
+  stopifnot(dim(varying_training_matrix$mean)[2] == 21)
   # save the WS for the plot
   save(varying_training_matrix, input.x_axis, file = paste0(output_dir, input.output_file_name_WS))
 }
