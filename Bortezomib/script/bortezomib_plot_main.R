@@ -3,8 +3,8 @@ library("doParallel")
 library("RColorBrewer")
 source('Common/plot_data_helper.R')
 
-# input parameters --------------------------------------------------------
 output_dir <- "Bortezomib/plots/"
+
 # Bortezomib p2p ----------------------------------------------------------
 rm(list=ls(pattern="input.*"))
 input.seq <- seq(2, 15, 1)
@@ -67,6 +67,7 @@ for (i in 1:length(input.response_labels)) {
   load(paste0(output_dir, input.output_file_name_WS))
   create_plot(input.output_file_name_plot, varying_training_matrix, input.xlab, output_dir)
 }
+
 # Bortezomib cp2p var c for p100 ---------------------------------------------------
 rm(list=ls(pattern="input.*"))
 input.seq <- seq(3, 15, 1)
@@ -89,3 +90,59 @@ for (i in 1:length(input.response_labels)) {
   load(paste0(output_dir, input.output_file_name_WS))
   create_plot(input.output_file_name_plot, varying_training_matrix, input.xlab, output_dir)
 }
+
+# Bortezomib best var p plot ----------------------------------------------
+load(paste0(output_dir, "bor_p2p.RData"))
+p2p.results <- varying_training_matrix
+p2p.x_axis <- input.x_axis 
+rm("varying_training_matrix")
+load(paste0(output_dir, "bor_cp2p_slope.RData"))
+cp2p.results <- varying_training_matrix
+rm("varying_training_matrix")
+load(paste0(output_dir, "bor_c2p_slope_p50.RData"))
+c2p.results <- varying_training_matrix
+rm("varying_training_matrix")
+input.output_file_name_plot = "bortezomib_var_p_best.png"
+create_plot_best_var_p(p2p.x_axis, p2p.results, cp2p.results, 
+                       c2p.results, input.x_axis_label,
+                       input.output_file_name_plot,
+                       output_dir)
+
+# Bortezomib best var c p50 plot ----------------------------------------------
+rm(cp2p.results)
+load(paste0(output_dir, "bor_p2p.RData"))
+p2p.results <- varying_training_matrix
+rm("varying_training_matrix")
+load(paste0(output_dir, "bor_cp2p_slope_p50.RData"))
+cp2p.results <- varying_training_matrix
+rm("varying_training_matrix")
+load(paste0(output_dir, "bor_c2p_slope_p50.RData"))
+c2p.results <- varying_training_matrix
+c2p.x_axis <- input.x_axis 
+rm("varying_training_matrix")
+input.output_file_name_plot = "bortezomib_var_c_p50_best.png"
+
+create_plot_best_var_c(c2p.x_axis, p2p.results, cp2p.results, 
+                       c2p.results,
+                       input.output_file_name_plot,
+                       output_dir)
+
+# Bortezomib best var c p100 plot ----------------------------------------------
+rm(cp2p.results)
+load(paste0(output_dir, "bor_p2p.RData"))
+p2p.results <- varying_training_matrix
+rm("varying_training_matrix")
+load(paste0(output_dir, "bor_cp2p_slope_p100.RData"))
+cp2p.results <- varying_training_matrix
+rm("varying_training_matrix")
+load(paste0(output_dir, "bor_c2p_slope_p50.RData"))
+c2p.results <- varying_training_matrix
+c2p.x_axis <- input.x_axis 
+rm("varying_training_matrix")
+input.output_file_name_plot = "bortezomib_var_c_p100_best.png"
+
+create_plot_best_var_c(c2p.x_axis, p2p.results, cp2p.results, 
+                       c2p.results,
+                       input.output_file_name_plot,
+                       output_dir)
+
