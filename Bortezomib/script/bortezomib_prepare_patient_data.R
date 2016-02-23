@@ -1,14 +1,14 @@
 # Load Libraries ----------------------------------------------------------
 library("sva")
+library(GEOquery)
 
-setwd("~/Git/CP2P/")
+#setwd("~/Git/CP2P/")
 
 source('Common/preparing_data_helper.R')
 source('Common/comGENE.R')
 
 # Load Data ---------------------------------------------------------------
 # uncomment these 2 line to download the data directly from GEO.
-# library(GEOquery)
 # bortezomib_mas5 <- getGEO("GSE9782")
 load("Bortezomib/WS/bortGeo.RData")
 
@@ -67,12 +67,13 @@ stopifnot(sum(codeLabel == 0) == 0)
 # apply ComBat ------------------------------------------------------------
 stopifnot(nrow(bortezomibExpr) == length(codeLabel))
 show_pca(input_data = bortezomibExpr, label = codeLabel)
-show_pca(input_data = bortezomibExpr, label = binaryResponse)
+#show_pca(input_data = bortezomibExpr, label = binaryResponse)
 
 bortezomib.patient_ComBat = t(ComBat(dat=t(bortezomibExpr), batch = codeLabel, 
                                      mod=NULL, par.prior=TRUE, prior.plots=FALSE))
+#bortezomib.patient_ComBat <- ComBat_combine(bortezomibExpr, label = binaryResponse, batch = codeLabel)
 show_pca(input_data = bortezomib.patient_ComBat, label = codeLabel)
-show_pca(input_data = bortezomib.patient_ComBat, label = binaryResponse)
+#show_pca(input_data = bortezomib.patient_ComBat, label = binaryResponse)
 
 # save the workspace file -------------------------------------------------
 save(bortezomib.patient_ComBat, binaryResponse, file = "Bortezomib/WS/bortezomib.patient.RData")
