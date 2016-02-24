@@ -105,12 +105,24 @@ rm("varying_training_matrix")
 load(paste0(output_dir, "bor_c2p_slope_p50.RData"))
 c2p.results <- varying_training_matrix
 rm("varying_training_matrix")
-input.output_file_name_plot = "bortezomib_var_p_best.png"
-create_plot_best_var_p(p2p.x_axis, p2p.results, cp2p.results, 
-                       c2p.results, input.x_axis_label,
-                       input.output_file_name_plot,
-                       output_dir)
 
+cols <- brewer.pal(n = 3, name = 'Dark2')
+input.color_manual <- c("P2P" = cols[1], "C2P" = cols[2], "CP2P" = cols[3])
+input.shape_manual <- c("P2P" = 16, "C2P" = NA, "CP2P" = 17)
+
+create_plot_best(input.x_axis = p2p.x_axis, 
+                 input_x_labels = "# of Patient Samples in Training",
+                 input.results = list(p2p.results, cp2p.results), 
+                 input.results_constant = list(c2p.results),
+                 input.output_file_name_plot = "bortezomib_var_p_best.png", 
+                 output_dir = output_dir, 
+                 input.labels = c("P2P", "CP2P"),
+                 input.labels_constant = c("C2P"),
+                 include_std = TRUE,
+                 input.color_manual,
+                 input.shape_manual,
+                 input.constant_best_ind = dim(c2p.results$mean)[1])
+  
 # Bortezomib best var c p50 plot ----------------------------------------------
 rm(cp2p.results)
 load(paste0(output_dir, "bor_p2p.RData"))
@@ -125,10 +137,22 @@ c2p.x_axis <- input.x_axis
 rm("varying_training_matrix")
 input.output_file_name_plot = "bortezomib_var_c_p50_best.png"
 
-create_plot_best_var_c(c2p.x_axis, p2p.results, cp2p.results, 
-                       c2p.results,
-                       input.output_file_name_plot,
-                       output_dir)
+cols <- brewer.pal(n = 3, name = 'Dark2')
+input.color_manual <- c("P2P" = cols[1], "C2P" = cols[2], "CP2P" = cols[3])
+input.shape_manual <- c("P2P" = NA, "C2P" = 16, "CP2P" = 17)
+
+create_plot_best(input.x_axis = c2p.x_axis, 
+                 input_x_labels = "# of Cell Line Samples in Training",
+                 input.results = list(cp2p.results, c2p.results), 
+                 input.results_constant = list(p2p.results),
+                 input.output_file_name_plot = "bortezomib_var_c_p50_best.png", 
+                 output_dir = output_dir, 
+                 input.labels = c("CP2P", "C2P"),
+                 input.labels_constant = c("P2P"),
+                 include_std = TRUE,
+                 input.color_manual,
+                 input.shape_manual,
+                 input.constant_best_ind = 4)
 
 # Bortezomib best var c p100 plot ----------------------------------------------
 rm(cp2p.results)
@@ -144,8 +168,20 @@ c2p.x_axis <- input.x_axis
 rm("varying_training_matrix")
 input.output_file_name_plot = "bortezomib_var_c_p100_best.png"
 
-create_plot_best_var_c(c2p.x_axis, p2p.results, cp2p.results, 
-                       c2p.results,
-                       input.output_file_name_plot,
-                       output_dir)
+cols <- brewer.pal(n = 3, name = 'Dark2')
+input.color_manual <- c("P2P" = cols[1], "C2P" = cols[2], "CP2P" = cols[3])
+input.shape_manual <- c("P2P" = NA, "C2P" = 16, "CP2P" = 17)
+
+create_plot_best(input.x_axis = c2p.x_axis, 
+                 input_x_labels = "# of Cell Line Samples in Training",
+                 input.results = list(cp2p.results, c2p.results), 
+                 input.results_constant = list(p2p.results),
+                 input.output_file_name_plot = "bortezomib_var_c_p100_best.png", 
+                 output_dir = output_dir, 
+                 input.labels = c("CP2P", "C2P"),
+                 input.labels_constant = c("P2P"),
+                 include_std = TRUE,
+                 input.color_manual,
+                 input.shape_manual,
+                 input.constant_best_ind = 9)
 
