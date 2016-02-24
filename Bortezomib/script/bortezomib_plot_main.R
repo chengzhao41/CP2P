@@ -106,7 +106,7 @@ load(paste0(output_dir, "bor_c2p_slope_p50.RData"))
 c2p.results <- varying_training_matrix
 rm("varying_training_matrix")
 
-cols <- brewer.pal(n = 3, name = 'Dark2')
+cols <- brewer.pal(n = 4, name = 'Dark2')
 input.color_manual <- c("P2P" = cols[1], "C2P" = cols[2], "CP2P" = cols[3])
 input.shape_manual <- c("P2P" = 16, "C2P" = NA, "CP2P" = 17)
 
@@ -137,8 +137,6 @@ c2p.x_axis <- input.x_axis
 rm("varying_training_matrix")
 input.output_file_name_plot = "bortezomib_var_c_p50_best.png"
 
-cols <- brewer.pal(n = 3, name = 'Dark2')
-input.color_manual <- c("P2P" = cols[1], "C2P" = cols[2], "CP2P" = cols[3])
 input.shape_manual <- c("P2P" = NA, "C2P" = 16, "CP2P" = 17)
 
 create_plot_best(input.x_axis = c2p.x_axis, 
@@ -168,8 +166,6 @@ c2p.x_axis <- input.x_axis
 rm("varying_training_matrix")
 input.output_file_name_plot = "bortezomib_var_c_p100_best.png"
 
-cols <- brewer.pal(n = 3, name = 'Dark2')
-input.color_manual <- c("P2P" = cols[1], "C2P" = cols[2], "CP2P" = cols[3])
 input.shape_manual <- c("P2P" = NA, "C2P" = 16, "CP2P" = 17)
 
 create_plot_best(input.x_axis = c2p.x_axis, 

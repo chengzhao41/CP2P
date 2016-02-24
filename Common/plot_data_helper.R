@@ -215,6 +215,8 @@ create_plot_best <- function(input.x_axis,
   stopifnot(!is.null(input.shape_manual))
   stopifnot(length(input.color_manual) == length(input.shape_manual))
   stopifnot(!is.null(input.constant_best_ind))
+  stopifnot(length(input.labels) == length(input.results))
+  stopifnot(length(input.labels_constant) == length(input.results_constant))
   
   require("ggplot2")
   require("grid")
