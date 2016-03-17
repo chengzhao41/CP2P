@@ -341,4 +341,4 @@ partition$cell_lines_lung <- cell_lines_lung
 
 # save worksapce ----------------------------------------------------------
 save(sampleinfo.gdsc, erlotinib, erlotinib.labels, feature.l1000, partition,
-     file = "Erlotinib/WS/erlotinib_data.RData")
+     file = "Erlotinib/WS/erlotinib_homogenized_data_gdsc.RData")

@@ -248,8 +248,13 @@ if (args[4] == "bortezomib") {
     stop(paste("args[5]", args[5], "is invalid."))
   }
   rm(docetaxel, docetaxel.labels)
-} else if (args[4] == "erlotinib") {
-  load("Erlotinib/WS/erlotinib_data.RData")
+} else if (args[4] == "erlotinib_gdsc" || args[4] == "erlotinib_ccle") {
+  
+  if (args[4] == "erlotinib_gdsc") {
+    load("Erlotinib/WS/erlotinib_homogenized_data_gdsc.RData.RData")
+  } else {
+    load("Erlotinib/WS/erlotinib_homogenized_data_ccle.RData.RData")
+  }
   
   input.type_measure = "acc"
   input_snf.parameter <- seq(from = 5, to = 30, by = 5)
