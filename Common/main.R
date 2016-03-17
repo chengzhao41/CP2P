@@ -251,9 +251,9 @@ if (args[4] == "bortezomib") {
 } else if (args[4] == "erlotinib_gdsc" || args[4] == "erlotinib_ccle") {
   
   if (args[4] == "erlotinib_gdsc") {
-    load("Erlotinib/WS/erlotinib_homogenized_data_gdsc.RData.RData")
+    load("Erlotinib/WS/erlotinib_homogenized_data_gdsc.RData")
   } else {
-    load("Erlotinib/WS/erlotinib_homogenized_data_ccle.RData.RData")
+    load("Erlotinib/WS/erlotinib_homogenized_data_ccle.RData")
   }
   
   input.type_measure = "acc"
