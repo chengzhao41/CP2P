@@ -307,9 +307,7 @@ patient_24 <- foreach(input.training_amount.c = seq(from = 50, to = 331, by = 20
 # expect all leave-one-out warnigns
 partition$patient_24 <- patient_24
 
-# lung only cell lines ----------------------------------------------------------
-
-# create partitions for 13 to 24 patients using all cell lines ------------------------
+# create partitions for 13 to 24 patients using lung cell lines ------------------------
 input.labels_cell_lines = list()
 input.labels_cell_lines$slope = erlotinib.labels$slope_lung[which(erlotinib.labels$slope_lung.source != "patient")]
 input.labels_cell_lines$IC50 = erlotinib.labels$IC50_lung[which(erlotinib.labels$IC50_lung.source != "patient")]
@@ -333,12 +331,15 @@ cell_lines_lung <- foreach(input.training_amount.p = seq(from = 13, to = 24, by 
                                                        cell_line_order = input.cell_line_order,
                                                        training_amount.c = length(input.cell_line_order$AUC),
                                                        acc_training = TRUE,
-                                                       input_partition = cell_lines_all
+                                                       input_partition = cell_lines_all[[input.training_amount.p - 12]]
                              )
                            }
 
 partition$cell_lines_lung <- cell_lines_lung
 
+names(partition)
+#[1] "cell_lines_all"  "patient_24"      "cell_lines_lung"
+names(e)
 # save worksapce ----------------------------------------------------------
 save(sampleinfo.gdsc, erlotinib, erlotinib.labels, feature.l1000, partition,
      file = "Erlotinib/WS/erlotinib_homogenized_data_gdsc.RData")
