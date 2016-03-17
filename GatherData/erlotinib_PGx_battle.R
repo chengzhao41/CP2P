@@ -13,7 +13,7 @@ load("GatherData/PSets/GSE32036.RData")
 ### GSE32036
 GSE32036@sensitivity$profiles$ic50_published <- as.numeric(GSE32036@sensitivity$profiles$ic50_published) 
 temp <- extractDrugData_forGSE32036('Erlotinib', GSE32036)
-battle <- list('GSE32036_IC50'=temp$rna.IC50)
+battle <- list('IC50'=temp$rna.IC50)
 battle.labels <- list('IC50.cont'=temp$IC50.cont)
 
 ## Dichotomize
@@ -22,5 +22,5 @@ battle.labels <- c(dichotomizeSensitivityWaterfall(battle.labels), battle.labels
 
 ## save the data set to RData
 # transpose
-battle$GSE32036_IC50 <- t(battle$GSE32036_IC50)
-save(battle, battle.labels, file='Erlotinib/WS/battle_GSE32036.RData')
+battle$IC50 <- t(battle$IC50)
+save(battle, battle.labels, file='Erlotinib/WS/erlotinib_battle.RData')
