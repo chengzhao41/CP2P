@@ -182,24 +182,24 @@ if (args[4] == "bortezomib") {
     input_partition = partition$cell_lines_all[[training_var_amount]]$cp2p.IC50
     input_feature.l1000 <- feature.l1000$cp
   } else if (args[5] == "cp2p_slope_breast") {
-    stopifnot(training_var_amount <= length(partition$cell_lines_all))
+    stopifnot(training_var_amount <= length(partition$cell_lines_breast))
     
-    input_data <- docetaxel$slope_combined.ComBat 
-    input_label <- docetaxel.labels$slope_combined
+    input_data <- docetaxel$slope_breast.ComBat 
+    input_label <- docetaxel.labels$slope_breast
     input_partition = partition$cell_lines_breast[[training_var_amount]]$cp2p.slope
     input_feature.l1000 <- feature.l1000$cp
   } else if (args[5] == "cp2p_auc_breast") {
-    stopifnot(training_var_amount <= length(partition$cell_lines_all))
+    stopifnot(training_var_amount <= length(partition$cell_lines_breast))
     
-    input_data <- docetaxel$AUC_combined.ComBat
-    input_label <- docetaxel.labels$AUC_combined
+    input_data <- docetaxel$AUC_breast.ComBat
+    input_label <- docetaxel.labels$AUC_breast
     input_partition = partition$cell_lines_breast[[training_var_amount]]$cp2p.AUC
     input_feature.l1000 <- feature.l1000$cp
   } else if (args[5] == "cp2p_ic50_breast") {
-    stopifnot(training_var_amount <= length(partition$cell_lines_all))
+    stopifnot(training_var_amount <= length(partition$cell_lines_breast))
     
-    input_data <- docetaxel$IC50_combined.ComBat
-    input_label <- docetaxel.labels$IC50_combined
+    input_data <- docetaxel$IC50_breast.ComBat
+    input_label <- docetaxel.labels$IC50_breast
     input_partition = partition$cell_lines_breast[[training_var_amount]]$cp2p.IC50
     input_feature.l1000 <- feature.l1000$cp
   } else if (args[5] == "cp2p_ic50_p23") {
@@ -248,6 +248,108 @@ if (args[4] == "bortezomib") {
     stop(paste("args[5]", args[5], "is invalid."))
   }
   rm(docetaxel, docetaxel.labels)
+} else if (args[4] == "erlotinib") {
+  load("Erlotinib/WS/erlotinib_data.RData")
+  
+  input.type_measure = "acc"
+  input_snf.parameter <- seq(from = 5, to = 30, by = 5)
+  
+  if (args[5] == "p2p") {
+    stopifnot(training_var_amount <= length(partition$cell_lines_all))
+    
+    input_data <- erlotinib$patient
+    input_label <- erlotinib.labels$patient
+    input_partition <- partition$cell_lines_all[[training_var_amount]]$p2p
+    input_feature.l1000 <- feature.l1000$pp
+    input_snf.parameter <- seq(from = 5, to = length(input_partition[[1]]$training_index), by = 3)
+  } else if (args[5] == "cp2p_slope") {
+    stopifnot(training_var_amount <= length(partition$cell_lines_all))
+    
+    input_data <- erlotinib$slope_combined.ComBat 
+    input_label <- erlotinib.labels$slope_combined
+    input_partition = partition$cell_lines_all[[training_var_amount]]$cp2p.slope
+    input_feature.l1000 <- feature.l1000$cp
+  } else if (args[5] == "cp2p_auc") {
+    stopifnot(training_var_amount <= length(partition$cell_lines_all))
+    
+    input_data <- erlotinib$AUC_combined.ComBat
+    input_label <- erlotinib.labels$AUC_combined
+    input_partition = partition$cell_lines_all[[training_var_amount]]$cp2p.AUC
+    input_feature.l1000 <- feature.l1000$cp
+  } else if (args[5] == "cp2p_ic50") {
+    stopifnot(training_var_amount <= length(partition$cell_lines_all))
+    
+    input_data <- erlotinib$IC50_combined.ComBat
+    input_label <- erlotinib.labels$IC50_combined
+    input_partition = partition$cell_lines_all[[training_var_amount]]$cp2p.IC50
+    input_feature.l1000 <- feature.l1000$cp
+  } else if (args[5] == "cp2p_slope_lung") {
+    stopifnot(training_var_amount <= length(partition$cell_lines_lung))
+    
+    input_data <- erlotinib$slope_lung.ComBat 
+    input_label <- erlotinib.labels$slope_lung
+    input_partition = partition$cell_lines_lung[[training_var_amount]]$cp2p.slope
+    input_feature.l1000 <- feature.l1000$cp
+  } else if (args[5] == "cp2p_auc_lung") {
+    stopifnot(training_var_amount <= length(partition$cell_lines_lung))
+    
+    input_data <- erlotinib$AUC_lung.ComBat
+    input_label <- erlotinib.labels$AUC_lung
+    input_partition = partition$cell_lines_lung[[training_var_amount]]$cp2p.AUC
+    input_feature.l1000 <- feature.l1000$cp
+  } else if (args[5] == "cp2p_ic50_lung") {
+    stopifnot(training_var_amount <= length(partition$cell_lines_lung))
+    
+    input_data <- erlotinib$IC50_lung.ComBat
+    input_label <- erlotinib.labels$IC50_lung
+    input_partition = partition$cell_lines_lung[[training_var_amount]]$cp2p.IC50
+    input_feature.l1000 <- feature.l1000$cp
+  } else if (args[5] == "cp2p_ic50_p24") {
+    stopifnot(training_var_amount <= length(partition$patient_24))
+    
+    input_data <- erlotinib$IC50_combined.ComBat
+    input_label <- erlotinib.labels$IC50_combined
+    input_partition = partition$patient_24[[training_var_amount]]$cp2p.IC50
+    input_feature.l1000 <- feature.l1000$cp
+  } else if (args[5] == "cp2p_auc_p24") {
+    stopifnot(training_var_amount <= length(partition$patient_24))
+    
+    input_data <- erlotinib$AUC_combined.ComBat
+    input_label <- erlotinib.labels$AUC_combined
+    input_partition = partition$patient_24[[training_var_amount]]$cp2p.AUC
+    input_feature.l1000 <- feature.l1000$cp
+  } else if (args[5] == "cp2p_slope_p24") {
+    stopifnot(training_var_amount <= length(partition$patient_24))
+    
+    input_data <- erlotinib$slope_combined.ComBat
+    input_label <- erlotinib.labels$slope_combined
+    input_partition = partition$patient_24[[training_var_amount]]$cp2p.slope
+    input_feature.l1000 <- feature.l1000$cp
+  } else if (args[5] == "c2p_ic50_p24") {
+    stopifnot(training_var_amount <= length(partition$patient_24))
+    
+    input_data <- erlotinib$IC50_combined.ComBat
+    input_label <- erlotinib.labels$IC50_combined
+    input_partition = partition$patient_24[[training_var_amount]]$c2p.IC50
+    input_feature.l1000 <- feature.l1000$cp
+  } else if (args[5] == "c2p_auc_p24") {
+    stopifnot(training_var_amount <= length(partition$patient_24))
+    
+    input_data <- erlotinib$AUC_combined.ComBat
+    input_label <- erlotinib.labels$AUC_combined
+    input_partition = partition$patient_24[[training_var_amount]]$c2p.AUC
+    input_feature.l1000 <- feature.l1000$cp
+  } else if (args[5] == "c2p_slope_p24") {
+    stopifnot(training_var_amount <= length(partition$patient_24))
+    
+    input_data <- erlotinib$slope_combined.ComBat
+    input_label <- erlotinib.labels$slope_combined
+    input_partition = partition$patient_24[[training_var_amount]]$c2p.slope
+    input_feature.l1000 <- feature.l1000$cp
+  } else {
+    stop(paste("args[5]", args[5], "is invalid."))
+  }
+  rm(erlotinib, erlotinib.labels)
 } else {
   stop(paste("args[4]", args[4], "is invalid."))
 }
