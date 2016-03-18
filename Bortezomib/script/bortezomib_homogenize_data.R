@@ -101,7 +101,8 @@ bortezomib$slope_combined.sva <- sva_combine(batch = bortezomib.labels$slope_com
                                              label = bortezomib.labels$slope_combined,
                                              input_data = bortezomib$slope_combined,
                                              n.sv = 2)
-mean(bortezomib$slope_combined.sva) # 4.788611e-18
+mean(bortezomib$slope_combined.sva) 
+# -3.482237e-18
 
 # after sva
 #show_pca(input_data = bortezomib$slope_combined.sva, label = bortezomib.labels$slope_combined)
@@ -127,7 +128,9 @@ bortezomib$IC50_combined.sva <- sva_combine(batch = bortezomib.labels$IC50_combi
                                             label = bortezomib.labels$IC50_combined, 
                                             input_data = bortezomib$IC50_combined, 
                                             n.sv = 2)
-mean(bortezomib$IC50_combined.sva) #-3.793741e-18
+mean(bortezomib$IC50_combined.sva) 
+# 7.379986e-18
+
 #show_pca(input_data = bortezomib$IC50_combined.sva, label = bortezomib.labels$IC50_combined)
 show_pca(input_data = bortezomib$IC50_combined.sva, label = bortezomib.labels$IC50_combined.source)
 rm(temp.data)
@@ -148,7 +151,8 @@ bortezomib$AUC_combined.sva <- sva_combine(batch = bortezomib.labels$AUC_combine
                                            label = bortezomib.labels$AUC_combined, 
                                            input_data = bortezomib$AUC_combined, 
                                            n.sv = 2)
-mean(bortezomib$AUC_combined.sva) # 1.357833e-17
+mean(bortezomib$AUC_combined.sva) 
+# 3.370679e-18
 
 #show_pca(input_data = bortezomib$AUC_combined.sva, label = bortezomib.labels$AUC_combined)
 show_pca(input_data = bortezomib$AUC_combined.sva, label = bortezomib.labels$AUC_combined.source)

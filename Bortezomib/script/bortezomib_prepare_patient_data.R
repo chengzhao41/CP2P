@@ -69,9 +69,7 @@ stopifnot(nrow(bortezomibExpr) == length(codeLabel))
 show_pca(input_data = bortezomibExpr, label = codeLabel)
 #show_pca(input_data = bortezomibExpr, label = binaryResponse)
 
-bortezomib.patient_ComBat = t(ComBat(dat=t(bortezomibExpr), batch = codeLabel, 
-                                     mod=NULL, par.prior=TRUE, prior.plots=FALSE))
-#bortezomib.patient_ComBat <- ComBat_combine(bortezomibExpr, label = binaryResponse, batch = codeLabel)
+bortezomib.patient_ComBat <- ComBat_combine(bortezomibExpr, label = binaryResponse, batch = codeLabel)
 show_pca(input_data = bortezomib.patient_ComBat, label = codeLabel)
 #show_pca(input_data = bortezomib.patient_ComBat, label = binaryResponse)
 
