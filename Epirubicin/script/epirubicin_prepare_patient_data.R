@@ -91,5 +91,5 @@ table(binaryResponse)
 # 101    17 
 
 # Save the expression matrix
-save(exprs_data, binaryResponse, file="Epirubicin/WS/epirubicin.patient.RData")
+save(epirubicin.patient, binaryResponse, file="Epirubicin/WS/epirubicin.patient.RData")
 
