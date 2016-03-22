@@ -53,9 +53,13 @@ docetaxel$slope_combined <- rbind(temp.data[[1]], temp.data[[2]])
 show_pca(input_data = docetaxel$slope_combined, label = docetaxel.labels$slope_combined.source)
 
 # ComBat
-docetaxel$slope_combined.ComBat = t(ComBat(dat=t(docetaxel$slope_combined), batch = docetaxel.labels$slope_combined.source, 
-                                     mod=NULL, par.prior=TRUE, prior.plots=FALSE))
-mean(docetaxel$slope_combined.ComBat) #-1.016799e-17
+docetaxel$slope_combined.ComBat <- ComBat_combine(
+                                    docetaxel$slope_combined, 
+                                    label = docetaxel.labels$slope_combined, 
+                                    batch = docetaxel.labels$slope_combined.source)
+mean(docetaxel$slope_combined.ComBat) 
+#-1.016799e-17
+#-5.974505e-07 
 
 # after ComBat
 #show_pca(input_data = docetaxel$slope_combined.ComBat, label = docetaxel.labels$slope_combined)
@@ -76,9 +80,13 @@ docetaxel$IC50_combined <- rbind(temp.data[[1]], temp.data[[2]])
 show_pca(input_data = docetaxel$IC50_combined, label = docetaxel.labels$IC50_combined.source)
 
 # ComBat
-docetaxel$IC50_combined.ComBat = t(ComBat(dat=t(docetaxel$IC50_combined), batch = docetaxel.labels$IC50_combined.source, 
-                                           mod=NULL, par.prior=TRUE, prior.plots=FALSE))
-mean(docetaxel$IC50_combined.ComBat) #-1.016799e-17
+docetaxel$IC50_combined.ComBat <- ComBat_combine(
+                                    docetaxel$IC50_combined, 
+                                    label = docetaxel.labels$IC50_combined, 
+                                    batch = docetaxel.labels$IC50_combined.source)
+mean(docetaxel$IC50_combined.ComBat) 
+#-1.016799e-17
+#-2.973273e-07
 
 # after ComBat
 #show_pca(input_data = docetaxel$IC50_combined.ComBat, label = docetaxel.labels$IC50_combined)
@@ -99,9 +107,14 @@ docetaxel$AUC_combined <- rbind(temp.data[[1]], temp.data[[2]])
 show_pca(input_data = docetaxel$AUC_combined, label = docetaxel.labels$AUC_combined.source)
 
 # ComBat
-docetaxel$AUC_combined.ComBat = t(ComBat(dat=t(docetaxel$AUC_combined), batch = docetaxel.labels$AUC_combined.source, 
-                                          mod=NULL, par.prior=TRUE, prior.plots=FALSE))
-mean(docetaxel$AUC_combined.ComBat) #-1.016799e-17
+docetaxel$AUC_combined.ComBat <- ComBat_combine(
+                                  docetaxel$AUC_combined, 
+                                  label = docetaxel.labels$AUC_combined, 
+                                  batch = docetaxel.labels$AUC_combined.source)
+
+mean(docetaxel$AUC_combined.ComBat) 
+#-1.016799e-17
+#-5.61166e-07
 
 # after ComBat
 #show_pca(input_data = docetaxel$AUC_combined.ComBat, label = docetaxel.labels$AUC_combined)
@@ -117,16 +130,22 @@ mean(temp.data[[2]]) #-9.652955e-18
 dim(temp.data[[2]]) #35 7969
 
 # before ComBat
+docetaxel.labels$IC50_breast <- docetaxel.labels$IC50[temp.ind]
 docetaxel.labels$IC50_breast.source <- c(rep("patient", dim(temp.data[[1]])[1]), rep("gdsc", dim(temp.data[[2]])[1]))
 docetaxel.labels$IC50_breast_only <- docetaxel.labels$IC50[temp.ind]
-docetaxel.labels$IC50_breast <- c(docetaxel.labels$patient, docetaxel.labels$IC50[temp.ind])
+docetaxel.labels$IC50_breast.combined <- c(docetaxel.labels$patient, docetaxel.labels$IC50_breast)
 docetaxel$IC50_breast <- rbind(temp.data[[1]], temp.data[[2]])
 show_pca(input_data = docetaxel$IC50_breast, label = docetaxel.labels$IC50_breast.source)
 
 # ComBat
-docetaxel$IC50_breast.ComBat <- t(ComBat(dat=t(docetaxel$IC50_breast), batch = docetaxel.labels$IC50_breast.source, 
-         mod=NULL, par.prior=TRUE, prior.plots=FALSE))
-mean(docetaxel$IC50_breast.ComBat) #-1.091286e-17
+docetaxel$IC50_breast.ComBat <- ComBat_combine(
+                                  docetaxel$IC50_breast, 
+                                  label = docetaxel.labels$IC50_breast.combined, 
+                                  batch = docetaxel.labels$IC50_breast.source)
+
+mean(docetaxel$IC50_breast.ComBat) 
+#-1.091286e-17
+#-8.750414e-06
 
 # after ComBat
 #show_pca(input_data = docetaxel$IC50_breast.ComBat, label = docetaxel.labels$IC50_breast)
@@ -141,16 +160,22 @@ mean(temp.data[[2]]) #-9.652955e-18
 dim(temp.data[[2]]) #35 7969
 
 # before ComBat
+docetaxel.labels$AUC_breast <- docetaxel.labels$AUC[temp.ind]
 docetaxel.labels$AUC_breast.source <- c(rep("patient", dim(temp.data[[1]])[1]), rep("gdsc", dim(temp.data[[2]])[1]))
 docetaxel.labels$AUC_breast_only <- docetaxel.labels$AUC[temp.ind]
-docetaxel.labels$AUC_breast <- c(docetaxel.labels$patient, docetaxel.labels$AUC[temp.ind])
+docetaxel.labels$AUC_breast.combined <- c(docetaxel.labels$patient, docetaxel.labels$AUC_breast)
 docetaxel$AUC_breast <- rbind(temp.data[[1]], temp.data[[2]])
 show_pca(input_data = docetaxel$AUC_breast, label = docetaxel.labels$AUC_breast.source)
 
 # ComBat
-docetaxel$AUC_breast.ComBat <- t(ComBat(dat=t(docetaxel$AUC_breast), batch = docetaxel.labels$AUC_breast.source, 
-                                         mod=NULL, par.prior=TRUE, prior.plots=FALSE))
-mean(docetaxel$AUC_breast.ComBat) #-1.091286e-17
+docetaxel$AUC_breast.ComBat <- ComBat_combine(
+                              docetaxel$AUC_breast, 
+                              label = docetaxel.labels$AUC_breast.combined, 
+                              batch = docetaxel.labels$AUC_breast.source)
+
+mean(docetaxel$AUC_breast.ComBat) 
+#-1.091286e-17
+#-9.066693e-06
 
 # after ComBat
 #show_pca(input_data = docetaxel$AUC_breast.ComBat, label = docetaxel.labels$AUC_breast)
@@ -165,16 +190,22 @@ mean(temp.data[[2]]) #-9.652955e-18
 dim(temp.data[[2]]) #35 7969
 
 # before ComBat
+docetaxel.labels$slope_breast <- docetaxel.labels$slope[temp.ind]
 docetaxel.labels$slope_breast.source <- c(rep("patient", dim(temp.data[[1]])[1]), rep("gdsc", dim(temp.data[[2]])[1]))
 docetaxel.labels$slope_breast_only <- docetaxel.labels$slope[temp.ind]
-docetaxel.labels$slope_breast <- c(docetaxel.labels$patient, docetaxel.labels$slope[temp.ind])
+docetaxel.labels$slope_breast.combined <- c(docetaxel.labels$patient, docetaxel.labels$slope_breast)
 docetaxel$slope_breast <- rbind(temp.data[[1]], temp.data[[2]])
 show_pca(input_data = docetaxel$slope_breast, label = docetaxel.labels$slope_breast.source)
 
 # ComBat
-docetaxel$slope_breast.ComBat <- t(ComBat(dat=t(docetaxel$slope_breast), batch = docetaxel.labels$slope_breast.source, 
-                                        mod=NULL, par.prior=TRUE, prior.plots=FALSE))
-mean(docetaxel$slope_breast.ComBat) #-1.091286e-17
+docetaxel$slope_breast.ComBat <- ComBat_combine(
+                                  docetaxel$slope_breast, 
+                                  label = docetaxel.labels$slope_breast.combined, 
+                                  batch = docetaxel.labels$slope_breast.source)
+
+mean(docetaxel$slope_breast.ComBat) 
+#-1.091286e-17
+#-1.206519e-05
 
 # after ComBat
 #show_pca(input_data = docetaxel$slope_breast.ComBat, label = docetaxel.labels$slope_breast)
@@ -242,7 +273,7 @@ cell_lines_breast <- foreach(input.training_amount.p = seq(from = 14, to = 23, b
                                                          cell_line_order = input.cell_line_order,
                                                          acc_training = TRUE,
                                                          training_amount.c = length(input.cell_line_order$AUC),
-                                                         input_partition = cell_lines_all[[input.training_amount.p - 13]])
+                                                         input_partition = partition$cell_lines_all[[input.training_amount.p - 13]])
                              }
 partition$cell_lines_breast <- cell_lines_breast
 
