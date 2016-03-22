@@ -13,7 +13,7 @@ stopifnot(length(args) == 5)
 # args[2] = "2" # partition end
 # args[3] = "4" # index for training sets
 # args[4] = "docetaxel"
-# args[5] = "p2p"
+# args[5] = "cp2p_slope_breast"
 
 PARTITION_BEGIN = as.integer(args[1])
 PARTITION_END = as.integer(args[2])
@@ -185,21 +185,21 @@ if (args[4] == "bortezomib") {
     stopifnot(training_var_amount <= length(partition$cell_lines_breast))
     
     input_data <- docetaxel$slope_breast.ComBat 
-    input_label <- docetaxel.labels$slope_breast
+    input_label <- docetaxel.labels$slope_breast.combined
     input_partition = partition$cell_lines_breast[[training_var_amount]]$cp2p.slope
     input_feature.l1000 <- feature.l1000$cp
   } else if (args[5] == "cp2p_auc_breast") {
     stopifnot(training_var_amount <= length(partition$cell_lines_breast))
     
     input_data <- docetaxel$AUC_breast.ComBat
-    input_label <- docetaxel.labels$AUC_breast
+    input_label <- docetaxel.labels$AUC_breast.combined
     input_partition = partition$cell_lines_breast[[training_var_amount]]$cp2p.AUC
     input_feature.l1000 <- feature.l1000$cp
   } else if (args[5] == "cp2p_ic50_breast") {
     stopifnot(training_var_amount <= length(partition$cell_lines_breast))
     
     input_data <- docetaxel$IC50_breast.ComBat
-    input_label <- docetaxel.labels$IC50_breast
+    input_label <- docetaxel.labels$IC50_breast.combined
     input_partition = partition$cell_lines_breast[[training_var_amount]]$cp2p.IC50
     input_feature.l1000 <- feature.l1000$cp
   } else if (args[5] == "cp2p_ic50_p23") {
