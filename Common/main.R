@@ -334,7 +334,7 @@ if (args[4] == "bortezomib") {
     stop(paste("args[5]", args[5], "is invalid."))
   }
   rm(erlotinib, erlotinib.labels)
-} if (args[4] == "epirubicin") {
+} else if (args[4] == "epirubicin") {
   load("Epirubicin/WS/epirubicin_data.RData")
   
   input.type_measure = "auc"
