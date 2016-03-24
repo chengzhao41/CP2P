@@ -23,7 +23,7 @@ PARTITION_END = as.integer(args[2])
 print(args)
 
 training_var_amount <- as.integer(args[[3]])
-  
+INPUT.NFOLDS = 5  
 if (args[4] == "bortezomib") {
   load("Bortezomib/WS/bortezomib_data.RData")
   
@@ -347,6 +347,7 @@ if (args[4] == "bortezomib") {
     input_label <- epirubicin.labels$patient
     input_partition <- partition$cell_lines_all[[training_var_amount]]$p2p
     input_feature.l1000 <- feature.l1000$pp
+    INPUT.NFOLDS = 3 # too imbalanced to do 5
   } else if (args[5] == "cp2p_slope") {
     stopifnot(training_var_amount <= length(partition$cell_lines_all))
     
@@ -361,6 +362,7 @@ if (args[4] == "bortezomib") {
     input_label <- epirubicin.labels$AUC_combined
     input_partition = partition$cell_lines_all[[training_var_amount]]$cp2p.AUC
     input_feature.l1000 <- feature.l1000$cp
+    INPUT.NFOLDS = 3 # too imbalanced to do 5
   } else if (args[5] == "cp2p_ic50") {
     stopifnot(training_var_amount <= length(partition$cell_lines_all))
     
@@ -396,6 +398,8 @@ if (args[4] == "bortezomib") {
     input_label <- epirubicin.labels$IC50_combined
     input_partition = partition$patient_40[[training_var_amount]]$c2p.IC50
     input_feature.l1000 <- feature.l1000$cp
+    INPUT.NFOLDS = 3 # too imbalanced to do 5
+    stop("c2p_ic50_p40 labels are too imbalanced!")
   } else if (args[5] == "c2p_auc_p40") {
     stopifnot(training_var_amount <= length(partition$patient_40))
     
@@ -403,6 +407,7 @@ if (args[4] == "bortezomib") {
     input_label <- epirubicin.labels$AUC_combined
     input_partition = partition$patient_40[[training_var_amount]]$c2p.AUC
     input_feature.l1000 <- feature.l1000$cp
+    INPUT.NFOLDS = 3 # too imbalanced to do 5
   } else if (args[5] == "c2p_slope_p40") {
     stopifnot(training_var_amount <= length(partition$patient_40))
     
@@ -410,6 +415,7 @@ if (args[4] == "bortezomib") {
     input_label <- epirubicin.labels$slope_combined
     input_partition = partition$patient_40[[training_var_amount]]$c2p.slope
     input_feature.l1000 <- feature.l1000$cp
+    INPUT.NFOLDS = 3 # too imbalanced to do 5
   } else if (args[5] == "cp2p_slope_p80") {
     stopifnot(training_var_amount <= length(partition$patient_80))
     

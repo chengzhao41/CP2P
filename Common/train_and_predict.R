@@ -32,7 +32,7 @@ for (temp.run_ind in PARTITION_BEGIN:PARTITION_END) {
                                                                partition = input_partition,
                                                                ground_truth = input_label,
                                                                run_ind = temp.run_ind,
-                                                               NFOLDS = 5,
+                                                               NFOLDS = INPUT.NFOLDS,
                                                                type_measure = input.type_measure)
   
   snf.single.mRMR1000[[temp.run_ind]]$feature.sets = temp.mRMR_features
@@ -41,7 +41,7 @@ for (temp.run_ind in PARTITION_BEGIN:PARTITION_END) {
                                                                  ground_truth = input_label, 
                                                                  partition = input_partition,
                                                                  selected_features = temp.mRMR_features, 
-                                                                 NFOLDS = 5, 
+                                                                 NFOLDS = INPUT.NFOLDS, 
                                                                  N_CV_REPEATS = 1, 
                                                                  run_ind = temp.run_ind, 
                                                                  type_measure = input.type_measure)
@@ -57,7 +57,7 @@ for (temp.run_ind in PARTITION_BEGIN:PARTITION_END) {
                                                             ground_truth = input_label, 
                                                             partition = input_partition,
                                                             selected_features = NULL, 
-                                                            NFOLDS = 5, 
+                                                            NFOLDS = INPUT.NFOLDS, 
                                                             N_CV_REPEATS = 1, 
                                                             run_ind = temp.run_ind,
                                                             type_measure = input.type_measure)
@@ -71,7 +71,7 @@ for (temp.run_ind in PARTITION_BEGIN:PARTITION_END) {
                                                               ground_truth = input_label, 
                                                               partition = input_partition,
                                                               selected_features = input_feature.l1000, 
-                                                              NFOLDS = 5, 
+                                                              NFOLDS = INPUT.NFOLDS, 
                                                               N_CV_REPEATS = 1, 
                                                               run_ind = temp.run_ind, 
                                                               type_measure = input.type_measure)
@@ -89,7 +89,7 @@ for (temp.run_ind in PARTITION_BEGIN:PARTITION_END) {
                                                           partition = input_partition,
                                                           ground_truth = input_label,
                                                           run_ind = temp.run_ind,
-                                                          NFOLDS = 5, 
+                                                          NFOLDS = INPUT.NFOLDS, 
                                                           type_measure = input.type_measure)
 }
 
@@ -104,7 +104,7 @@ for (temp.run_ind in PARTITION_BEGIN:PARTITION_END) {
                                                             partition = input_partition,
                                                             ground_truth = input_label,
                                                             run_ind = temp.run_ind,
-                                                            NFOLDS = 5,
+                                                            NFOLDS = INPUT.NFOLDS,
                                                             type_measure = input.type_measure)
 }
 
