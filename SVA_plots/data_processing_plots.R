@@ -1,9 +1,4 @@
-rootdir <- "~/Dropbox/CP2P"
-# rootdir <- "/dupa-filer/laci/CP2P"
-setwd(rootdir)
-
-source("SVA_plots/preparing_data_helper.R")
-source("Common/comGENE.R")
+## Main script to compute and plot PCA of various data preprocessing methods
 
 generate_single_random_partition.cpp_var <- function(input_labels_cell_lines, input_labels_patient, training_amount) {
   ## Copied and adjusted from Bortezomib/Script/generate_random_partition.R function generate_random_partition.cpp_var
@@ -26,8 +21,12 @@ generate_single_random_partition.cpp_var <- function(input_labels_cell_lines, in
   # flags to denote: cell lines in training; patients in training; patients in test
   cell.line.name = "GDSC "
   if (length(input_labels_cell_lines) == 38) { # hack to change name in the legened in case of Epirubicin
-    cell.line.name = "Heiser Cell Lines "
+    cell.line.name = "GRAY "
   }
+  if (length(input_labels_cell_lines) == 489) { # hack to change name in the legened in case of Erlotinib CCLE
+    cell.line.name = "CCLE "
+  }
+
   cpp_flags <- rep(cell.line.name, length(input_combined_labels))
   cpp_flags[temp.patients_in_training] <- "Patients  70% " # a hack to make this be before the "patients 30%"
   cpp_flags[temp.test_index] <- "Patients 30%"
@@ -51,7 +50,7 @@ generate_single_random_partition.cpp_var <- function(input_labels_cell_lines, in
 }
 
 
-compute_preprocessing <- function(data, label, sampleinfo, n.sv, preprocessCLsva = 0){
+compute_preprocessing <- function(data, label, sampleinfo, n.sv, preprocessCLsva = 0, baselinePlot = c('AUC', 'IC50', 'Slope')){
   ## Split to training set and patient-only test set
   labels_cell_lines <- label$AUC
   cl.len <- length(label$AUC)
@@ -66,31 +65,31 @@ compute_preprocessing <- function(data, label, sampleinfo, n.sv, preprocessCLsva
   labels.combined <- list()
   ## Pool AUC, IC50, Slope data and labels together, preprocess cell lines with SVA first
   if (preprocessCLsva != 0) {
-    cgp_AUC.sva <- sva_combine(batch = sampleinfo$tissue.type[label$AUC_ind],  
-                                 label = label$AUC, input_data = scale(data$cgp_AUC), n.sv=preprocessCLsva)
-    temp.data <- comGENE(scale(cgp_AUC.sva), scale(data$patient))
+    cl_AUC.sva <- sva_combine(batch = sampleinfo$tissue.type[label$AUC_ind],  
+                                 label = label$AUC, input_data = scale(data$cl_AUC), n.sv=preprocessCLsva)
+    temp.data <- comGENE(scale(cl_AUC.sva), scale(data$patient))
   } else {
-    temp.data <- comGENE(scale(data$cgp_AUC), scale(data$patient))
+    temp.data <- comGENE(scale(data$cl_AUC), scale(data$patient))
   }
   data.raw[[1]] <- rbind(temp.data[[1]], temp.data[[2]])
   labels.combined[[1]] <- c(label$AUC, label$patient)
   #IC50
   if (preprocessCLsva != 0) {
-    cgp_IC50.sva <- sva_combine(batch = sampleinfo$tissue.type[label$IC50_ind],  
-                                label = label$IC50, input_data = scale(data$cgp_IC50), n.sv=preprocessCLsva)
-    temp.data <- comGENE(scale(cgp_IC50.sva), scale(data$patient))
+    cl_IC50.sva <- sva_combine(batch = sampleinfo$tissue.type[label$IC50_ind],  
+                                label = label$IC50, input_data = scale(data$cl_IC50), n.sv=preprocessCLsva)
+    temp.data <- comGENE(scale(cl_IC50.sva), scale(data$patient))
   } else {
-    temp.data <- comGENE(scale(data$cgp_IC50), scale(data$patient))
+    temp.data <- comGENE(scale(data$cl_IC50), scale(data$patient))
   }
   data.raw[[2]] <- rbind(temp.data[[1]], temp.data[[2]])
   labels.combined[[2]] <- c(label$IC50, label$patient)
   #Slope
   if (preprocessCLsva != 0) {
-    cgp_slope.sva <- sva_combine(batch = sampleinfo$tissue.type[label$slope_ind],  
-                                 label = label$slope, input_data = scale(data$cgp_slope), n.sv=preprocessCLsva)
-    temp.data <- comGENE(scale(cgp_slope.sva), scale(data$patient))
+    cl_slope.sva <- sva_combine(batch = sampleinfo$tissue.type[label$slope_ind],  
+                                 label = label$slope, input_data = scale(data$cl_slope), n.sv=preprocessCLsva)
+    temp.data <- comGENE(scale(cl_slope.sva), scale(data$patient))
   } else {
-    temp.data <- comGENE(scale(data$cgp_slope), scale(data$patient))
+    temp.data <- comGENE(scale(data$cl_slope), scale(data$patient))
   }
   data.raw[[3]] <- rbind(temp.data[[1]], temp.data[[2]])
   labels.combined[[3]] <- c(label$slope, label$patient)
@@ -98,9 +97,15 @@ compute_preprocessing <- function(data, label, sampleinfo, n.sv, preprocessCLsva
   pID <- 1
   data.all <- list()
   plabel.all <- list()
+  ptitle.all <- list()
   ## Store raw data as is
-  # temp.data <- comGENE(scale(data$cgp_AUC), scale(data$patient))
-  temp.data <- comGENE(scale(data$cgp_slope), scale(data$patient))
+  if (baselinePlot == 'AUC'){
+    temp.data <- comGENE(scale(data$cl_AUC), scale(data$patient))
+  } else if (baselinePlot == 'IC50'){
+    temp.data <- comGENE(scale(data$cl_IC50), scale(data$patient))
+  } else if (baselinePlot == 'slope'){
+    temp.data <- comGENE(scale(data$cl_slope), scale(data$patient))
+  }
   temp.data.raw <- rbind(temp.data[[1]], temp.data[[2]])
   temp.label.combined <- c(label$slope, label$patient)
   
@@ -111,10 +116,11 @@ compute_preprocessing <- function(data, label, sampleinfo, n.sv, preprocessCLsva
   
   data.all[[pID]] <- temp.data.raw
   plabel.all[[pID]] <- temp.plot_label
+  ptitle.all[[pID]] <- paste(baselinePlot, "labels before cell lines vs patients homogenization")
   pID <- pID + 1
   
   print("processing CL + patients")
-  for(outcomeID in 1:3) {
+  for(outcomeID in 1:1) {
     ## Get data and labels
     temp.data.raw <- data.raw[[outcomeID]]
     temp.labels.combined <- labels.combined[[outcomeID]]
@@ -138,6 +144,7 @@ compute_preprocessing <- function(data, label, sampleinfo, n.sv, preprocessCLsva
                                        input_data = temp.data.raw)
     data.all[[pID]] <- temp.data.ComBat
     plabel.all[[pID]] <- temp.plot_label
+    ptitle.all[[pID]] <- paste(c('AUC', 'IC50', 'Slope')[outcomeID], "labels after ComBat homogenization of entire data set")
     pID <- pID + 1
     
     ## Store SVA processed data
@@ -147,6 +154,7 @@ compute_preprocessing <- function(data, label, sampleinfo, n.sv, preprocessCLsva
                                  n.sv = n.sv)
     data.all[[pID]] <- temp.data.sva
     plabel.all[[pID]] <- temp.plot_label
+    ptitle.all[[pID]] <- paste(c('AUC', 'IC50', 'Slope')[outcomeID], "labels after SVA homogenization of entire data set")
     pID <- pID + 1
     
     ## Store frozen SVA processed data
@@ -159,28 +167,30 @@ compute_preprocessing <- function(data, label, sampleinfo, n.sv, preprocessCLsva
     #num_sv_method = "leek"
     data.all[[pID]] <- temp.data.fsva
     plabel.all[[pID]] <- temp.plot_label
+    ptitle.all[[pID]] <- paste(c('AUC', 'IC50', 'Slope')[outcomeID], "labels after frozen SVA homogenization")
     pID <- pID + 1
   }
-  return(list(data.all, plabel.all))
+  return(list(data.all, plabel.all, ptitle.all))
 }
 
 format_PCAplot <- function (plt, plot_label, pOrder) {
-  # The color-blind firendly palette with grey
-  cbPalette <- c("#B3B3B3", "#DE9900", "#48A6DB", "#00996F", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+  # The color-blind friendly palette with grey
+  # cbPalette <- c("#B3B3B3", "#DE9900", "#48A6DB", "#00996F", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+  cbPalette <- c("#B3B3B3", "#0D5DE0", "#E6374F")
   
   plot_label <<- plot_label
   plt <- plt + theme(legend.direction = 'horizontal', 
                      legend.position = 'top', plot.margin = unit(c(5.1,7,4.5,3.5)/2, "lines"), 
                      text = element_text(size=15), axis.title.x=element_text(vjust=-1.5))
   plt <- plt + guides(colour = guide_legend(override.aes = list(size=2.5, linetype=0, shape = c(16, 17, 15))))
-  plt <- plt + geom_point(aes(shape = factor(plot_label), colour = factor(plot_label)), show_guide = FALSE)
-  plt <- plt + ggtitle(LETTERS[pOrder]) + theme(plot.title=element_text(hjust=-0.12, size = rel(1.75), face='bold'))
-  plt <- plt + scale_colour_manual(name = 'Dataset', values=cbPalette)
+  plt <- plt + geom_point(aes(shape = factor(plot_label), colour = factor(plot_label)), show.legend = FALSE)
+  # plt <- plt + ggtitle(LETTERS[pOrder]) + theme(plot.title=element_text(hjust=-0.12, size = rel(1.75), face='bold'))
+  plt <- plt + scale_colour_manual(name = 'Dataset: ', values=cbPalette)
   return(eval(ggplotGrob(plt)))
 }
 
 #### Plot PCA of all given data
-plot_processed_data_all <- function(data.all, plabel.all, name="drugX"){
+plot_processed_data_all <- function(data.all, plabel.all, ptitle.all, name="drugX"){
   library(ggplot2)
   library(grid)
   library(RColorBrewer)
@@ -193,14 +203,13 @@ plot_processed_data_all <- function(data.all, plabel.all, name="drugX"){
   for(pID in 1:length(data.all)) { #length(data.all)
     ## Plot PCA of the data as is
     p1 <- show_pca(input_data = data.all[[pID]], label = plabel.all[[pID]], pca_line_plot = FALSE, print = FALSE, useColorBlindScheme = TRUE)
+    p1 <- p1 + ggtitle(ptitle.all[[pID]]) + theme(plot.title=element_text(hjust=0.5, size = rel(1.15)))
     g1 <- format_PCAplot(p1, plabel.all[[pID]], pID)
-    lplots <- c(lplots, list(g1))
+    g2 <- arrangeGrob(g1, top = textGrob(LETTERS[pID+3], x = unit(0.05, "npc"), y = unit(0.35, "npc"),
+                                     just = c("left", "top"),
+                                     gp = gpar(col="black", fontsize=22, fontface="bold")))
+    lplots <- c(lplots, list(g2))
   }
-  
-#   ## Add figure letters
-#   for(pID in 1:length(lplots)) {
-#     lplots[[pID]] <- lplots[[pID]] + ggtitle(LETTERS[pID]) + theme(plot.title=element_text(hjust=-0.12, size = rel(1.75), face='bold'))
-#   }
   
   ## Extract Grobs
   # g1 <- ggplotGrob(p1)
@@ -218,31 +227,93 @@ plot_processed_data_all <- function(data.all, plabel.all, name="drugX"){
 
 }
 
+######################  MAIN  #######################
+
+args <- commandArgs(TRUE)
+
+ENV <- args[1]
+stopifnot(ENV %in% c('dp', 'cb'))
+
+DRUG2RUN <- args[2]
+stopifnot(DRUG2RUN %in% c('bor', 'doc', 'epir', 'erl-gdsc', 'erl-ccle'))
+
+if (ENV == 'dp'){
+  rootdir <- "~/Dropbox/CP2P"
+  setwd(rootdir)
+
+  source("Common/preparing_data_helper.R")
+  source("Common/comGENE.R")
+  rdata_prefix_bor <- "../Bortezomib/WS/"
+  rdata_prefix_doc <- "../Docetaxel/WS/"
+  rdata_prefix_epir <- "../Epirubicin/WS/"
+  rdata_prefix_erl <- "../Erlotinib/WS/"
+}
+if (ENV == 'cb'){
+  rootdir <- "/dupa-filer/laci/CP2P/"
+  setwd(rootdir)
+
+  source("SVA_plots/preparing_data_helper.R")
+  source("SVA_plots/comGENE.R")
+  rdata_prefix_bor <- ""
+  rdata_prefix_doc <- ""
+  rdata_prefix_epir <- ""
+  rdata_prefix_erl <- ""
+}
+
 #### Bortezomib
-# load("Bortezomib/WS/bortezomib_data.RData"); bortezomib$patient <- bortezomib$patient.combat
-# bor.processed.data <- compute_preprocessing(bortezomib, bortezomib.labels, sampleinfo.cgp, n.sv = 2, preprocessCLsva = 3)
-# save(bor.processed.data, file = "bor.processed.data.RData")
-# plot_processed_data_all(bor.processed.data[[1]], bor.processed.data[[2]], name="bortezomib_2sva")
+if (DRUG2RUN == 'bor'){
+  load(paste0(rdata_prefix_bor, "bortezomib_data.RData")); bortezomib$patient <- bortezomib$patient.combat
+  bortezomib$cl_IC50 <- bortezomib$gdsc_IC50
+  bortezomib$cl_AUC <- bortezomib$gdsc_AUC
+  bortezomib$cl_slope <- bortezomib$gdsc_slope
+  bor.processed.data <- compute_preprocessing(bortezomib, bortezomib.labels, sampleinfo.gdsc, n.sv = 2, preprocessCLsva = 3, baselinePlot = 'Slope')
+  save(bor.processed.data, file = "bor.processed.data.RData")
+  plot_processed_data_all(bor.processed.data[[1]], bor.processed.data[[2]], bor.processed.data[[3]], name="bortezomib_2sva")
+  }
 
 #### Docetaxel
-# load("Docetaxel/WS/docetaxel_data.RData")
-# doc.processed.data <- compute_preprocessing(docetaxel, docetaxel.labels, sampleinfo.cgp, n.sv = 2, preprocessCLsva = 0)
-# save(doc.processed.data, file = "doc.processed.data.RData")
-# plot_processed_data_all(doc.processed.data[[1]], doc.processed.data[[2]], name="docetaxel_2sva")
+if (DRUG2RUN == 'doc'){
+  load(paste0(rdata_prefix_doc, "docetaxel_data.RData"))
+  docetaxel$cl_IC50 <- docetaxel$gdsc_IC50
+  docetaxel$cl_AUC <- docetaxel$gdsc_AUC
+  docetaxel$cl_slope <- docetaxel$gdsc_slope
+  doc.processed.data <- compute_preprocessing(docetaxel, docetaxel.labels, sampleinfo.gdsc, n.sv = 2, preprocessCLsva = 0, baselinePlot = 'Slope')
+  save(doc.processed.data, file = "doc.processed.data.RData")
+  plot_processed_data_all(doc.processed.data[[1]], doc.processed.data[[2]], doc.processed.data[[3]], name="docetaxel_2sva")
+}
 
 #### Epirubicin
-# load("Epirubicin/WS/epirubicin_data.RData")
-# epirubicin$cgp_IC50 <- epirubicin$IC50
-# epirubicin$cgp_AUC <- epirubicin$heiser
-# epirubicin$cgp_slope <- epirubicin$heiser
-# epir.processed.data <- compute_preprocessing(epirubicin, epirubicin.labels, sampleinfo.cgp, n.sv = 3, preprocessCLsva = 0)
-# save(epir.processed.data, file = "epir.processed.data.RData")
-# plot_processed_data_all(epir.processed.data[[1]], epir.processed.data[[2]], name="epirubicin_3sva")
+if (DRUG2RUN == 'epir'){
+  load(paste0(rdata_prefix_epir, "epirubicin_data.RData"))
+  epirubicin$cl_IC50 <- epirubicin$gray_IC50
+  epirubicin$cl_AUC <- epirubicin$gray_AUC
+  epirubicin$cl_slope <- epirubicin$gray_slope
+  epir.processed.data <- compute_preprocessing(epirubicin, epirubicin.labels, sampleinfo.gray, n.sv = 3, preprocessCLsva = 0, baselinePlot = 'Slope')
+  save(epir.processed.data, file = "epir.processed.data.RData")
+  # load("epir.processed.data.RData")
+  plot_processed_data_all(epir.processed.data[[1]], epir.processed.data[[2]], epir.processed.data[[3]], name="epirubicin_3sva")
+}
 
 #### Erlotinib
-load("Erlotinib/WS/erlotinib_data.RData")
-colnames(erlotinib$cgp_AUC) <- colnames(erlotinib$cgp_IC50) # fix gene names
-erl.processed.data <- compute_preprocessing(erlotinib, erlotinib.labels, sampleinfo.cgp, n.sv = 2, preprocessCLsva = 0)
-save(erl.processed.data, file = "erl.processed.data.RData")
-# load("erl.processed.data.RData")
-plot_processed_data_all(erl.processed.data[[1]], erl.processed.data[[2]], name="erlotinib_2sva")
+if (DRUG2RUN == 'erl-gdsc'){
+  load(paste0(rdata_prefix_erl, "erlotinib_homogenized_data_gdsc.RData"))
+  erlotinib$cl_IC50 <- erlotinib$gdsc_IC50
+  erlotinib$cl_AUC <- erlotinib$gdsc_AUC
+  erlotinib$cl_slope <- erlotinib$gdsc_slope
+  colnames(erlotinib$cl_AUC) <- colnames(erlotinib$cl_IC50) # fix gene names
+  erl.processed.data <- compute_preprocessing(erlotinib, erlotinib.labels, sampleinfo.gdsc, n.sv = 2, preprocessCLsva = 0, baselinePlot = 'Slope')
+  save(erl.processed.data, file = "erl.gdsc.processed.data.RData")
+  # load("erl.gdsc.processed.data.RData")
+  plot_processed_data_all(erl.processed.data[[1]], erl.processed.data[[2]], erl.processed.data[[3]], name="erlotinibGDSC_2sva")
+}
+if (DRUG2RUN == 'erl-ccle'){
+  load(paste0(rdata_prefix_erl, "erlotinib_homogenized_data_ccle.RData"))
+  erlotinib$cl_IC50 <- erlotinib$ccle_IC50
+  erlotinib$cl_AUC <- erlotinib$ccle_AUC
+  erlotinib$cl_slope <- erlotinib$ccle_slope
+  colnames(erlotinib$cl_AUC) <- colnames(erlotinib$cl_IC50) # fix gene names
+  erl.processed.data <- compute_preprocessing(erlotinib, erlotinib.labels, sampleinfo.ccle, n.sv = 2, preprocessCLsva = 0, baselinePlot = 'Slope')
+  save(erl.processed.data, file = "erl.ccle.processed.data.RData")
+  # load("erl.ccle.processed.data.RData")
+  plot_processed_data_all(erl.processed.data[[1]], erl.processed.data[[2]], erl.processed.data[[3]], name="erlotinibCCLE_2sva")
+}

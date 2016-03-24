@@ -86,7 +86,7 @@ ComBat_combine <- function(input_data, label, batch, par.prior = TRUE, prior.plo
 }
 
 
-show_pca <- function(input_data, label, choices = c(1,2), pca_line_plot = TRUE, print = TRUE) {
+show_pca <- function(input_data, label, choices = c(1,2), pca_line_plot = TRUE, print = TRUE, useColorBlindScheme = TRUE) {
   require(ggbiplot)  
   stopifnot(dim(input_data)[1] == length(label))
   pca <- prcomp(input_data, center = TRUE, scale. = TRUE)
@@ -99,6 +99,14 @@ show_pca <- function(input_data, label, choices = c(1,2), pca_line_plot = TRUE, 
                 groups = as.factor(label), ellipse = TRUE, 
                 circle = TRUE, varname.size=0, var.axes = FALSE, 
                 labels.size = 10)
+
+  # The color-blind friendly palette
+  # cbPalette <- c("#B3B3B3", "#DE9900", "#48A6DB", "#00996F", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+  cbPalette <- c("#B3B3B3", "#0D5DE0", "#E6374F")
+  if (useColorBlindScheme == TRUE){
+    g <- g + scale_colour_manual(values=cbPalette)
+  }
+
   if (print == TRUE) {
     print(g + theme_bw())  
   }
