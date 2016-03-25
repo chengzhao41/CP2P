@@ -205,7 +205,7 @@ plot_processed_data_all <- function(data.all, plabel.all, ptitle.all, name="drug
     p1 <- show_pca(input_data = data.all[[pID]], label = plabel.all[[pID]], pca_line_plot = FALSE, print = FALSE, useColorBlindScheme = TRUE)
     p1 <- p1 + ggtitle(ptitle.all[[pID]]) + theme(plot.title=element_text(hjust=0.5, size = rel(1.15)))
     g1 <- format_PCAplot(p1, plabel.all[[pID]], pID)
-    g2 <- arrangeGrob(g1, top = textGrob(LETTERS[pID+3], x = unit(0.05, "npc"), y = unit(0.7, "npc"),
+    g2 <- arrangeGrob(g1, top = textGrob(LETTERS[pID], x = unit(0.05, "npc"), y = unit(0.0, "npc"),
                                      just = c("left", "top"),
                                      gp = gpar(col="black", fontsize=22, fontface="bold")))
     lplots <- c(lplots, list(g2))
