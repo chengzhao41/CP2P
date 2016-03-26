@@ -17,7 +17,7 @@ other_model.mRMR1000 = list()
 for (temp.run_ind in PARTITION_BEGIN:PARTITION_END) {  
   print(Sys.time())
   print(temp.run_ind)
-  
+  gc()
   temp.mRMR_features <- mRMR_getFeatures(
     input_data[input_partition[[temp.run_ind]]$training_index, ], 
     as.ordered(input_label[input_partition[[temp.run_ind]]$training_index]), 
@@ -25,7 +25,7 @@ for (temp.run_ind in PARTITION_BEGIN:PARTITION_END) {
     solution_count = 1)
   print(paste("Number of mRMR features:", length(temp.mRMR_features)))
   temp.mRMR_features <- as.integer(temp.mRMR_features)
-  
+  gc()
   snf.single.mRMR1000[[temp.run_ind]] <- SNF_Single_Predict(feature.sets = temp.mRMR_features, 
                                                                parameters = list(K = input_snf.parameter), 
                                                                data = input_data, 
@@ -52,7 +52,7 @@ other_model.all = list()
 for (temp.run_ind in PARTITION_BEGIN:PARTITION_END) {
   print(Sys.time())
   print(temp.run_ind)
-  
+  gc()
   other_model.all[[temp.run_ind]] <- Other_Model_Predict(data = input_data, 
                                                             ground_truth = input_label, 
                                                             partition = input_partition,
