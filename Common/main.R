@@ -362,82 +362,36 @@ if (args[4] == "bortezomib") {
     input_label <- epirubicin.labels$AUC_combined
     input_partition = partition$cell_lines_all[[training_var_amount]]$cp2p.AUC
     input_feature.l1000 <- feature.l1000$cp
-  } else if (args[5] == "cp2p_ic50") {
-    stopifnot(training_var_amount <= length(partition$cell_lines_all))
-    
-    input_data <- epirubicin$IC50_combined.sva
-    input_label <- epirubicin.labels$IC50_combined
-    input_partition = partition$cell_lines_all[[training_var_amount]]$cp2p.IC50
-    input_feature.l1000 <- feature.l1000$cp
-    stop("cp2p_ic50 labels are too imbalanced!")
-  } else if (args[5] == "cp2p_ic50_p40") {
-    stopifnot(training_var_amount <= length(partition$patient_40))
-    
-    input_data <- epirubicin$IC50_combined.sva
-    input_label <- epirubicin.labels$IC50_combined
-    input_partition = partition$patient_40[[training_var_amount]]$cp2p.IC50
-    input_feature.l1000 <- feature.l1000$cp
-    stop("ic50 labels are too imbalanced!")
-  } else if (args[5] == "cp2p_auc_p40") {
-    stopifnot(training_var_amount <= length(partition$patient_40))
+  } else if (args[5] == "cp2p_auc_p50") {
+    stopifnot(training_var_amount <= length(partition$patient_50))
     
     input_data <- epirubicin$AUC_combined.sva
     input_label <- epirubicin.labels$AUC_combined
-    input_partition = partition$patient_40[[training_var_amount]]$cp2p.AUC
+    input_partition = partition$patient_50[[training_var_amount]]$cp2p.AUC
     input_feature.l1000 <- feature.l1000$cp
-  } else if (args[5] == "cp2p_slope_p40") {
-    stopifnot(training_var_amount <= length(partition$patient_40))
+  } else if (args[5] == "cp2p_slope_p50") {
+    stopifnot(training_var_amount <= length(partition$patient_50))
     
     input_data <- epirubicin$slope_combined.sva
     input_label <- epirubicin.labels$slope_combined
-    input_partition = partition$patient_40[[training_var_amount]]$cp2p.slope
+    input_partition = partition$patient_50[[training_var_amount]]$cp2p.slope
     input_feature.l1000 <- feature.l1000$cp
-  } else if (args[5] == "c2p_ic50_p40") {
-    stopifnot(training_var_amount <= length(partition$patient_40))
-    
-    input_data <- epirubicin$IC50_combined.sva
-    input_label <- epirubicin.labels$IC50_combined
-    input_partition = partition$patient_40[[training_var_amount]]$c2p.IC50
-    input_feature.l1000 <- feature.l1000$cp
-    stop("ic50 labels are too imbalanced!")
-  } else if (args[5] == "c2p_auc_p40") {
-    stopifnot(training_var_amount <= length(partition$patient_40))
+  } else if (args[5] == "c2p_auc_p50") {
+    stopifnot(training_var_amount <= length(partition$patient_50))
     
     input_data <- epirubicin$AUC_combined.sva
     input_label <- epirubicin.labels$AUC_combined
-    input_partition = partition$patient_40[[training_var_amount]]$c2p.AUC
+    input_partition = partition$patient_50[[training_var_amount]]$c2p.AUC
     input_feature.l1000 <- feature.l1000$cp
-    INPUT.NFOLDS = 3 # too imbalanced to do 5
-  } else if (args[5] == "c2p_slope_p40") {
-    stopifnot(training_var_amount <= length(partition$patient_40))
+    input.type_measure = "acc" # too imbalanced to do auc
+  } else if (args[5] == "c2p_slope_p50") {
+    stopifnot(training_var_amount <= length(partition$patient_50))
     
     input_data <- epirubicin$slope_combined.sva
     input_label <- epirubicin.labels$slope_combined
-    input_partition = partition$patient_40[[training_var_amount]]$c2p.slope
+    input_partition = partition$patient_50[[training_var_amount]]$c2p.slope
     input_feature.l1000 <- feature.l1000$cp
-    INPUT.NFOLDS = 3 # too imbalanced to do 5
-  } else if (args[5] == "cp2p_slope_p80") {
-    stopifnot(training_var_amount <= length(partition$patient_80))
-    
-    input_data <- epirubicin$slope_combined.sva
-    input_label <- epirubicin.labels$slope_combined
-    input_partition = partition$patient_80[[training_var_amount]]$cp2p.slope
-    input_feature.l1000 <- feature.l1000$cp
-  } else if (args[5] == "cp2p_auc_p80") {
-    stopifnot(training_var_amount <= length(partition$patient_80))
-    
-    input_data <- epirubicin$AUC_combined.sva
-    input_label <- epirubicin.labels$AUC_combined
-    input_partition = partition$patient_80[[training_var_amount]]$cp2p.AUC
-    input_feature.l1000 <- feature.l1000$cp
-  } else if (args[5] == "cp2p_ic50_p80") {
-    stopifnot(training_var_amount <= length(partition$patient_80))
-    
-    input_data <- epirubicin$IC50_combined.sva
-    input_label <- epirubicin.labels$IC50_combined
-    input_partition = partition$patient_80[[training_var_amount]]$cp2p.IC50
-    input_feature.l1000 <- feature.l1000$cp
-    stop("ic50 labels are too imbalanced!")
+    input.type_measure = "acc" # too imbalanced to do auc
   } else {
     stop(paste("args[5]", args[5], "is invalid."))
   }

@@ -197,31 +197,18 @@ stopifnot(length(input.cell_line_order$slope) == length(input.cell_line_order$IC
 stopifnot(length(input.cell_line_order$AUC) == length(input.cell_line_order$IC50))
 stopifnot(length(input.cell_line_order$AUC) > 0)
 
-stopifnot(length(partition$cell_lines_all[[7]]$p2p[[1]]$training_index) == 80)
-patient_80 <- foreach(input.training_amount.c = seq(from = 5, to = 38, by = 5), .errorhandling = "stop") %dopar% {
+stopifnot(length(partition$cell_lines_all[[4]]$p2p[[100]]$training_index) == 50)
+patient_50 <- foreach(input.training_amount.c = seq(from = 5, to = 38, by = 5), .errorhandling = "stop") %dopar% {
   generate_random_partition(labels_cell_lines = input.labels_cell_lines, 
                             labels_patient = epirubicin.labels$patient,
-                            training_amount.p = 80,
+                            training_amount.p = 50,
                             leave_one_out = FALSE,
                             cell_line_order = input.cell_line_order,
                             training_amount.c = input.training_amount.c,
-                            input_partition = partition$cell_lines_all[[7]],
+                            input_partition = partition$cell_lines_all[[4]],
                             acc_training = FALSE)
 }
-partition$patient_80 <- patient_80
-
-stopifnot(length(partition$cell_lines_all[[3]]$p2p[[3]]$training_index) == 40)
-patient_40 <- foreach(input.training_amount.c = seq(from = 5, to = 38, by = 5), .errorhandling = "stop") %dopar% {
-  generate_random_partition(labels_cell_lines = input.labels_cell_lines, 
-                            labels_patient = epirubicin.labels$patient,
-                            training_amount.p = 40,
-                            leave_one_out = FALSE,
-                            cell_line_order = input.cell_line_order,
-                            training_amount.c = input.training_amount.c,
-                            input_partition = partition$cell_lines_all[[3]],
-                            acc_training = FALSE)
-}
-partition$patient_40 <- patient_40
+partition$patient_50 <- patient_50
 
 # save worksapce ----------------------------------------------------------
 save(sampleinfo.gray, epirubicin, epirubicin.labels, feature.l1000, partition,
