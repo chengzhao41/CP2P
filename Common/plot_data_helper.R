@@ -10,8 +10,8 @@ create_plot <- function(input.output_file_name_plot,
   
   # create the png file
   png(filename = paste0(output_dir, input.output_file_name_plot), width = 800, height = 800)
-  input.ylim = c((floor(range(varying_training_matrix$mean)[1]*10)/10) - 0.05, 
-                 (ceiling(range(varying_training_matrix$mean)[2]*10)/10) + 0.1)
+  input.ylim = c((max(0, floor((range(varying_training_matrix$mean)[1] - 0.05)*20)/20)) , 
+                 (ceiling(range(varying_training_matrix$mean)[2]*10)/10) + 0.15)
   input.yaxp = c(input.ylim[1], min(1, input.ylim[2]), round((min(1, input.ylim[2]) - input.ylim[1]) / 0.05))
   if (input.yaxp[3] >= 15) {
     input.ylim[2] = input.ylim[2] + 0.2
@@ -200,23 +200,21 @@ create_plot_best <- function(input.x_axis,
                              include_std = TRUE,
                              input.color_manual,
                              input.shape_manual,
-                             input.constant_best_ind) 
+                             input.constant_best_ind,
+                             input.best_model_ind = NULL,
+                             input.constant_best_model_ind = NULL) 
 {
-  stopifnot(!is.null(input.x_axis))
-  stopifnot(!is.null(input_x_labels))
-  stopifnot(!is.null(input.results))
-  stopifnot(!is.null(input.results_constant))
-  stopifnot(!is.null(input.output_file_name_plot))
-  stopifnot(!is.null(output_dir))
-  stopifnot(!is.null(input.labels))
-  stopifnot(!is.null(input.labels_constant))
-  stopifnot(!is.null(include_std))
-  stopifnot(!is.null(input.color_manual))
-  stopifnot(!is.null(input.shape_manual))
+
   stopifnot(length(input.color_manual) == length(input.shape_manual))
-  stopifnot(!is.null(input.constant_best_ind))
   stopifnot(length(input.labels) == length(input.results))
   stopifnot(length(input.labels_constant) == length(input.results_constant))
+  
+  if (!is.null(input.best_model_ind)) {
+    stopifnot(length(input.best_model_ind) == length(input.results))
+  }
+  if (!is.null(input.constant_best_model_ind)) {
+    stopifnot(length(input.constant_best_model_ind) == length(input.results_constant))    
+  }
   
   require("ggplot2")
   require("grid")
@@ -232,11 +230,16 @@ create_plot_best <- function(input.x_axis,
     current_results <- input.results[[i]]
     last_3_ind = (dim(current_results$mean)[1] - 2) : dim(current_results$mean)[1]
     stopifnot(length(last_3_ind) == 3)
-    current_best <- which(max(apply(current_results$mean[last_3_ind, ], 2, mean)) == apply(current_results$mean[last_3_ind, ], 2, mean))
-    if (length(current_best) > 1) {
-      warnings("Many best")
-      print(current_best)
-      current_best <- current_best[1]
+    
+    if (is.null(input.best_model_ind)) {
+      current_best <- which(max(apply(current_results$mean[last_3_ind, ], 2, mean)) == apply(current_results$mean[last_3_ind, ], 2, mean))
+      if (length(current_best) > 1) {
+        warnings("Many best")
+        print(current_best)
+        current_best <- current_best[1]
+      }
+    } else {
+      current_best <- input.best_model_ind[[i]]
     }
     
     if (include_std) {
@@ -264,12 +267,18 @@ create_plot_best <- function(input.x_axis,
     all.m$Approach[nrow(all.m)] <- input.labels_constant[i]
     
     current_results <- input.results_constant[[i]]
-    current_best <- which(current_results$mean[input.constant_best_ind, ] == max(current_results$mean[input.constant_best_ind, ]))
-    if (length(current_best) > 1) {
-      warnings("Many best")
-      print(current_best)
-      current_best <- current_best[1]
+    
+    if (is.null(input.constant_best_model_ind)) {
+      current_best <- which(current_results$mean[input.constant_best_ind, ] == max(current_results$mean[input.constant_best_ind, ]))
+      if (length(current_best) > 1) {
+        warnings("Many best")
+        print(current_best)
+        current_best <- current_best[1]
+      }
+    } else {
+      current_best <- input.constant_best_model_ind[[i]]
     }
+
     min_value <- min(min_value, current_results$mean[, current_best])   
     max_value <- max(max_value, current_results$mean[, current_best])
     best_model_constant <- c(best_model_constant, current_best)
@@ -280,7 +289,11 @@ create_plot_best <- function(input.x_axis,
   calculated_size = length(input.results) + length(input.results_constant)
   
   # The errorbars overlapped, so use position_dodge to move them horizontally
-  pd <- position_dodge(2) # move them .05 to the left and right
+  if (include_std) {
+    pd <- position_dodge(2) # move them .05 to the left and right
+  } else {
+    pd <- position_dodge(0)
+  }
   
   # get the colours
   plot_best <- ggplot(all.m, aes(x=xval, y=yval, colour = Approach, ymax = max_value, ymin = min_value)) + 
@@ -309,4 +322,5 @@ create_plot_best <- function(input.x_axis,
   png(filename = paste0(output_dir, input.output_file_name_plot), width = 800, height = 800)
   print(plot_best)
   dev.off()
+  return (list(best_model = best_model, best_model_constant = best_model_constant))
 }
