@@ -13,9 +13,9 @@ generate_random_partition <- function(
   stopifnot(!is.null(acc_training))
   stopifnot(length(labels_cell_lines) > 0)
   stopifnot(length(labels_cell_lines) == length(cell_line_order))
-  stopifnot(length(labels_patient) >= 10)
   stopifnot(training_amount.p >= 10)
   stopifnot(length(labels_patient) > training_amount.p)
+  stopifnot(min(table(labels_patient)) >= 16)
   
   require("doParallel")
 
@@ -40,6 +40,13 @@ generate_random_partition <- function(
   } else {
     warning("IC50 response labels are not provided")
   }
+  
+  # get the true and false class labels indices
+  temp.patient.true <- which(labels_patient == TRUE)
+  temp.patient.false <- which(labels_patient == FALSE)
+  stopifnot(length(temp.patient.true) >= 8)
+  stopifnot(length(temp.patient.false) >= 8)
+  
 
   partition <- list()
   
@@ -48,7 +55,6 @@ generate_random_partition <- function(
     for (temp.run_ind in 1:100) {
       
       # if the training and test set does not contain at least 5 samples of each label, then resample
-      temp.loop_count = 0
       temp.training_index.cp2p <- list()
       temp.training_index.c2p <- list()
       temp.training_index.p2p <- vector()
@@ -56,9 +62,17 @@ generate_random_partition <- function(
       repeat {
         
         if (is.null(input_partition)) {
-          temp.training_index.p2p <- sample(temp.patients, training_amount.p)
+          temp.training_index.p2p <- sample(temp.patient.false, 8)
+          temp.training_index.p2p <- c(temp.training_index.p2p, sample(temp.patient.true, 8))
+          
+          temp.test_index <- sample(temp.patient.false[-which(temp.patient.false %in% temp.training_index.p2p)], 8)
+          temp.test_index <- c(temp.test_index, sample(temp.patient.true[-which(temp.patient.true %in% temp.training_index.p2p)], 8))
+          
+          temp.training_index.p2p <- c(temp.training_index.p2p, sample(temp.patients[-c(temp.training_index.p2p, temp.test_index)], training_amount.p - 16))
+          stopifnot(min(table(labels_patient[temp.training_index.p2p])) >= 8)
           stopifnot(length(temp.training_index.p2p) == training_amount.p)
           temp.test_index <- setdiff(temp.patients, temp.training_index.p2p)
+          stopifnot(min(table(labels_patient[temp.test_index])) >= 8)
         } else {
           temp.training_index.p2p <- input_partition$p2p[[temp.run_ind]]$training_index
           stopifnot(length(temp.training_index.p2p) == training_amount.p)
@@ -82,18 +96,17 @@ generate_random_partition <- function(
         }
         
         if (acc_training) {
-          if ((length(table(labels_patient[temp.training_index.p2p])) == 2 && min(table(labels_patient[temp.training_index.p2p])) >= 5)) {
+          if ((length(table(labels_patient[temp.training_index.p2p])) == 2 && min(table(labels_patient[temp.training_index.p2p])) >= 8)) {
             break
           }          
         } else {
-          if ((length(table(labels_patient[temp.test_index])) == 2 && min(table(labels_patient[temp.test_index])) >= 5
-               && length(table(labels_patient[temp.training_index.p2p])) == 2 && min(table(labels_patient[temp.training_index.p2p])) >= 5)) {
+          if ((length(table(labels_patient[temp.test_index])) == 2 && min(table(labels_patient[temp.test_index])) >= 8
+               && length(table(labels_patient[temp.training_index.p2p])) == 2 && min(table(labels_patient[temp.training_index.p2p])) >= 8)) {
             break
           }
         }
-
-        temp.loop_count = temp.loop_count + 1
-        stopifnot(temp.loop_count < 100)
+        
+        stop("Something went wrong during partitioning!")
       }
       
       stopifnot(length(temp.training_index.p2p) == training_amount.p)
