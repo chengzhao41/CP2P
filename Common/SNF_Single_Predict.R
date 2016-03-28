@@ -1,4 +1,13 @@
-SNF_Single_Predict <- function(feature.sets, parameters, data, partition, ground_truth, run_ind = 0, NFOLDS = 10, verbose = FALSE, type_measure = "auc") {  
+SNF_Single_Predict <- function(
+  feature.sets, 
+  parameters, 
+  data, 
+  partition, 
+  ground_truth, 
+  run_ind = 0, 
+  NFOLDS = 10, 
+  verbose = FALSE, 
+  type_measure = "auc") {  
   
   require("foreach")
   require("doParallel")
@@ -9,7 +18,7 @@ SNF_Single_Predict <- function(feature.sets, parameters, data, partition, ground
     feature.sets = 1:dim(data)[2]
   }
   
-  ground_truth[ground_truth == -1] = 0
+  ground_truth[which(ground_truth) == FALSE] = 0
   
   # Error handling
   stopifnot(typeof(feature.sets) == "integer")
@@ -19,12 +28,27 @@ SNF_Single_Predict <- function(feature.sets, parameters, data, partition, ground
   stopifnot(range(ground_truth)[1] == 0)
   stopifnot(range(ground_truth)[2] == 1)
   stopifnot(length(parameters$K) > 1)
-  stopifnot(run_ind > 0)  
+  stopifnot(run_ind > 0)
   
   f.ind <- feature.sets
-  data.use = data[, f.ind]    
+  data.use = data[, f.ind]
   
-  temp.folds = createFolds(partition[[run_ind]]$training_index, k = NFOLDS)
+  temp.repeat_fold <- TRUE
+  temp.loop_count = 0
+  while (temp.repeat_fold) {
+    temp.folds = createFolds(partition[[run_ind]]$training_index, k = NFOLDS)
+    temp.repeat_fold = FALSE
+    for (i in 1:length(temp.folds)) {
+      if (min(table(ground_truth[temp.folds[[i]]])) < 2) {
+        temp.repeat_fold = TRUE
+        break
+      }
+    }
+    temp.loop_count = temp.loop_count + 1
+    if (temp.loop_count > 100) {
+      stop("create fold error in SNF predict")
+    }
+  }
   
   auc.training <- foreach (i = 1:length(parameters$K), .combine=rbind, .errorhandling="stop") %dopar% {    
     auc.training.one_split  <- foreach (cv_ind = 1:NFOLDS, .combine=rbind, .errorhandling="stop") %do% {
