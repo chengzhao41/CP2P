@@ -351,35 +351,35 @@ if (args[4] == "bortezomib") {
   } else if (args[5] == "cp2p_slope") {
     stopifnot(training_var_amount <= length(partition$cell_lines_all))
     
-    input_data <- epirubicin$slope_combined.sva 
+    input_data <- epirubicin$slope_combined.ComBat 
     input_label <- epirubicin.labels$slope_combined
     input_partition = partition$cell_lines_all[[training_var_amount]]$cp2p.slope
     input_feature.l1000 <- feature.l1000$cp
   } else if (args[5] == "cp2p_auc") {
     stopifnot(training_var_amount <= length(partition$cell_lines_all))
     
-    input_data <- epirubicin$AUC_combined.sva
+    input_data <- epirubicin$AUC_combined.ComBat
     input_label <- epirubicin.labels$AUC_combined
     input_partition = partition$cell_lines_all[[training_var_amount]]$cp2p.AUC
     input_feature.l1000 <- feature.l1000$cp
   } else if (args[5] == "cp2p_auc_p50") {
     stopifnot(training_var_amount <= length(partition$patient_50))
     
-    input_data <- epirubicin$AUC_combined.sva
+    input_data <- epirubicin$AUC_combined.ComBat
     input_label <- epirubicin.labels$AUC_combined
     input_partition = partition$patient_50[[training_var_amount]]$cp2p.AUC
     input_feature.l1000 <- feature.l1000$cp
   } else if (args[5] == "cp2p_slope_p50") {
     stopifnot(training_var_amount <= length(partition$patient_50))
     
-    input_data <- epirubicin$slope_combined.sva
+    input_data <- epirubicin$slope_combined.ComBat
     input_label <- epirubicin.labels$slope_combined
     input_partition = partition$patient_50[[training_var_amount]]$cp2p.slope
     input_feature.l1000 <- feature.l1000$cp
   } else if (args[5] == "c2p_auc_p50") {
     stopifnot(training_var_amount <= length(partition$patient_50))
     
-    input_data <- epirubicin$AUC_combined.sva
+    input_data <- epirubicin$AUC_combined.ComBat
     input_label <- epirubicin.labels$AUC_combined
     input_partition = partition$patient_50[[training_var_amount]]$c2p.AUC
     input_feature.l1000 <- feature.l1000$cp
@@ -387,7 +387,7 @@ if (args[4] == "bortezomib") {
   } else if (args[5] == "c2p_slope_p50") {
     stopifnot(training_var_amount <= length(partition$patient_50))
     
-    input_data <- epirubicin$slope_combined.sva
+    input_data <- epirubicin$slope_combined.ComBat
     input_label <- epirubicin.labels$slope_combined
     input_partition = partition$patient_50[[training_var_amount]]$c2p.slope
     input_feature.l1000 <- feature.l1000$cp

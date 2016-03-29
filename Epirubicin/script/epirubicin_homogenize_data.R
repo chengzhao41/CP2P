@@ -1,6 +1,6 @@
 # Load Libraries ----------------------------------------------------------
 library("doParallel")
-library("sva")
+library("ComBat")
 
 source('Common/preparing_data_helper.R')
 source('Common/comGENE.R')
@@ -38,6 +38,8 @@ table(epirubicin.labels$slope)
 table(epirubicin.labels$AUC)
 # FALSE  TRUE 
 # 7    31 
+
+# not using IC50 labels, because it is too imbalanced
 table(epirubicin.labels$IC50)
 # FALSE  TRUE 
 # 2    36 
@@ -53,91 +55,70 @@ table(epirubicin.labels$patient)
 # FALSE  TRUE 
 # 101    17 
 
-# Using slope labels for SVA  ---------------------------------
+# Using slope labels for ComBat  ---------------------------------
 temp.data <- comGENE(epirubicin$patient, scale(epirubicin$gray_slope))
 mean(temp.data[[1]]) #1.191286e-18
 mean(temp.data[[2]]) #1.56495e-19
 dim(temp.data[[1]]) #118 19100
 dim(temp.data[[2]]) #38 19343
 
-# before sva
+# before combat
 epirubicin$slope_combined <- rbind(temp.data[[1]], temp.data[[2]])
 epirubicin.labels$slope_combined <- c(epirubicin.labels$patient, epirubicin.labels$slope)
 epirubicin.labels$slope_combined.source <- c(rep("patient", dim(temp.data[[1]])[1]), rep("gray", dim(temp.data[[2]])[1]))
 #show_pca(input_data = epirubicin$slope_combined, label = epirubicin.labels$slope_combined)
 show_pca(input_data = epirubicin$slope_combined, label = epirubicin.labels$slope_combined.source)
-# not the outlier greatly skews the red eclipse 
+warning("note the outlier greatly skews the patient eclipse")
 
-# sva
-epirubicin$slope_combined.sva <- sva_combine(batch = epirubicin.labels$slope_combined.source,
+# ComBat
+epirubicin$slope_combined.ComBat <- ComBat_combine(batch = epirubicin.labels$slope_combined.source,
                                              label = epirubicin.labels$slope_combined,
-                                             input_data = epirubicin$slope_combined,
-                                             n.sv = 2)
-mean(epirubicin$slope_combined.sva) 
-# 1.994808e-17
+                                             input_data = epirubicin$slope_combined)
+mean(epirubicin$slope_combined.ComBat) 
+# -5.349659e-06
 
-# after sva
-#show_pca(input_data = epirubicin$slope_combined.sva, label = epirubicin.labels$slope_combined)
-show_pca(input_data = epirubicin$slope_combined.sva, label = epirubicin.labels$slope_combined.source)
+# after ComBat
+#show_pca(input_data = epirubicin$slope_combined.ComBat, label = epirubicin.labels$slope_combined)
+show_pca(input_data = epirubicin$slope_combined.ComBat, label = epirubicin.labels$slope_combined.source)
 rm(temp.data)
 
-# Using IC50 labels for SVA  ---------------------------------
+# Using IC50 labels for ComBat  ---------------------------------
 temp.data <- comGENE(epirubicin$patient, scale(epirubicin$gray_IC50))
 mean(temp.data[[1]]) # 1.191286e-18
 mean(temp.data[[2]]) # 1.56495e-19
 dim(temp.data[[1]]) # 118 19100
 dim(temp.data[[2]]) # 38 19100
 
-# before sva
-epirubicin.labels$IC50_combined <- c(epirubicin.labels$patient, epirubicin.labels$IC50)
-epirubicin.labels$IC50_combined.source <- c(rep("patient", dim(temp.data[[1]])[1]), rep("gray", dim(temp.data[[2]])[1]))
-epirubicin$IC50_combined <- rbind(temp.data[[1]], temp.data[[2]])
-#show_pca(input_data = epirubicin$IC50_combined, label = epirubicin.labels$IC50_combined)
-show_pca(input_data = epirubicin$IC50_combined, label = epirubicin.labels$IC50_combined.source)
-
-# sva
-epirubicin$IC50_combined.sva <- sva_combine(batch = epirubicin.labels$IC50_combined.source,
-                                            label = epirubicin.labels$IC50_combined, 
-                                            input_data = epirubicin$IC50_combined, 
-                                            n.sv = 2)
-mean(epirubicin$IC50_combined.sva) 
-# -1.031379e-17
-
-#show_pca(input_data = epirubicin$IC50_combined.sva, label = epirubicin.labels$IC50_combined)
-show_pca(input_data = epirubicin$IC50_combined.sva, label = epirubicin.labels$IC50_combined.source)
-rm(temp.data)
-
-# Using AUC labels for SVA  ---------------------------------
+# Using AUC labels for ComBat  ---------------------------------
 temp.data <- comGENE(epirubicin$patient, scale(epirubicin$gray_AUC))
 mean(temp.data[[1]]) #1.191286e-18
 mean(temp.data[[2]]) #1.56495e-19
 
-# before sva
+# before ComBat
 epirubicin.labels$AUC_combined <- c(epirubicin.labels$patient, epirubicin.labels$AUC)
 epirubicin.labels$AUC_combined.source <- c(rep("patient", dim(temp.data[[1]])[1]), rep("gray", dim(temp.data[[2]])[1]))
 epirubicin$AUC_combined <- rbind(temp.data[[1]], temp.data[[2]])
 #show_pca(input_data = epirubicin$AUC_combined, label = epirubicin.labels$AUC_combined)
 show_pca(input_data = epirubicin$AUC_combined, label = epirubicin.labels$AUC_combined.source)
 
-epirubicin$AUC_combined.sva <- sva_combine(batch = epirubicin.labels$AUC_combined.source,
+epirubicin$AUC_combined.ComBat <- ComBat_combine(batch = epirubicin.labels$AUC_combined.source,
                                            label = epirubicin.labels$AUC_combined, 
-                                           input_data = epirubicin$AUC_combined, 
-                                           n.sv = 2)
-mean(epirubicin$AUC_combined.sva) 
-# 3.530146e-17
+                                           input_data = epirubicin$AUC_combined)
+mean(epirubicin$AUC_combined.ComBat) 
+# -3.662885e-06
 
-#show_pca(input_data = epirubicin$AUC_combined.sva, label = epirubicin.labels$AUC_combined)
-show_pca(input_data = epirubicin$AUC_combined.sva, label = epirubicin.labels$AUC_combined.source)
+#show_pca(input_data = epirubicin$AUC_combined.ComBat, label = epirubicin.labels$AUC_combined)
+show_pca(input_data = epirubicin$AUC_combined.ComBat, label = epirubicin.labels$AUC_combined.source)
 rm(temp.data)
 
 # get l1000 features ------------------------------------------------------
-stopifnot(colnames(epirubicin$gray_IC50.sva) == colnames(epirubicin$gray_AUC.sva))
-stopifnot(colnames(epirubicin$gray_slope.sva) == colnames(epirubicin$gray_AUC.sva))
+stopifnot(colnames(epirubicin$gray_IC50.ComBat) == colnames(epirubicin$gray_AUC.ComBat))
+stopifnot(colnames(epirubicin$gray_slope.ComBat) == colnames(epirubicin$gray_AUC.ComBat))
 
 Landmark_Genes_n978 <- read.csv("Common/Landmark_Genes_n978.csv")
 
 feature.l1000 <- list()
-feature.l1000$cp <- which(colnames(epirubicin$AUC_combined.sva) %in% Landmark_Genes_n978$Ensembl)
+feature.l1000$cp <- which(colnames(epirubicin$AUC_combined.ComBat) %in% Landmark_Genes_n978$Ensembl)
 feature.l1000$pp <- which(colnames(epirubicin$patient) %in% Landmark_Genes_n978$Ensembl)
 
 stopifnot(length(feature.l1000$cp) > 0)
