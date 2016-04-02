@@ -33,13 +33,15 @@ SNF_Single_Predict <- function(
   f.ind <- feature.sets
   data.use = data[, f.ind]
   
+  # create fold and also ensure that each fold has at least samples from both class when
+  # it is auc
   temp.repeat_fold <- TRUE
   temp.loop_count = 0
   while (temp.repeat_fold) {
     temp.folds = createFolds(partition[[run_ind]]$training_index, k = NFOLDS)
     temp.repeat_fold = FALSE
     for (i in 1:length(temp.folds)) {
-      if (min(table(ground_truth[temp.folds[[i]]])) < 2) {
+      if (type_measure == "auc" && min(table(ground_truth[temp.folds[[i]]])) < 2) {
         temp.repeat_fold = TRUE
         break
       }
