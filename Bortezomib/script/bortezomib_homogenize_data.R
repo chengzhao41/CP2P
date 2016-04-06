@@ -171,7 +171,7 @@ feature.l1000$pp <- which(colnames(bortezomib$patient.combat) %in% Landmark_Gene
 stopifnot(length(feature.l1000$cp) > 0)
 stopifnot(length(feature.l1000$pp) > 0)
 
-# create partitions for 10 to 150 patients using all cell lines ------------------------
+# create partitions for 10 to 120 patients using all cell lines ------------------------
 partition <- list()
 
 input.labels_cell_lines = list()
@@ -188,16 +188,14 @@ stopifnot(input.cell_line_order$slope == input.cell_line_order$IC50)
 stopifnot(input.cell_line_order$AUC == input.cell_line_order$IC50)  
 stopifnot(length(input.cell_line_order$AUC) > 0)
 
-cell_lines_all <- foreach(input.training_amount.p = seq(from = 10, to = 150, by = 10)
-                          , .errorhandling = "stop") %dopar% {
+cell_lines_all <- foreach(parInd = c(1:11), .errorhandling = "stop") %dopar% {
   
-  generate_random_partition(labels_cell_lines = input.labels_cell_lines, 
-                            labels_patient = bortezomib.labels$patient,
-                            training_amount.p = input.training_amount.p,
-                            leave_one_out = FALSE,
+  generate_random_partition(labels.cell_lines = input.labels_cell_lines, 
+                            labels.patient = bortezomib.labels$patient,
+                            num.training.p = seq(from = 20, to = 120, by = 10)[parInd],
                             cell_line_order = input.cell_line_order,
-                            training_amount.c = length(input.cell_line_order$AUC),
-                            acc_training = FALSE
+                            num.training.c = length(input.cell_line_order$AUC),
+                            num.test_size = 49
                             )
 }
 
@@ -230,30 +228,45 @@ stopifnot(length(input.cell_line_order$slope) == length(input.cell_line_order$IC
 stopifnot(length(input.cell_line_order$AUC) == length(input.cell_line_order$IC50))
 stopifnot(length(input.cell_line_order$AUC) > 0)
 
-patient_100 <- foreach(input.training_amount.c = seq(from = 20, to = 300, by = 20), .errorhandling = "stop") %dopar% {
-                            generate_random_partition(labels_cell_lines = input.labels_cell_lines, 
-                                                      labels_patient = bortezomib.labels$patient,
-                                                      training_amount.p = 100,
-                                                      leave_one_out = FALSE,
-                                                      cell_line_order = input.cell_line_order,
-                                                      training_amount.c = input.training_amount.c,
-                                                      input_partition = partition$cell_lines_all[[10]],
-                                                      acc_training = FALSE)
+stopifnot(length(partition$cell_lines_all[[1]]$p2p[[1]]$training_index) == 20)
+input.training.c = c(seq(from = 10, to = 100, by = 10), seq(from = 120, to = 313, by = 20))
+stopifnot(length(input.training.c) == 20)
+patient_20 <- foreach(parInd = c(1:20), .errorhandling = "stop") %dopar% {
+  if (parInd == 1) {
+    num.min_labels.training = 5
+  } else {
+    num.min_labels.training = 8
   }
-partition$patient_100 <- patient_100
-
-patient_50 <- foreach(input.training_amount.c = seq(from = 20, to = 300, by = 20), .errorhandling = "stop") %dopar% {
-  generate_random_partition(labels_cell_lines = input.labels_cell_lines, 
-                            labels_patient = bortezomib.labels$patient,
-                            training_amount.p = 50,
-                            leave_one_out = FALSE,
+  generate_random_partition(labels.cell_lines = input.labels_cell_lines, 
+                            labels.patient = bortezomib.labels$patient,
+                            num.training.p = 20,
                             cell_line_order = input.cell_line_order,
-                            training_amount.c = input.training_amount.c,
-                            input_partition = partition$cell_lines_all[[5]],
-                            acc_training = FALSE)
+                            num.training.c = input.training.c[parInd],
+                            input_partition = partition$cell_lines_all[[1]],
+                            num.min_labels.training = num.min_labels.training)
 }
-partition$patient_50 <- patient_50
+partition$patient_20 <- patient_20
+
+stopifnot(length(partition$cell_lines_all[[3]]$p2p[[1]]$training_index) == 40)
+patient_40 <- foreach(parInd = c(1:20), .errorhandling = "stop") %dopar% {
+  if (parInd == 1) {
+    num.min_labels.training = 5
+  } else {
+    num.min_labels.training = 8
+  }
+  generate_random_partition(labels.cell_lines = input.labels_cell_lines, 
+                            labels.patient = bortezomib.labels$patient,
+                            num.training.p = 40,
+                            cell_line_order = input.cell_line_order,
+                            num.training.c = input.training.c[parInd],
+                            input_partition = partition$cell_lines_all[[3]],
+                            num.min_labels.training = num.min_labels.training)
+}
+partition$patient_40 <- patient_40
 
 # save worksapce ----------------------------------------------------------
+names(bortezomib)
+names(bortezomib.labels)
+names(partition)
 save(sampleinfo.gdsc, bortezomib, bortezomib.labels, feature.l1000, partition,
      file = "Bortezomib/WS/bortezomib_data.RData")

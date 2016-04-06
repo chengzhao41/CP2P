@@ -58,63 +58,63 @@ if (args[4] == "bortezomib") {
     input_label <- bortezomib.labels$IC50_combined
     input_partition = partition$cell_lines_all[[training_var_amount]]$cp2p.IC50
     input_feature.l1000 <- feature.l1000$cp
-  } else if (args[5] == "cp2p_ic50_p50") {
+  } else if (args[5] == "cp2p_ic50_p20") {
     stopifnot(training_var_amount <= length(partition$patient_50))
     
     input_data <- bortezomib$IC50_combined.sva
     input_label <- bortezomib.labels$IC50_combined
     input_partition = partition$patient_50[[training_var_amount]]$cp2p.IC50
     input_feature.l1000 <- feature.l1000$cp
-  } else if (args[5] == "cp2p_auc_p50") {
+  } else if (args[5] == "cp2p_auc_p20") {
     stopifnot(training_var_amount <= length(partition$patient_50))
     
     input_data <- bortezomib$AUC_combined.sva
     input_label <- bortezomib.labels$AUC_combined
     input_partition = partition$patient_50[[training_var_amount]]$cp2p.AUC
     input_feature.l1000 <- feature.l1000$cp
-  } else if (args[5] == "cp2p_slope_p50") {
+  } else if (args[5] == "cp2p_slope_p20") {
     stopifnot(training_var_amount <= length(partition$patient_50))
     
     input_data <- bortezomib$slope_combined.sva
     input_label <- bortezomib.labels$slope_combined
     input_partition = partition$patient_50[[training_var_amount]]$cp2p.slope
     input_feature.l1000 <- feature.l1000$cp
-  } else if (args[5] == "c2p_ic50_p50") {
+  } else if (args[5] == "c2p_ic50_p20") {
     stopifnot(training_var_amount <= length(partition$patient_50))
     
     input_data <- bortezomib$IC50_combined.sva
     input_label <- bortezomib.labels$IC50_combined
     input_partition = partition$patient_50[[training_var_amount]]$c2p.IC50
     input_feature.l1000 <- feature.l1000$cp
-  } else if (args[5] == "c2p_auc_p50") {
+  } else if (args[5] == "c2p_auc_p20") {
     stopifnot(training_var_amount <= length(partition$patient_50))
     
     input_data <- bortezomib$AUC_combined.sva
     input_label <- bortezomib.labels$AUC_combined
     input_partition = partition$patient_50[[training_var_amount]]$c2p.AUC
     input_feature.l1000 <- feature.l1000$cp
-  } else if (args[5] == "c2p_slope_p50") {
+  } else if (args[5] == "c2p_slope_p20") {
     stopifnot(training_var_amount <= length(partition$patient_50))
     
     input_data <- bortezomib$slope_combined.sva
     input_label <- bortezomib.labels$slope_combined
     input_partition = partition$patient_50[[training_var_amount]]$c2p.slope
     input_feature.l1000 <- feature.l1000$cp
-  } else if (args[5] == "cp2p_slope_p100") {
+  } else if (args[5] == "cp2p_slope_p40") {
     stopifnot(training_var_amount <= length(partition$patient_100))
     
     input_data <- bortezomib$slope_combined.sva
     input_label <- bortezomib.labels$slope_combined
     input_partition = partition$patient_100[[training_var_amount]]$cp2p.slope
     input_feature.l1000 <- feature.l1000$cp
-  } else if (args[5] == "cp2p_auc_p100") {
+  } else if (args[5] == "cp2p_auc_p40") {
     stopifnot(training_var_amount <= length(partition$patient_100))
     
     input_data <- bortezomib$AUC_combined.sva
     input_label <- bortezomib.labels$AUC_combined
     input_partition = partition$patient_100[[training_var_amount]]$cp2p.AUC
     input_feature.l1000 <- feature.l1000$cp
-  } else if (args[5] == "cp2p_ic50_p100") {
+  } else if (args[5] == "cp2p_ic50_p40") {
     stopifnot(training_var_amount <= length(partition$patient_100))
     
     input_data <- bortezomib$IC50_combined.sva
@@ -362,21 +362,21 @@ if (args[4] == "bortezomib") {
     input_label <- epirubicin.labels$AUC_combined
     input_partition = partition$cell_lines_all[[training_var_amount]]$cp2p.AUC
     input_feature.l1000 <- feature.l1000$cp
-  } else if (args[5] == "cp2p_auc_p50") {
+  } else if (args[5] == "cp2p_auc_p20") {
     stopifnot(training_var_amount <= length(partition$patient_50))
     
     input_data <- epirubicin$AUC_combined
     input_label <- epirubicin.labels$AUC_combined
     input_partition = partition$patient_50[[training_var_amount]]$cp2p.AUC
     input_feature.l1000 <- feature.l1000$cp
-  } else if (args[5] == "cp2p_slope_p50") {
+  } else if (args[5] == "cp2p_slope_p20") {
     stopifnot(training_var_amount <= length(partition$patient_50))
     
     input_data <- epirubicin$slope_combined
     input_label <- epirubicin.labels$slope_combined
     input_partition = partition$patient_50[[training_var_amount]]$cp2p.slope
     input_feature.l1000 <- feature.l1000$cp
-  } else if (args[5] == "c2p_auc_p50") {
+  } else if (args[5] == "c2p_auc_p20") {
     stopifnot(training_var_amount <= length(partition$patient_50))
     
     input_data <- epirubicin$AUC_combined
@@ -384,7 +384,7 @@ if (args[4] == "bortezomib") {
     input_partition = partition$patient_50[[training_var_amount]]$c2p.AUC
     input_feature.l1000 <- feature.l1000$cp
     input.type_measure = "acc" # too imbalanced to do auc
-  } else if (args[5] == "c2p_slope_p50") {
+  } else if (args[5] == "c2p_slope_p20") {
     stopifnot(training_var_amount <= length(partition$patient_50))
     
     input_data <- epirubicin$slope_combined
