@@ -24,7 +24,7 @@ print(args)
 
 parInd <- as.integer(args[[3]])
 INPUT.NFOLDS = 5  
-train_once == FALSE
+train_once = FALSE
 
 if (args[4] == "bortezomib") {
   load("Bortezomib/WS/bortezomib_data.RData")
