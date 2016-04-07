@@ -30,6 +30,11 @@ SNF_Single_Predict <- function(
   stopifnot(length(parameters$K) > 1)
   stopifnot(run_ind > 0)
   
+  if (length(partition[[1]]$training_index) < max(parameters$K)) {
+    warning("number of training samples is less than max K")
+    parameters$K = parameters$K[-which(parameters$K > length(partition[[1]]$training_index))]
+  }
+  
   f.ind <- feature.sets
   data.use = data[, f.ind]
   
@@ -65,13 +70,13 @@ SNF_Single_Predict <- function(
       temp.ground_truth = ground_truth[temp.training.index]
       stopifnot(rownames(temp.training_data) == names(temp.ground_truth))      
       stopifnot(length(table(temp.ground_truth)) == 2)
-      temp.predicted_labels <- SNF_LP_Cheng(train = temp.training_data, 
-                                            test = temp.test_data, 
-                                            groups = as.numeric(temp.ground_truth), 
-                                            K = parameters$K[i], 
-                                            alpha = 0.5, 
-                                            t = 20, 
-                                            method = 1)           
+      temp.predicted_labels <- SNF_LP(train = temp.training_data, 
+                                          test = temp.test_data, 
+                                          groups = as.numeric(temp.ground_truth), 
+                                          K = parameters$K[i], 
+                                          alpha = 0.5, 
+                                          t = 20, 
+                                          method = 1)           
       
       temp.predicted_labels <- temp.predicted_labels[[2]]      
       stopifnot(length(temp.predicted_labels) == dim(temp.training_data)[1] + dim(temp.test_data)[1])      
@@ -109,16 +114,15 @@ SNF_Single_Predict <- function(
   }
   
   temp.training_data = data.use[partition[[run_ind]]$training_index, ]
-  temp.test_data = data.use[c(partition[[run_ind]]$ES_index, partition[[run_ind]]$test_index), ]
+  temp.test_data = data.use[partition[[run_ind]]$test_index, ]
   
   #stopifnot(length(unique(c(rownames(temp.training_data), rownames(temp.test_data)))) == dim(data.use)[1])  
-  stopifnot(rownames(temp.test_data) == names(c(partition[[run_ind]]$ES_index, partition[[run_ind]]$test_index)))
+  stopifnot(rownames(temp.test_data) == names(partition[[run_ind]]$test_index))
   
-  temp.predicted_labels <- SNF_LP_Cheng(temp.training_data, temp.test_data, ground_truth[partition[[run_ind]]$training_index], 
+  temp.predicted_labels <- SNF_LP(temp.training_data, temp.test_data, ground_truth[partition[[run_ind]]$training_index], 
                                         K = parameters$K[best_parameters.ind], alpha = 0.5, t = 20, method = 1)             
   temp.all_predict <- temp.predicted_labels[[2]][-(1:(length(partition[[run_ind]]$training_index)))] 
   fs.test_prediction <- tail(temp.all_predict, length(partition[[run_ind]]$test_index))
-  fs.ES_prediction <- head(temp.all_predict, length(partition[[run_ind]]$ES_index))
   
   stopifnot(range(fs.test_prediction)[1] >= 0)
   stopifnot(range(fs.test_prediction)[2] <= 1)
@@ -129,9 +133,9 @@ SNF_Single_Predict <- function(
       fs.test_auc <- 0
       print(paste("Test AUC: ", fs.test_auc))    
     } else {    
-    temp.test_predict <- prediction(fs.test_prediction, ground_truth[partition[[run_ind]]$test_index])
-    fs.test_auc <- unlist(slot(performance(temp.test_predict, "auc"), "y.values"))
-    print(paste("Test AUC: ", fs.test_auc))    
+      temp.test_predict <- prediction(fs.test_prediction, ground_truth[partition[[run_ind]]$test_index])
+      fs.test_auc <- unlist(slot(performance(temp.test_predict, "auc"), "y.values"))
+      print(paste("Test AUC: ", fs.test_auc))    
     }
   }
   fs.test_accuracy <- mean(round(fs.test_prediction) == ground_truth[partition[[run_ind]]$test_index])        
@@ -145,7 +149,6 @@ SNF_Single_Predict <- function(
       list(
         training.auc = fs.training_auc
         , training.accuracy = fs.training_acc
-        , ES.prediction = fs.ES_prediction
         , test.prediction = fs.test_prediction
         , test.auc = fs.test_auc
         , test.accuracy = fs.test_accuracy
@@ -157,7 +160,6 @@ SNF_Single_Predict <- function(
       list(
         training.auc = fs.training_auc
         , training.accuracy = fs.training_acc
-        , ES.prediction = fs.ES_prediction
         , test.prediction = fs.test_prediction        
         , test.accuracy = fs.test_accuracy
         , K = parameters$K[best_parameters.ind]

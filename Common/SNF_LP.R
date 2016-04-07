@@ -1,4 +1,4 @@
-SNF_LP_Cheng <- function(train, test, groups, K=0, alpha=0.5, t=20, method=1) {  
+SNF_LP <- function(train, test, groups, K=0, alpha=0.5, t=20, method=1) {  
   
   require(SNFtool)
   
