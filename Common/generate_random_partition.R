@@ -109,6 +109,7 @@ generate_random_partition <- function(
         
       } else {
         training_index.p2p <- input_partition$p2p[[ind.partition]]$training_index
+        training_index.p2p <- training_index.p2p[1:num.training.p]
         stopifnot(length(training_index.p2p) == num.training.p)
         test_index <- input_partition$p2p[[ind.partition]]$test_index
       }

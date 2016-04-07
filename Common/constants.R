@@ -1,0 +1,25 @@
+model.names <- c(
+  "Elastic Net L1000" 
+  , "Lasso L1000" 
+  , "Ridge L1000" 
+  , "RF L1000" 
+  , "SVM lin L1000" 
+  , "SVM rbf L1000"           
+  , "SNF L1000"   
+  
+  , "Elastic Net all" 
+  , "Lasso all"   
+  , "Ridge all" 
+  , "RF all" 
+  , "SVM lin all" 
+  , "SVM rbf all"     
+  , "SNF all"
+  
+  , "Elastic Net mRMR1000" 
+  , "Lasso mRMR1000"   
+  , "Ridge mRMR1000" 
+  , "RF mRMR1000" 
+  , "SVM lin mRMR1000" 
+  , "SVM rbf mRMR1000"       
+  , "SNF mRMR1000"
+)

@@ -22,8 +22,10 @@ PARTITION_END = as.integer(args[2])
 
 print(args)
 
-training_var_amount <- as.integer(args[[3]])
+parInd <- as.integer(args[[3]])
 INPUT.NFOLDS = 5  
+train_once == FALSE
+
 if (args[4] == "bortezomib") {
   load("Bortezomib/WS/bortezomib_data.RData")
   
@@ -31,95 +33,98 @@ if (args[4] == "bortezomib") {
   input_snf.parameter <- seq(from = 5, to = 30, by = 5)
   
   if (args[5] == "p2p") {
-    stopifnot(training_var_amount <= length(partition$cell_lines_all))
+    stopifnot(parInd <= length(partition$cell_lines_all))
     
     input_data <- bortezomib$patient.combat
     input_label <- bortezomib.labels$patient
-    input_partition <- partition$cell_lines_all[[training_var_amount]]$p2p
+    input_partition <- partition$cell_lines_all[[parInd]]$p2p
     input_feature.l1000 <- feature.l1000$pp
   } else if (args[5] == "cp2p_slope") {
-    stopifnot(training_var_amount <= length(partition$cell_lines_all))
+    stopifnot(parInd <= length(partition$cell_lines_all))
     
     input_data <- bortezomib$slope_combined.sva 
     input_label <- bortezomib.labels$slope_combined
-    input_partition = partition$cell_lines_all[[training_var_amount]]$cp2p.slope
+    input_partition = partition$cell_lines_all[[parInd]]$cp2p.slope
     input_feature.l1000 <- feature.l1000$cp
   } else if (args[5] == "cp2p_auc") {
-    stopifnot(training_var_amount <= length(partition$cell_lines_all))
+    stopifnot(parInd <= length(partition$cell_lines_all))
     
     input_data <- bortezomib$AUC_combined.sva
     input_label <- bortezomib.labels$AUC_combined
-    input_partition = partition$cell_lines_all[[training_var_amount]]$cp2p.AUC
+    input_partition = partition$cell_lines_all[[parInd]]$cp2p.AUC
     input_feature.l1000 <- feature.l1000$cp
   } else if (args[5] == "cp2p_ic50") {
-    stopifnot(training_var_amount <= length(partition$cell_lines_all))
+    stopifnot(parInd <= length(partition$cell_lines_all))
     
     input_data <- bortezomib$IC50_combined.sva
     input_label <- bortezomib.labels$IC50_combined
-    input_partition = partition$cell_lines_all[[training_var_amount]]$cp2p.IC50
+    input_partition = partition$cell_lines_all[[parInd]]$cp2p.IC50
     input_feature.l1000 <- feature.l1000$cp
   } else if (args[5] == "cp2p_ic50_p20") {
-    stopifnot(training_var_amount <= length(partition$patient_20))
+    stopifnot(parInd <= length(partition$patient_20))
     
     input_data <- bortezomib$IC50_combined.sva
     input_label <- bortezomib.labels$IC50_combined
-    input_partition = partition$patient_20[[training_var_amount]]$cp2p.IC50
+    input_partition = partition$patient_20[[parInd]]$cp2p.IC50
     input_feature.l1000 <- feature.l1000$cp
   } else if (args[5] == "cp2p_auc_p20") {
-    stopifnot(training_var_amount <= length(partition$patient_20))
+    stopifnot(parInd <= length(partition$patient_20))
     
     input_data <- bortezomib$AUC_combined.sva
     input_label <- bortezomib.labels$AUC_combined
-    input_partition = partition$patient_20[[training_var_amount]]$cp2p.AUC
+    input_partition = partition$patient_20[[parInd]]$cp2p.AUC
     input_feature.l1000 <- feature.l1000$cp
   } else if (args[5] == "cp2p_slope_p20") {
-    stopifnot(training_var_amount <= length(partition$patient_20))
+    stopifnot(parInd <= length(partition$patient_20))
     
     input_data <- bortezomib$slope_combined.sva
     input_label <- bortezomib.labels$slope_combined
-    input_partition = partition$patient_20[[training_var_amount]]$cp2p.slope
+    input_partition = partition$patient_20[[parInd]]$cp2p.slope
     input_feature.l1000 <- feature.l1000$cp
   } else if (args[5] == "c2p_ic50_p20") {
-    stopifnot(training_var_amount <= length(partition$patient_20))
+    stopifnot(parInd <= length(partition$patient_20))
     
+    train_once = TRUE
     input_data <- bortezomib$IC50_combined.sva
     input_label <- bortezomib.labels$IC50_combined
-    input_partition = partition$patient_20[[training_var_amount]]$c2p.IC50
+    input_partition = partition$patient_20[[parInd]]$c2p.IC50
     input_feature.l1000 <- feature.l1000$cp
   } else if (args[5] == "c2p_auc_p20") {
-    stopifnot(training_var_amount <= length(partition$patient_20))
+    stopifnot(parInd <= length(partition$patient_20))
     
+    train_once = TRUE
     input_data <- bortezomib$AUC_combined.sva
     input_label <- bortezomib.labels$AUC_combined
-    input_partition = partition$patient_20[[training_var_amount]]$c2p.AUC
+    input_partition = partition$patient_20[[parInd]]$c2p.AUC
     input_feature.l1000 <- feature.l1000$cp
   } else if (args[5] == "c2p_slope_p20") {
-    stopifnot(training_var_amount <= length(partition$patient_20))
+    stopifnot(parInd <= length(partition$patient_20))
     
+    train_once = TRUE
     input_data <- bortezomib$slope_combined.sva
     input_label <- bortezomib.labels$slope_combined
-    input_partition = partition$patient_20[[training_var_amount]]$c2p.slope
+    input_partition = partition$patient_20[[parInd]]$c2p.slope
     input_feature.l1000 <- feature.l1000$cp
   } else if (args[5] == "cp2p_slope_p40") {
-    stopifnot(training_var_amount <= length(partition$patient_40))
+    stopifnot(parInd <= length(partition$patient_40))
     
     input_data <- bortezomib$slope_combined.sva
     input_label <- bortezomib.labels$slope_combined
-    input_partition = partition$patient_40[[training_var_amount]]$cp2p.slope
+    input_partition = partition$patient_40[[parInd]]$cp2p.slope
     input_feature.l1000 <- feature.l1000$cp
   } else if (args[5] == "cp2p_auc_p40") {
-    stopifnot(training_var_amount <= length(partition$patient_40))
+    stopifnot(parInd <= length(partition$patient_40))
     
     input_data <- bortezomib$AUC_combined.sva
     input_label <- bortezomib.labels$AUC_combined
-    input_partition = partition$patient_40[[training_var_amount]]$cp2p.AUC
+    input_partition = partition$patient_40[[parInd]]$cp2p.AUC
     input_feature.l1000 <- feature.l1000$cp
   } else if (args[5] == "cp2p_ic50_p40") {
-    stopifnot(training_var_amount <= length(partition$patient_40))
+    stopifnot(parInd <= length(partition$patient_40))
     
     input_data <- bortezomib$IC50_combined.sva
     input_label <- bortezomib.labels$IC50_combined
-    input_partition = partition$patient_40[[training_var_amount]]$cp2p.IC50
+    input_partition = partition$patient_40[[parInd]]$cp2p.IC50
     input_feature.l1000 <- feature.l1000$cp
   } else {
     stop(paste("args[5]", args[5], "is invalid."))
@@ -132,96 +137,99 @@ if (args[4] == "bortezomib") {
   input_snf.parameter <- seq(from = 5, to = 30, by = 5)
   
   if (args[5] == "p2p") {
-    stopifnot(training_var_amount <= length(partition$cell_lines_all))
+    stopifnot(parInd <= length(partition$cell_lines_all))
     
     input_data <- docetaxel$patient
     input_label <- docetaxel.labels$patient
-    input_partition <- partition$cell_lines_all[[training_var_amount]]$p2p
+    input_partition <- partition$cell_lines_all[[parInd]]$p2p
     input_feature.l1000 <- feature.l1000$pp
     input_snf.parameter <- seq(from = 5, to = length(input_partition[[1]]$training_index), by = 3)
   } else if (args[5] == "cp2p_slope") {
-    stopifnot(training_var_amount <= length(partition$cell_lines_all))
+    stopifnot(parInd <= length(partition$cell_lines_all))
     
     input_data <- docetaxel$slope_combined 
     input_label <- docetaxel.labels$slope_combined
-    input_partition = partition$cell_lines_all[[training_var_amount]]$cp2p.slope
+    input_partition = partition$cell_lines_all[[parInd]]$cp2p.slope
     input_feature.l1000 <- feature.l1000$cp
   } else if (args[5] == "cp2p_auc") {
-    stopifnot(training_var_amount <= length(partition$cell_lines_all))
+    stopifnot(parInd <= length(partition$cell_lines_all))
     
     input_data <- docetaxel$AUC_combined
     input_label <- docetaxel.labels$AUC_combined
-    input_partition = partition$cell_lines_all[[training_var_amount]]$cp2p.AUC
+    input_partition = partition$cell_lines_all[[parInd]]$cp2p.AUC
     input_feature.l1000 <- feature.l1000$cp
   } else if (args[5] == "cp2p_ic50") {
-    stopifnot(training_var_amount <= length(partition$cell_lines_all))
+    stopifnot(parInd <= length(partition$cell_lines_all))
     
     input_data <- docetaxel$IC50_combined
     input_label <- docetaxel.labels$IC50_combined
-    input_partition = partition$cell_lines_all[[training_var_amount]]$cp2p.IC50
+    input_partition = partition$cell_lines_all[[parInd]]$cp2p.IC50
     input_feature.l1000 <- feature.l1000$cp
   } else if (args[5] == "cp2p_slope_breast") {
-    stopifnot(training_var_amount <= length(partition$cell_lines_breast))
+    stopifnot(parInd <= length(partition$cell_lines_breast))
     
     input_data <- docetaxel$slope_breast 
     input_label <- docetaxel.labels$slope_breast.combined
-    input_partition = partition$cell_lines_breast[[training_var_amount]]$cp2p.slope
+    input_partition = partition$cell_lines_breast[[parInd]]$cp2p.slope
     input_feature.l1000 <- feature.l1000$cp
   } else if (args[5] == "cp2p_auc_breast") {
-    stopifnot(training_var_amount <= length(partition$cell_lines_breast))
+    stopifnot(parInd <= length(partition$cell_lines_breast))
     
     input_data <- docetaxel$AUC_breast
     input_label <- docetaxel.labels$AUC_breast.combined
-    input_partition = partition$cell_lines_breast[[training_var_amount]]$cp2p.AUC
+    input_partition = partition$cell_lines_breast[[parInd]]$cp2p.AUC
     input_feature.l1000 <- feature.l1000$cp
   } else if (args[5] == "cp2p_ic50_breast") {
-    stopifnot(training_var_amount <= length(partition$cell_lines_breast))
+    stopifnot(parInd <= length(partition$cell_lines_breast))
     
     input_data <- docetaxel$IC50_breast
     input_label <- docetaxel.labels$IC50_breast.combined
-    input_partition = partition$cell_lines_breast[[training_var_amount]]$cp2p.IC50
+    input_partition = partition$cell_lines_breast[[parInd]]$cp2p.IC50
     input_feature.l1000 <- feature.l1000$cp
   } else if (args[5] == "cp2p_ic50_p23") {
-    stopifnot(training_var_amount <= length(partition$patient_23))
+    stopifnot(parInd <= length(partition$patient_23))
     
     input_data <- docetaxel$IC50_combined
     input_label <- docetaxel.labels$IC50_combined
-    input_partition = partition$patient_23[[training_var_amount]]$cp2p.IC50
+    input_partition = partition$patient_23[[parInd]]$cp2p.IC50
     input_feature.l1000 <- feature.l1000$cp
   } else if (args[5] == "cp2p_auc_p23") {
-    stopifnot(training_var_amount <= length(partition$patient_23))
+    stopifnot(parInd <= length(partition$patient_23))
     
     input_data <- docetaxel$AUC_combined
     input_label <- docetaxel.labels$AUC_combined
-    input_partition = partition$patient_23[[training_var_amount]]$cp2p.AUC
+    input_partition = partition$patient_23[[parInd]]$cp2p.AUC
     input_feature.l1000 <- feature.l1000$cp
   } else if (args[5] == "cp2p_slope_p23") {
-    stopifnot(training_var_amount <= length(partition$patient_23))
+    stopifnot(parInd <= length(partition$patient_23))
     
     input_data <- docetaxel$slope_combined
     input_label <- docetaxel.labels$slope_combined
-    input_partition = partition$patient_23[[training_var_amount]]$cp2p.slope
+    input_partition = partition$patient_23[[parInd]]$cp2p.slope
     input_feature.l1000 <- feature.l1000$cp
   } else if (args[5] == "c2p_ic50_p23") {
-    stopifnot(training_var_amount <= length(partition$patient_23))
+    stopifnot(parInd <= length(partition$patient_23))
     
+    train_once = TRUE
     input_data <- docetaxel$IC50_combined
     input_label <- docetaxel.labels$IC50_combined
-    input_partition = partition$patient_23[[training_var_amount]]$c2p.IC50
+    input_partition = partition$patient_23[[parInd]]$c2p.IC50
     input_feature.l1000 <- feature.l1000$cp
   } else if (args[5] == "c2p_auc_p23") {
-    stopifnot(training_var_amount <= length(partition$patient_23))
+    stopifnot(parInd <= length(partition$patient_23))
     
+    train_once = TRUE
     input_data <- docetaxel$AUC_combined
     input_label <- docetaxel.labels$AUC_combined
-    input_partition = partition$patient_23[[training_var_amount]]$c2p.AUC
+    input_partition = partition$patient_23[[parInd]]$c2p.AUC
     input_feature.l1000 <- feature.l1000$cp
   } else if (args[5] == "c2p_slope_p23") {
-    stopifnot(training_var_amount <= length(partition$patient_23))
+    stopifnot(parInd <= length(partition$patient_23))
     
+    train_once = TRUE
     input_data <- docetaxel$slope_combined
     input_label <- docetaxel.labels$slope_combined
-    input_partition = partition$patient_23[[training_var_amount]]$c2p.slope
+    input_partition = partition$patient_23[[parInd]]$c2p.slope
     input_feature.l1000 <- feature.l1000$cp
   } else {
     stop(paste("args[5]", args[5], "is invalid."))
@@ -239,96 +247,99 @@ if (args[4] == "bortezomib") {
   input_snf.parameter <- seq(from = 5, to = 30, by = 5)
   
   if (args[5] == "p2p") {
-    stopifnot(training_var_amount <= length(partition$cell_lines_all))
+    stopifnot(parInd <= length(partition$cell_lines_all))
     
     input_data <- erlotinib$patient
     input_label <- erlotinib.labels$patient
-    input_partition <- partition$cell_lines_all[[training_var_amount]]$p2p
+    input_partition <- partition$cell_lines_all[[parInd]]$p2p
     input_feature.l1000 <- feature.l1000$pp
     input_snf.parameter <- seq(from = 5, to = length(input_partition[[1]]$training_index), by = 3)
   } else if (args[5] == "cp2p_slope") {
-    stopifnot(training_var_amount <= length(partition$cell_lines_all))
+    stopifnot(parInd <= length(partition$cell_lines_all))
     
     input_data <- erlotinib$slope_combined 
     input_label <- erlotinib.labels$slope_combined
-    input_partition = partition$cell_lines_all[[training_var_amount]]$cp2p.slope
+    input_partition = partition$cell_lines_all[[parInd]]$cp2p.slope
     input_feature.l1000 <- feature.l1000$cp
   } else if (args[5] == "cp2p_auc") {
-    stopifnot(training_var_amount <= length(partition$cell_lines_all))
+    stopifnot(parInd <= length(partition$cell_lines_all))
     
     input_data <- erlotinib$AUC_combined
     input_label <- erlotinib.labels$AUC_combined
-    input_partition = partition$cell_lines_all[[training_var_amount]]$cp2p.AUC
+    input_partition = partition$cell_lines_all[[parInd]]$cp2p.AUC
     input_feature.l1000 <- feature.l1000$cp
   } else if (args[5] == "cp2p_ic50") {
-    stopifnot(training_var_amount <= length(partition$cell_lines_all))
+    stopifnot(parInd <= length(partition$cell_lines_all))
     
     input_data <- erlotinib$IC50_combined
     input_label <- erlotinib.labels$IC50_combined
-    input_partition = partition$cell_lines_all[[training_var_amount]]$cp2p.IC50
+    input_partition = partition$cell_lines_all[[parInd]]$cp2p.IC50
     input_feature.l1000 <- feature.l1000$cp
   } else if (args[5] == "cp2p_slope_lung") {
-    stopifnot(training_var_amount <= length(partition$cell_lines_lung))
+    stopifnot(parInd <= length(partition$cell_lines_lung))
     
     input_data <- erlotinib$slope_lung 
     input_label <- erlotinib.labels$slope_lung
-    input_partition = partition$cell_lines_lung[[training_var_amount]]$cp2p.slope
+    input_partition = partition$cell_lines_lung[[parInd]]$cp2p.slope
     input_feature.l1000 <- feature.l1000$cp
   } else if (args[5] == "cp2p_auc_lung") {
-    stopifnot(training_var_amount <= length(partition$cell_lines_lung))
+    stopifnot(parInd <= length(partition$cell_lines_lung))
     
     input_data <- erlotinib$AUC_lung
     input_label <- erlotinib.labels$AUC_lung
-    input_partition = partition$cell_lines_lung[[training_var_amount]]$cp2p.AUC
+    input_partition = partition$cell_lines_lung[[parInd]]$cp2p.AUC
     input_feature.l1000 <- feature.l1000$cp
   } else if (args[5] == "cp2p_ic50_lung") {
-    stopifnot(training_var_amount <= length(partition$cell_lines_lung))
+    stopifnot(parInd <= length(partition$cell_lines_lung))
     
     input_data <- erlotinib$IC50_lung
     input_label <- erlotinib.labels$IC50_lung
-    input_partition = partition$cell_lines_lung[[training_var_amount]]$cp2p.IC50
+    input_partition = partition$cell_lines_lung[[parInd]]$cp2p.IC50
     input_feature.l1000 <- feature.l1000$cp
   } else if (args[5] == "cp2p_ic50_p24") {
-    stopifnot(training_var_amount <= length(partition$patient_24))
+    stopifnot(parInd <= length(partition$patient_24))
     
     input_data <- erlotinib$IC50_combined
     input_label <- erlotinib.labels$IC50_combined
-    input_partition = partition$patient_24[[training_var_amount]]$cp2p.IC50
+    input_partition = partition$patient_24[[parInd]]$cp2p.IC50
     input_feature.l1000 <- feature.l1000$cp
   } else if (args[5] == "cp2p_auc_p24") {
-    stopifnot(training_var_amount <= length(partition$patient_24))
+    stopifnot(parInd <= length(partition$patient_24))
     
     input_data <- erlotinib$AUC_combined
     input_label <- erlotinib.labels$AUC_combined
-    input_partition = partition$patient_24[[training_var_amount]]$cp2p.AUC
+    input_partition = partition$patient_24[[parInd]]$cp2p.AUC
     input_feature.l1000 <- feature.l1000$cp
   } else if (args[5] == "cp2p_slope_p24") {
-    stopifnot(training_var_amount <= length(partition$patient_24))
+    stopifnot(parInd <= length(partition$patient_24))
     
     input_data <- erlotinib$slope_combined
     input_label <- erlotinib.labels$slope_combined
-    input_partition = partition$patient_24[[training_var_amount]]$cp2p.slope
+    input_partition = partition$patient_24[[parInd]]$cp2p.slope
     input_feature.l1000 <- feature.l1000$cp
   } else if (args[5] == "c2p_ic50_p24") {
-    stopifnot(training_var_amount <= length(partition$patient_24))
+    stopifnot(parInd <= length(partition$patient_24))
     
+    train_once = TRUE
     input_data <- erlotinib$IC50_combined
     input_label <- erlotinib.labels$IC50_combined
-    input_partition = partition$patient_24[[training_var_amount]]$c2p.IC50
+    input_partition = partition$patient_24[[parInd]]$c2p.IC50
     input_feature.l1000 <- feature.l1000$cp
   } else if (args[5] == "c2p_auc_p24") {
-    stopifnot(training_var_amount <= length(partition$patient_24))
+    stopifnot(parInd <= length(partition$patient_24))
     
+    train_once = TRUE
     input_data <- erlotinib$AUC_combined
     input_label <- erlotinib.labels$AUC_combined
-    input_partition = partition$patient_24[[training_var_amount]]$c2p.AUC
+    input_partition = partition$patient_24[[parInd]]$c2p.AUC
     input_feature.l1000 <- feature.l1000$cp
   } else if (args[5] == "c2p_slope_p24") {
-    stopifnot(training_var_amount <= length(partition$patient_24))
+    stopifnot(parInd <= length(partition$patient_24))
     
+    train_once = TRUE
     input_data <- erlotinib$slope_combined
     input_label <- erlotinib.labels$slope_combined
-    input_partition = partition$patient_24[[training_var_amount]]$c2p.slope
+    input_partition = partition$patient_24[[parInd]]$c2p.slope
     input_feature.l1000 <- feature.l1000$cp
   } else {
     stop(paste("args[5]", args[5], "is invalid."))
@@ -341,55 +352,57 @@ if (args[4] == "bortezomib") {
   input_snf.parameter <- seq(from = 5, to = 30, by = 5)
   
   if (args[5] == "p2p") {
-    stopifnot(training_var_amount <= length(partition$cell_lines_all))
+    stopifnot(parInd <= length(partition$cell_lines_all))
     
     input_data <- epirubicin$patient
     input_label <- epirubicin.labels$patient
-    input_partition <- partition$cell_lines_all[[training_var_amount]]$p2p
+    input_partition <- partition$cell_lines_all[[parInd]]$p2p
     input_feature.l1000 <- feature.l1000$pp
     INPUT.NFOLDS = 3 # too imbalanced to do 5
   } else if (args[5] == "cp2p_slope") {
-    stopifnot(training_var_amount <= length(partition$cell_lines_all))
+    stopifnot(parInd <= length(partition$cell_lines_all))
     
     input_data <- epirubicin$slope_combined 
     input_label <- epirubicin.labels$slope_combined
-    input_partition = partition$cell_lines_all[[training_var_amount]]$cp2p.slope
+    input_partition = partition$cell_lines_all[[parInd]]$cp2p.slope
     input_feature.l1000 <- feature.l1000$cp
   } else if (args[5] == "cp2p_auc") {
-    stopifnot(training_var_amount <= length(partition$cell_lines_all))
+    stopifnot(parInd <= length(partition$cell_lines_all))
     
     input_data <- epirubicin$AUC_combined
     input_label <- epirubicin.labels$AUC_combined
-    input_partition = partition$cell_lines_all[[training_var_amount]]$cp2p.AUC
+    input_partition = partition$cell_lines_all[[parInd]]$cp2p.AUC
     input_feature.l1000 <- feature.l1000$cp
   } else if (args[5] == "cp2p_auc_p20") {
-    stopifnot(training_var_amount <= length(partition$patient_20))
+    stopifnot(parInd <= length(partition$patient_20))
     
     input_data <- epirubicin$AUC_combined
     input_label <- epirubicin.labels$AUC_combined
-    input_partition = partition$patient_20[[training_var_amount]]$cp2p.AUC
+    input_partition = partition$patient_20[[parInd]]$cp2p.AUC
     input_feature.l1000 <- feature.l1000$cp
   } else if (args[5] == "cp2p_slope_p20") {
-    stopifnot(training_var_amount <= length(partition$patient_20))
+    stopifnot(parInd <= length(partition$patient_20))
     
     input_data <- epirubicin$slope_combined
     input_label <- epirubicin.labels$slope_combined
-    input_partition = partition$patient_20[[training_var_amount]]$cp2p.slope
+    input_partition = partition$patient_20[[parInd]]$cp2p.slope
     input_feature.l1000 <- feature.l1000$cp
   } else if (args[5] == "c2p_auc_p20") {
-    stopifnot(training_var_amount <= length(partition$patient_20))
+    stopifnot(parInd <= length(partition$patient_20))
     
+    train_once = TRUE
     input_data <- epirubicin$AUC_combined
     input_label <- epirubicin.labels$AUC_combined
-    input_partition = partition$patient_20[[training_var_amount]]$c2p.AUC
+    input_partition = partition$patient_20[[parInd]]$c2p.AUC
     input_feature.l1000 <- feature.l1000$cp
     input.type_measure = "acc" # too imbalanced to do auc
   } else if (args[5] == "c2p_slope_p20") {
-    stopifnot(training_var_amount <= length(partition$patient_20))
+    stopifnot(parInd <= length(partition$patient_20))
     
+    train_once = TRUE
     input_data <- epirubicin$slope_combined
     input_label <- epirubicin.labels$slope_combined
-    input_partition = partition$patient_20[[training_var_amount]]$c2p.slope
+    input_partition = partition$patient_20[[parInd]]$c2p.slope
     input_feature.l1000 <- feature.l1000$cp
     input.type_measure = "acc" # too imbalanced to do auc
   } else {
@@ -407,8 +420,11 @@ stopifnot(!is.null(input_partition))
 rm(partition, feature.l1000)
 
 # do the computation
-print(paste0(args[4], "_", args[5], "_", PARTITION_BEGIN, "to", PARTITION_END, "_parInd", training_var_amount, ".RData"))
+if (train_once == TRUE) {
+  print("train_once = TRUE!!")
+}
+print(paste0(args[4], "_", args[5], "_", PARTITION_BEGIN, "to", PARTITION_END, "_parInd", parInd, ".RData"))
 source("Common/train_and_predict.R")
 ##
 
-save.image(paste0(args[4], "_", args[5], "_", PARTITION_BEGIN, "to", PARTITION_END, "_parInd", training_var_amount, ".RData"))
+save.image(paste0(args[4], "_", args[5], "_", PARTITION_BEGIN, "to", PARTITION_END, "_parInd", parInd, ".RData"))

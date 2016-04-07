@@ -14,96 +14,101 @@ print("Training and Predicting!")
 snf.single.mRMR1000 = list()
 other_model.mRMR1000 = list()
 
-for (temp.run_ind in PARTITION_BEGIN:PARTITION_END) {  
+already_run_mRMR = FALSE
+
+for (loop_ind.parInd in PARTITION_BEGIN:PARTITION_END) {  
   print(Sys.time())
-  print(temp.run_ind)
+  print(loop_ind.parInd)
   gc()
-  temp.mRMR_features <- mRMR_getFeatures(
-    input_data[input_partition[[temp.run_ind]]$training_index, ], 
-    as.ordered(input_label[input_partition[[temp.run_ind]]$training_index]), 
-    feature_count = 1000, 
-    solution_count = 1)
-  print(paste("Number of mRMR features:", length(temp.mRMR_features)))
-  temp.mRMR_features <- as.integer(temp.mRMR_features)
-  gc()
-  snf.single.mRMR1000[[temp.run_ind]] <- SNF_Single_Predict(feature.sets = temp.mRMR_features, 
+  if (train_once == FALSE || already_run_mRMR == FALSE) {
+    temp.mRMR_features <- mRMR_getFeatures(
+      input_data[input_partition[[loop_ind.parInd]]$training_index, ], 
+      as.ordered(input_label[input_partition[[loop_ind.parInd]]$training_index]), 
+      feature_count = 1000, 
+      solution_count = 1)
+    print(paste("Number of mRMR features:", length(temp.mRMR_features)))
+    temp.mRMR_features <- as.integer(temp.mRMR_features)
+    already_run_mRMR = TRUE
+    gc()
+  }
+  snf.single.mRMR1000[[loop_ind.parInd]] <- SNF_Single_Predict(feature.sets = temp.mRMR_features, 
                                                                parameters = list(K = input_snf.parameter), 
                                                                data = input_data, 
                                                                partition = input_partition,
                                                                ground_truth = input_label,
-                                                               run_ind = temp.run_ind,
+                                                               run_ind = loop_ind.parInd,
                                                                NFOLDS = INPUT.NFOLDS,
                                                                type_measure = input.type_measure)
   
-  snf.single.mRMR1000[[temp.run_ind]]$feature.sets = temp.mRMR_features
+  snf.single.mRMR1000[[loop_ind.parInd]]$feature.sets = temp.mRMR_features
   
-  other_model.mRMR1000[[temp.run_ind]] <- Other_Model_Predict(data = input_data, 
+  other_model.mRMR1000[[loop_ind.parInd]] <- Other_Model_Predict(data = input_data, 
                                                                  ground_truth = input_label, 
                                                                  partition = input_partition,
                                                                  selected_features = temp.mRMR_features, 
                                                                  NFOLDS = INPUT.NFOLDS, 
                                                                  N_CV_REPEATS = 1, 
-                                                                 run_ind = temp.run_ind, 
+                                                                 run_ind = loop_ind.parInd, 
                                                                  type_measure = input.type_measure)
 }
 
 # Other models make predictions ---------------------------------
 other_model.all = list()
-for (temp.run_ind in PARTITION_BEGIN:PARTITION_END) {
+for (loop_ind.parInd in PARTITION_BEGIN:PARTITION_END) {
   print(Sys.time())
-  print(temp.run_ind)
+  print(loop_ind.parInd)
   gc()
-  other_model.all[[temp.run_ind]] <- Other_Model_Predict(data = input_data, 
+  other_model.all[[loop_ind.parInd]] <- Other_Model_Predict(data = input_data, 
                                                             ground_truth = input_label, 
                                                             partition = input_partition,
                                                             selected_features = NULL, 
                                                             NFOLDS = INPUT.NFOLDS, 
                                                             N_CV_REPEATS = 1, 
-                                                            run_ind = temp.run_ind,
+                                                            run_ind = loop_ind.parInd,
                                                             type_measure = input.type_measure)
 }
 
 other_model.l1000 = list()
-for (temp.run_ind in PARTITION_BEGIN:PARTITION_END) {
+for (loop_ind.parInd in PARTITION_BEGIN:PARTITION_END) {
   print(Sys.time())
-  print(temp.run_ind)
-  other_model.l1000[[temp.run_ind]] <- Other_Model_Predict(data = input_data, 
+  print(loop_ind.parInd)
+  other_model.l1000[[loop_ind.parInd]] <- Other_Model_Predict(data = input_data, 
                                                               ground_truth = input_label, 
                                                               partition = input_partition,
                                                               selected_features = input_feature.l1000, 
                                                               NFOLDS = INPUT.NFOLDS, 
                                                               N_CV_REPEATS = 1, 
-                                                              run_ind = temp.run_ind, 
+                                                              run_ind = loop_ind.parInd, 
                                                               type_measure = input.type_measure)
 }
 
 snf.single.all = list()
 
-for (temp.run_ind in PARTITION_BEGIN:PARTITION_END) {  
+for (loop_ind.parInd in PARTITION_BEGIN:PARTITION_END) {  
   print(Sys.time())
-  print(temp.run_ind)
+  print(loop_ind.parInd)
   
-  snf.single.all[[temp.run_ind]] <- SNF_Single_Predict(feature.sets = NULL, 
+  snf.single.all[[loop_ind.parInd]] <- SNF_Single_Predict(feature.sets = NULL, 
                                                           parameters = list(K = input_snf.parameter), 
                                                           data = input_data, 
                                                           partition = input_partition,
                                                           ground_truth = input_label,
-                                                          run_ind = temp.run_ind,
+                                                          run_ind = loop_ind.parInd,
                                                           NFOLDS = INPUT.NFOLDS, 
                                                           type_measure = input.type_measure)
 }
 
 snf.single.l1000 = list()
-for (temp.run_ind in PARTITION_BEGIN:PARTITION_END) {  
+for (loop_ind.parInd in PARTITION_BEGIN:PARTITION_END) {  
   print(Sys.time())
-  print(temp.run_ind)
+  print(loop_ind.parInd)
   
-  snf.single.l1000[[temp.run_ind]] <- SNF_Single_Predict(feature.sets = input_feature.l1000, 
+  snf.single.l1000[[loop_ind.parInd]] <- SNF_Single_Predict(feature.sets = input_feature.l1000, 
                                                             parameters = list(K = input_snf.parameter), 
                                                             data = input_data, 
                                                             partition = input_partition,
                                                             ground_truth = input_label,
-                                                            run_ind = temp.run_ind,
+                                                            run_ind = loop_ind.parInd,
                                                             NFOLDS = INPUT.NFOLDS,
                                                             type_measure = input.type_measure)
 }
