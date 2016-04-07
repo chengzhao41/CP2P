@@ -38,27 +38,10 @@ SNF_Single_Predict <- function(
   f.ind <- feature.sets
   data.use = data[, f.ind]
   
-  # create fold and also ensure that each fold has at least samples from both class when
-  # it is auc
-  temp.repeat_fold <- TRUE
-  temp.loop_count = 0
-  while (temp.repeat_fold) {
-    temp.folds = createFolds(partition[[run_ind]]$training_index, k = NFOLDS)
-    temp.repeat_fold = FALSE
-    for (i in 1:length(temp.folds)) {
-      if (type_measure == "auc" && min(table(ground_truth[temp.folds[[i]]])) < 2) {
-        temp.repeat_fold = TRUE
-        break
-      }
-    }
-    temp.loop_count = temp.loop_count + 1
-    if (temp.loop_count > 100) {
-      stop("create fold error in SNF predict")
-    }
-  }
+  temp.folds = createFolds(partition[[run_ind]]$training_index, k = NFOLDS)
   
-  auc.training <- foreach (i = 1:length(parameters$K), .combine=rbind, .errorhandling="stop") %dopar% {    
-    auc.training.one_split  <- foreach (cv_ind = 1:NFOLDS, .combine=rbind, .errorhandling="stop") %do% {
+  auc.training <- foreach (i = 1:length(parameters$K), .combine=rbind, .errorhandling="remove") %dopar% {    
+    auc.training.one_split  <- foreach (cv_ind = 1:NFOLDS, .combine=rbind, .errorhandling="remove") %do% {
       
       temp.cv.index <- partition[[run_ind]]$training_index[temp.folds[[cv_ind]]]
       temp.training.index <- setdiff(partition[[run_ind]]$training_index, temp.cv.index)        
@@ -94,17 +77,22 @@ SNF_Single_Predict <- function(
     c(mean(auc.training.one_split[, 1]), mean(auc.training.one_split[, 2]))
   }
   
-  print(type_measure)
-  if (type_measure == "auc") {
-    fs.training_auc <- max(auc.training[, 1])
-    best_parameters.ind <- which(auc.training[, 1] == fs.training_auc, arr.ind=TRUE)
-    best_parameters.ind <- best_parameters.ind[ceiling(length(best_parameters.ind)/2)]
-    fs.training_acc <- auc.training[best_parameters.ind, 2]    
+  if (length(auc.training) == 0) {
+    warning("SNF CV failed!")
+    best_parameters.ind = round(length(parameters$K) / 2)
   } else {
-    fs.training_acc <- max(auc.training[, 2])    
-    best_parameters.ind <- which(auc.training[, 2] == fs.training_acc, arr.ind=TRUE)
-    best_parameters.ind <- best_parameters.ind[ceiling(length(best_parameters.ind)/2)]
-    fs.training_auc <- auc.training[best_parameters.ind, 1]
+    print(type_measure)
+    if (type_measure == "auc") {
+      fs.training_auc <- max(auc.training[, 1])
+      best_parameters.ind <- which(auc.training[, 1] == fs.training_auc, arr.ind=TRUE)
+      best_parameters.ind <- best_parameters.ind[ceiling(length(best_parameters.ind)/2)]
+      fs.training_acc <- auc.training[best_parameters.ind, 2]    
+    } else {
+      fs.training_acc <- max(auc.training[, 2])    
+      best_parameters.ind <- which(auc.training[, 2] == fs.training_acc, arr.ind=TRUE)
+      best_parameters.ind <- best_parameters.ind[ceiling(length(best_parameters.ind)/2)]
+      fs.training_auc <- auc.training[best_parameters.ind, 1]
+    }
   }
   
   print(paste("Best K:", parameters$K[best_parameters.ind]))        
