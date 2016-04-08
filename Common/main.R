@@ -415,7 +415,7 @@ if (args[4] == "bortezomib") {
 }
 
 if (is.null(input.type_measure.test)) {
-  input.type_measure = input.type_measure.test
+  input.type_measure.test = input.type_measure
 }
 
 stopifnot(!is.null(input_data))
