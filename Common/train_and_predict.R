@@ -4,7 +4,7 @@ stopifnot(dim(input_data)[1] == length(input_label))
 stopifnot(rownames(input_data) == names(input_label))
 
 source('Common/other_model_train_only.R')
-source('Common/other_model_predict_only.R.R')
+source('Common/other_model_predict_only.R')
 source('Common/mRMR_getFeatures.R')
 source('Common/SNF_Single_Predict.R')
 source('Common/SNF_LP.R')
