@@ -1,7 +1,5 @@
 Other_Model_Predict_Only <- function(data, ground_truth, partition, selected_features = NULL, NFOLDS = 5, N_CV_REPEATS = 2, run_ind = 0, type_measure = "auc", input.models) {
   
-  # uses all samples in CV, as opposed to Other_Model_Predict2 which uses only patients
-  
   # Checking for input parameters ---------------------------------
   require("glmnet")
   require("foreach")
@@ -42,8 +40,72 @@ Other_Model_Predict_Only <- function(data, ground_truth, partition, selected_fea
   
   # Setup ---------------------------------    
   # 1) Elastic Net Logistic Regression
-
-  elasticNet.model = input.models$elasticNet.model
+  elastic_net.cv_error = vector()
+  elastic_net.cv_model = list()
+  elastic_net.ALPHA <- c(1:9) / 10
+  
+  temp.cv_error_matrix <- foreach (temp = 1:N_CV_REPEATS, .combine=rbind, .errorhandling="stop") %do% {      
+    for (alpha_index in 1:length(elastic_net.ALPHA))
+    {      
+      elastic_net.cv_model[[alpha_index]] = cv.glmnet(data[partition[[run_ind]]$training_index, selected_features],
+                                                      ground_truth[partition[[run_ind]]$training_index],
+                                                      alpha = elastic_net.ALPHA[alpha_index]
+                                                      , type.measure = type_measure.glmnet
+                                                      , family = "binomial"
+                                                      , standardize = FALSE 
+                                                      , nfolds = NFOLDS
+                                                      , nlambda = 100
+                                                      , parallel = TRUE
+      )
+      elastic_net.cv_error[alpha_index] = min(elastic_net.cv_model[[alpha_index]]$cvm)
+    }
+    elastic_net.cv_error    
+  }
+  
+  if (N_CV_REPEATS == 1) {
+    temp.cv_error_mean = temp.cv_error_matrix
+  } else {
+    temp.cv_error_mean = apply(temp.cv_error_matrix, 2, mean)  
+  }
+  
+  stopifnot(length(temp.cv_error_mean) == length(elastic_net.ALPHA))
+  temp.best_alpha_index = which(min(temp.cv_error_mean) == temp.cv_error_mean)[length(which(min(temp.cv_error_mean) == temp.cv_error_mean))] 
+  print(paste("Best ALPHA:", elastic_net.ALPHA[temp.best_alpha_index]))
+  
+  temp.non_zero_coeff = 0
+  temp.loop_count = 0
+  while (temp.non_zero_coeff < 3) {
+    elastic_net.cv_model = cv.glmnet(
+      data[partition[[run_ind]]$training_index, selected_features]
+      , ground_truth[partition[[run_ind]]$training_index]
+      , alpha = elastic_net.ALPHA[temp.best_alpha_index]
+      , type.measure = type_measure.glmnet
+      , family = "binomial"
+      , standardize=FALSE, 
+      , nlambda = 100
+      , nfolds = NFOLDS
+      , parallel = TRUE
+    )
+    temp.min_lambda_index = which(elastic_net.cv_model$lambda == elastic_net.cv_model$lambda.min)
+    temp.non_zero_coeff = elastic_net.cv_model$nzero[temp.min_lambda_index]    
+    temp.loop_count = temp.loop_count + 1
+    as.numeric(Sys.time())-> t 
+    set.seed((t - floor(t)) * 1e8 -> seed) 
+    #print(paste0("seed: ", seed))
+    if (temp.loop_count > 5) {
+      print("diverged")
+      temp.min_lambda_index = 50
+      break
+    }
+  } 
+  print(temp.non_zero_coeff)  
+  
+  elasticNet.model = glmnet(data[partition[[run_ind]]$training_index, selected_features], 
+                            ground_truth[partition[[run_ind]]$training_index], 
+                            alpha = elastic_net.ALPHA[temp.best_alpha_index],
+                            standardize=FALSE,
+                            nlambda = 100,
+                            family = "binomial")
   
   if (length(partition[[run_ind]]$test_index) > 1) {
     temp.predictions = predict(elasticNet.model, data[partition[[run_ind]]$test_index, selected_features], type = "response")  
@@ -76,7 +138,39 @@ Other_Model_Predict_Only <- function(data, ground_truth, partition, selected_fea
   rm(list = ls(pattern="alpha."))  
   
   # 2) Lasso Logistic Regression  
-  lasso.model = input.models$lasso.model
+  temp.non_zero_coeff = 0
+  temp.loop_count = 0
+  while (temp.non_zero_coeff < 3) {      
+    temp.cv_model = cv.glmnet(data[partition[[run_ind]]$training_index, selected_features]
+                              , ground_truth[partition[[run_ind]]$training_index]
+                              , alpha = 1
+                              , type.measure = type_measure.glmnet
+                              , family = "binomial"
+                              , standardize = FALSE
+                              , nlambda = 100
+                              , nfolds = NFOLDS
+                              , parallel = TRUE
+    )
+    temp.min_lambda_index = which(temp.cv_model$lambda == temp.cv_model$lambda.min)
+    temp.non_zero_coeff = temp.cv_model$nzero[temp.min_lambda_index]
+    temp.loop_count = temp.loop_count + 1
+    as.numeric(Sys.time())-> t 
+    set.seed((t - floor(t)) * 1e8 -> seed) 
+    #print(paste0("seed: ", seed))
+    if (temp.loop_count > 5) {
+      print("diverged")
+      temp.min_lambda_index = 50
+      break
+    }    
+  }  
+  print(temp.non_zero_coeff)  
+  
+  lasso.model = glmnet(data[partition[[run_ind]]$training_index, selected_features], 
+                       ground_truth[partition[[run_ind]]$training_index], 
+                       alpha = 1,
+                       standardize=FALSE,
+                       nlambda = 100,
+                       family = "binomial")
   
   if (length(partition[[run_ind]]$test_index) > 1) {
     temp.predictions = predict(lasso.model, data[partition[[run_ind]]$test_index, selected_features], type = "response")  
@@ -104,7 +198,40 @@ Other_Model_Predict_Only <- function(data, ground_truth, partition, selected_fea
   rm(list = ls(pattern="temp"))
   
   # 3) Ridge Regularized Logistic Regression  
-  ridge.model = input.models$ridge.model
+  temp.non_zero_coeff = 0
+  temp.loop_count = 0
+  while (temp.non_zero_coeff < 3) {      
+    temp.cv_model = cv.glmnet(data[partition[[run_ind]]$training_index, selected_features]
+                              , ground_truth[partition[[run_ind]]$training_index]
+                              , alpha = 0
+                              , type.measure = type_measure.glmnet
+                              , family = "binomial"
+                              , standardize = FALSE
+                              , nlambda = 100
+                              , nfolds = NFOLDS
+                              , parallel = FALSE
+    )
+    temp.min_lambda_index = which(temp.cv_model$lambda == temp.cv_model$lambda.min)
+    temp.non_zero_coeff = temp.cv_model$nzero[temp.min_lambda_index]
+    temp.loop_count = temp.loop_count + 1
+    as.numeric(Sys.time())-> t 
+    set.seed((t - floor(t)) * 1e8 -> seed) 
+    print(paste0("seed: ", seed))
+    print(temp.loop_count)
+    if (temp.loop_count > 5) {
+      print("diverged")
+      temp.min_lambda_index = 50
+      break
+    }        
+  } 
+  print(temp.non_zero_coeff)  
+  
+  ridge.model = glmnet(data[partition[[run_ind]]$training_index, selected_features], 
+                       ground_truth[partition[[run_ind]]$training_index], 
+                       alpha = 0,
+                       standardize=FALSE,
+                       nlambda = 100,
+                       family = "binomial")
   
   if (length(partition[[run_ind]]$test_index) > 1) {
     temp.predictions = predict(ridge.model, data[partition[[run_ind]]$test_index, selected_features], type = "response")  
