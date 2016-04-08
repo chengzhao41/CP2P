@@ -394,6 +394,7 @@ if (args[4] == "bortezomib") {
     input_label <- epirubicin.labels$AUC_combined
     input_partition = partition$patient_20[[parInd]]$c2p.AUC
     input_feature.l1000 <- feature.l1000$cp
+    INPUT.NFOLDS = 3
   } else if (args[5] == "c2p_slope_p20") {
     stopifnot(parInd <= length(partition$patient_20))
     
@@ -402,6 +403,7 @@ if (args[4] == "bortezomib") {
     input_label <- epirubicin.labels$slope_combined
     input_partition = partition$patient_20[[parInd]]$c2p.slope
     input_feature.l1000 <- feature.l1000$cp
+    INPUT.NFOLDS = 3
   } else {
     stop(paste("args[5]", args[5], "is invalid."))
   }
