@@ -7,7 +7,8 @@ generate_random_partition <- function(
   num.training.c, 
   metric = 'auc',
   input_partition = NULL,
-  num.min_labels.training = 8,
+  num.min_labels.training.p = 8,
+  num.min_labels.training.c = 8,
   num.min_labels.test = 5,
   num.partitions = 100,
   num.test_size = NULL) {
@@ -17,7 +18,7 @@ generate_random_partition <- function(
   stopifnot(num.training.p >= 10)
   stopifnot(metric %in% c('auc', 'acc'))
   stopifnot(length(labels.patient) > num.training.p)
-  stopifnot(num.training.p >= (num.min_labels.training * 2))
+  stopifnot(num.training.p >= (num.min_labels.training.p * 2))
   
   require("doParallel")
 
@@ -26,7 +27,7 @@ generate_random_partition <- function(
   
   if (!is.null(labels.cell_lines$slope)) {
     stopifnot(length(labels.cell_lines$slope) >= num.training.c)
-    stopifnot(min(table(labels.cell_lines$slope)) >= num.min_labels.training)
+    stopifnot(min(table(labels.cell_lines$slope)) >= num.min_labels.training.c)
     
     ind.cell_lines$slope <- length(ind.patients) + 1:length(labels.cell_lines$slope)
     
@@ -34,33 +35,33 @@ generate_random_partition <- function(
       ind = ind.cell_lines$slope,
       order = cell_line_order$slope,
       labels = labels.cell_lines$slope,
-      num.min_labels = num.min_labels.training)
+      num.min_labels = num.min_labels.training.c)
   } else {
     warning("slope response labels are not provided")
   }
   if (!is.null(labels.cell_lines$AUC)) {
     stopifnot(length(labels.cell_lines$AUC) >= num.training.c)
-    stopifnot(min(table(labels.cell_lines$AUC)) >= num.min_labels.training)
+    stopifnot(min(table(labels.cell_lines$AUC)) >= num.min_labels.training.c)
     ind.cell_lines$AUC <- length(ind.patients) + 1:length(labels.cell_lines$AUC)
     
     ind.cell_lines$AUC <- getCellLineBalancedOrder(
       ind = ind.cell_lines$AUC,
       order = cell_line_order$AUC,
       labels = labels.cell_lines$AUC,
-      num.min_labels = num.min_labels.training)
+      num.min_labels = num.min_labels.training.c)
   } else {
     warning("AUC response labels are not provided")
   }
   if (!is.null(labels.cell_lines$IC50)) {
     stopifnot(length(labels.cell_lines$IC50) >= num.training.c)
-    stopifnot(min(table(labels.cell_lines$IC50)) >= num.min_labels.training)
+    stopifnot(min(table(labels.cell_lines$IC50)) >= num.min_labels.training.c)
     ind.cell_lines$IC50 <- length(ind.patients) + 1:length(labels.cell_lines$IC50)
     
     ind.cell_lines$IC50 <- getCellLineBalancedOrder(
       ind = ind.cell_lines$IC50,
       order = cell_line_order$IC50,
       labels = labels.cell_lines$IC50,
-      num.min_labels = num.min_labels.training)
+      num.min_labels = num.min_labels.training.c)
   } else {
     warning("IC50 response labels are not provided")
   }
@@ -82,7 +83,7 @@ generate_random_partition <- function(
       if (is.null(input_partition)) {
         
         training_index.p2p <- getMinBalancedInd(
-          num.min_labels = num.min_labels.training,
+          num.min_labels = num.min_labels.training.p,
           ind.true = ind.patients.true,
           ind.false = ind.patient.false)
         
@@ -93,16 +94,29 @@ generate_random_partition <- function(
         
         training_index.p2p <- c(training_index.p2p, 
                                 sample(ind.patients[-which(ind.patients %in% c(training_index.p2p, test_index))], 
-                                       num.training.p - (num.min_labels.training * 2)))
+                                       num.training.p - (num.min_labels.training.p * 2)))
         
-        stopifnot(min(table(labels.patient[training_index.p2p])) >= num.min_labels.training)
+        stopifnot(min(table(labels.patient[training_index.p2p])) >= num.min_labels.training.p)
         stopifnot(length(training_index.p2p) == num.training.p)
         
         test_index <- setdiff(ind.patients, training_index.p2p)
         
         if (!is.null(num.test_size)) {
           stopifnot(length(test_index) >= num.test_size)
-          test_index <- sample(test_index, num.test_size) 
+          test_index.true <- test_index[which(labels.patient[test_index] == TRUE)]
+          test_index.false <- test_index[which(labels.patient[test_index] == FALSE)]
+          
+          test_index.min_balanced <- getMinBalancedInd(
+            num.min_labels = num.min_labels.test,
+            ind.true = test_index.true,
+            ind.false = test_index.false)
+          
+          if ((num.test_size - 2 * num.min_labels.test) > 0) {
+            test_index <- sample(test_index[-which(test_index %in% test_index.min_balanced)], num.test_size - 2 * num.min_labels.test) 
+            test_index <- c(test_index, test_index.min_balanced)
+          } else {
+            test_index <- test_index.min_balanced
+          }
         }
         
         stopifnot(min(table(labels.patient[test_index])) >= num.min_labels.test)
@@ -118,25 +132,25 @@ generate_random_partition <- function(
         training_index.c2p$slope = ind.cell_lines$slope[1:num.training.c]
         training_index.cp2p$slope <- c(training_index.c2p$slope, training_index.p2p)
         stopifnot(length(training_index.c2p$slope) == num.training.c)
-        stopifnot(min(table(labels.cell_lines$slope[training_index.c2p$slope - length(ind.patients)])) >= num.min_labels.training)
+        stopifnot(min(table(labels.cell_lines$slope[training_index.c2p$slope - length(ind.patients)])) >= num.min_labels.training.c)
       }
       if (length(ind.cell_lines$AUC) > 0) {
         training_index.c2p$AUC = ind.cell_lines$AUC[1:num.training.c]
         training_index.cp2p$AUC <- c(training_index.c2p$AUC, training_index.p2p)
         stopifnot(length(training_index.c2p$AUC) == num.training.c)
-        stopifnot(min(table(labels.cell_lines$AUC[training_index.c2p$AUC - length(ind.patients)])) >= num.min_labels.training)
+        stopifnot(min(table(labels.cell_lines$AUC[training_index.c2p$AUC - length(ind.patients)])) >= num.min_labels.training.c)
       }
       if (length(ind.cell_lines$IC50) > 0) {
         training_index.c2p$IC50 = ind.cell_lines$IC50[1:num.training.c]
         training_index.cp2p$IC50 <- c(training_index.c2p$IC50, training_index.p2p)
         stopifnot(length(training_index.c2p$IC50) == num.training.c)
-        stopifnot(min(table(labels.cell_lines$IC50[training_index.c2p$IC50 - length(ind.patients)])) >= num.min_labels.training)
+        stopifnot(min(table(labels.cell_lines$IC50[training_index.c2p$IC50 - length(ind.patients)])) >= num.min_labels.training.c)
       }
       
       stopifnot(length(table(labels.patient[test_index])) == 2)
       stopifnot(min(table(labels.patient[test_index])) >= num.min_labels.test)
       stopifnot(length(table(labels.patient[training_index.p2p])) == 2)
-      stopifnot(min(table(labels.patient[training_index.p2p])) >= num.min_labels.training)
+      stopifnot(min(table(labels.patient[training_index.p2p])) >= num.min_labels.training.p)
       
       stopifnot(length(training_index.p2p) == num.training.p)
       stopifnot(length(intersect(test_index, training_index.p2p)) == 0)

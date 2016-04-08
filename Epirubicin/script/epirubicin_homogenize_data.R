@@ -1,11 +1,9 @@
 # Load Libraries ----------------------------------------------------------
 library("doParallel")
-library("ComBat")
 
 source('Common/preparing_data_helper.R')
 source('Common/comGENE.R')
 source("Common/generate_random_partition.R")
-source("Common/ordering_by_similarity.R")
 
 # Load CGP Cell line data --------------------------------------------
 load("Epirubicin/WS/epirubicin_gray.RData")
@@ -55,70 +53,39 @@ table(epirubicin.labels$patient)
 # FALSE  TRUE 
 # 101    17 
 
-# Using slope labels for ComBat  ---------------------------------
+# Using slope labels ---------------------------------
 temp.data <- comGENE(epirubicin$patient, scale(epirubicin$gray_slope))
 mean(temp.data[[1]]) #1.191286e-18
 mean(temp.data[[2]]) #1.56495e-19
 dim(temp.data[[1]]) #118 19100
 dim(temp.data[[2]]) #38 19343
 
-# before combat
 epirubicin$slope_combined <- rbind(temp.data[[1]], temp.data[[2]])
 epirubicin.labels$slope_combined <- c(epirubicin.labels$patient, epirubicin.labels$slope)
 epirubicin.labels$slope_combined.source <- c(rep("patient", dim(temp.data[[1]])[1]), rep("gray", dim(temp.data[[2]])[1]))
-#show_pca(input_data = epirubicin$slope_combined, label = epirubicin.labels$slope_combined)
-show_pca(input_data = epirubicin$slope_combined, label = epirubicin.labels$slope_combined.source)
-warning("note the outlier greatly skews the patient eclipse")
+# show_pca(input_data = epirubicin$slope_combined, label = epirubicin.labels$slope_combined)
+# show_pca(input_data = epirubicin$slope_combined, label = epirubicin.labels$slope_combined.source)
 
-# ComBat
-epirubicin$slope_combined.ComBat <- ComBat_combine(batch = epirubicin.labels$slope_combined.source,
-                                             label = epirubicin.labels$slope_combined,
-                                             input_data = epirubicin$slope_combined)
-mean(epirubicin$slope_combined.ComBat) 
-# -5.349659e-06
-
-# after ComBat
-#show_pca(input_data = epirubicin$slope_combined.ComBat, label = epirubicin.labels$slope_combined)
-show_pca(input_data = epirubicin$slope_combined.ComBat, label = epirubicin.labels$slope_combined.source)
+# Using AUC labels ---------------------------------
 rm(temp.data)
-
-# Using IC50 labels for ComBat  ---------------------------------
-temp.data <- comGENE(epirubicin$patient, scale(epirubicin$gray_IC50))
-mean(temp.data[[1]]) # 1.191286e-18
-mean(temp.data[[2]]) # 1.56495e-19
-dim(temp.data[[1]]) # 118 19100
-dim(temp.data[[2]]) # 38 19100
-
-# Using AUC labels for ComBat  ---------------------------------
 temp.data <- comGENE(epirubicin$patient, scale(epirubicin$gray_AUC))
 mean(temp.data[[1]]) #1.191286e-18
 mean(temp.data[[2]]) #1.56495e-19
 
-# before ComBat
 epirubicin.labels$AUC_combined <- c(epirubicin.labels$patient, epirubicin.labels$AUC)
 epirubicin.labels$AUC_combined.source <- c(rep("patient", dim(temp.data[[1]])[1]), rep("gray", dim(temp.data[[2]])[1]))
 epirubicin$AUC_combined <- rbind(temp.data[[1]], temp.data[[2]])
-#show_pca(input_data = epirubicin$AUC_combined, label = epirubicin.labels$AUC_combined)
-show_pca(input_data = epirubicin$AUC_combined, label = epirubicin.labels$AUC_combined.source)
-
-epirubicin$AUC_combined.ComBat <- ComBat_combine(batch = epirubicin.labels$AUC_combined.source,
-                                           label = epirubicin.labels$AUC_combined, 
-                                           input_data = epirubicin$AUC_combined)
-mean(epirubicin$AUC_combined.ComBat) 
-# -3.662885e-06
-
-#show_pca(input_data = epirubicin$AUC_combined.ComBat, label = epirubicin.labels$AUC_combined)
-show_pca(input_data = epirubicin$AUC_combined.ComBat, label = epirubicin.labels$AUC_combined.source)
-rm(temp.data)
+# show_pca(input_data = epirubicin$AUC_combined, label = epirubicin.labels$AUC_combined)
+# show_pca(input_data = epirubicin$AUC_combined, label = epirubicin.labels$AUC_combined.source)
 
 # get l1000 features ------------------------------------------------------
-stopifnot(colnames(epirubicin$gray_IC50.ComBat) == colnames(epirubicin$gray_AUC.ComBat))
-stopifnot(colnames(epirubicin$gray_slope.ComBat) == colnames(epirubicin$gray_AUC.ComBat))
+stopifnot(colnames(epirubicin$gray_IC50) == colnames(epirubicin$gray_AUC))
+stopifnot(colnames(epirubicin$gray_slope) == colnames(epirubicin$gray_AUC))
 
 Landmark_Genes_n978 <- read.csv("Common/Landmark_Genes_n978.csv")
 
 feature.l1000 <- list()
-feature.l1000$cp <- which(colnames(epirubicin$AUC_combined.ComBat) %in% Landmark_Genes_n978$Ensembl)
+feature.l1000$cp <- which(colnames(epirubicin$AUC_combined) %in% Landmark_Genes_n978$Ensembl)
 feature.l1000$pp <- which(colnames(epirubicin$patient) %in% Landmark_Genes_n978$Ensembl)
 
 stopifnot(length(feature.l1000$cp) > 0)
@@ -129,67 +96,63 @@ partition <- list()
 
 input.labels_cell_lines = list()
 input.labels_cell_lines$slope = epirubicin.labels$slope
-input.labels_cell_lines$IC50 = epirubicin.labels$IC50
 input.labels_cell_lines$AUC = epirubicin.labels$AUC
 
 input.cell_line_order = list()
 input.cell_line_order$slope = 1:length(input.labels_cell_lines$slope)
-input.cell_line_order$IC50 = 1:length(input.labels_cell_lines$IC50)
 input.cell_line_order$AUC = 1:length(input.labels_cell_lines$AUC)
 
-stopifnot(input.cell_line_order$slope == input.cell_line_order$IC50)  
-stopifnot(input.cell_line_order$AUC == input.cell_line_order$IC50)  
+stopifnot(input.cell_line_order$slope == input.cell_line_order$AUC)  
 stopifnot(length(input.cell_line_order$AUC) > 0)
 
-cell_lines_all <- foreach(input.training_amount.p = seq(from = 20, to = 100, by = 10)
-                          , .errorhandling = "stop") %dopar% {
+cell_lines_all <- foreach(parInd = 1:11, .errorhandling = "stop") %dopar% {
                             
-                            generate_random_partition(labels_cell_lines = input.labels_cell_lines, 
-                                                      labels_patient = epirubicin.labels$patient,
-                                                      training_amount.p = input.training_amount.p,
-                                                      leave_one_out = FALSE,
-                                                      cell_line_order = input.cell_line_order,
-                                                      training_amount.c = length(input.cell_line_order$AUC),
-                                                      acc_training = FALSE
-                            )
-                          }
+    generate_random_partition(labels.cell_lines = input.labels_cell_lines, 
+                              labels.patient = epirubicin.labels$patient,
+                              num.training.p = seq(from = 20, to = 70, by = 5)[parInd],
+                              cell_line_order = input.cell_line_order,
+                              num.training.c = length(input.cell_line_order$AUC),
+                              num.test_size = 48,
+                              num.min_labels.training.c = 5
+                              )
+}
 
 partition$cell_lines_all <- cell_lines_all
 
-# order cell lines by similarity using 80 and 40 patients ------------------------------------------
+# order cell lines by brca mutations ------------------------------------------
 load("CGP/cosmic.tcga.RData")
 input.labels_cell_lines = list()
 input.labels_cell_lines$slope = epirubicin.labels$slope
-input.labels_cell_lines$IC50 = epirubicin.labels$IC50
 input.labels_cell_lines$AUC = epirubicin.labels$AUC
 
 input.cell_line_order = list()
 input.cell_line_order$slope <- order(match(names(input.labels_cell_lines$slope), brca_ordered$cell.line))
-input.cell_line_order$IC50 <- order(match(names(input.labels_cell_lines$IC50), brca_ordered$cell.line))
 input.cell_line_order$AUC <- order(match(names(input.labels_cell_lines$AUC), brca_ordered$cell.line))
 
 stopifnot(!is.unsorted(match(brca_ordered$cell.line, 
                              names(input.labels_cell_lines$slope)[input.cell_line_order$slope] ), na.rm = TRUE))
 stopifnot( length(table(input.labels_cell_lines$slope[input.cell_line_order$slope][1:30])) == 2 )
 stopifnot( length(table(input.labels_cell_lines$AUC[input.cell_line_order$AUC][1:30])) == 2 )
-stopifnot( length(table(input.labels_cell_lines$IC50[input.cell_line_order$IC50][1:30])) == 2 )
 
-stopifnot(length(input.cell_line_order$slope) == length(input.cell_line_order$IC50))
-stopifnot(length(input.cell_line_order$AUC) == length(input.cell_line_order$IC50))
+stopifnot(length(input.cell_line_order$slope) == length(input.cell_line_order$AUC))
 stopifnot(length(input.cell_line_order$AUC) > 0)
 
-stopifnot(length(partition$cell_lines_all[[4]]$p2p[[100]]$training_index) == 50)
-patient_50 <- foreach(input.training_amount.c = seq(from = 5, to = 38, by = 5), .errorhandling = "stop") %dopar% {
-  generate_random_partition(labels_cell_lines = input.labels_cell_lines, 
-                            labels_patient = epirubicin.labels$patient,
-                            training_amount.p = 50,
-                            leave_one_out = FALSE,
+input.training.c = seq(from = 10, to = 38, by = 5)
+patient_20 <- foreach(parInd = 1:6, .errorhandling = "stop") %dopar% {
+  
+  stopifnot(length(partition$cell_lines_all[[parInd + 2]]$p2p[[1]]$training_index) == 20 + input.training.c[parInd])
+  
+  generate_random_partition(labels.cell_lines = input.labels_cell_lines, 
+                            labels.patient = epirubicin.labels$patient,
+                            num.training.p = 20,
                             cell_line_order = input.cell_line_order,
-                            training_amount.c = input.training_amount.c,
-                            input_partition = partition$cell_lines_all[[4]],
-                            acc_training = FALSE)
+                            num.training.c = input.training.c[parInd],
+                            input_partition = partition$cell_lines_all[[parInd + 2]],
+                            num.test_size = 48,
+                            num.min_labels.training.c = 5)
 }
-partition$patient_50 <- patient_50
+partition$patient_20 <- patient_20
+
 
 # save worksapce ----------------------------------------------------------
 save(sampleinfo.gray, epirubicin, epirubicin.labels, feature.l1000, partition,
