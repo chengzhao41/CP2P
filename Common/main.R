@@ -25,7 +25,7 @@ print(args)
 parInd <- as.integer(args[[3]])
 INPUT.NFOLDS = 5  
 train_once = FALSE
-
+input.type_measure.test <- NULL
 if (args[4] == "bortezomib") {
   load("Bortezomib/WS/bortezomib_data.RData")
   
@@ -395,6 +395,7 @@ if (args[4] == "bortezomib") {
     input_partition = partition$patient_20[[parInd]]$c2p.AUC
     input_feature.l1000 <- feature.l1000$cp
     input.type_measure = "acc"
+    input.type_measure.test = "auc"
   } else if (args[5] == "c2p_slope_p20") {
     stopifnot(parInd <= length(partition$patient_20))
     
@@ -404,12 +405,17 @@ if (args[4] == "bortezomib") {
     input_partition = partition$patient_20[[parInd]]$c2p.slope
     input_feature.l1000 <- feature.l1000$cp
     input.type_measure = "acc"
+    input.type_measure.test = "auc"
   } else {
     stop(paste("args[5]", args[5], "is invalid."))
   }
   rm(epirubicin, epirubicin.labels)
 } else {
   stop(paste("args[4]", args[4], "is invalid."))
+}
+
+if (is.null(input.type_measure.test)) {
+  input.type_measure = input.type_measure.test
 }
 
 stopifnot(!is.null(input_data))

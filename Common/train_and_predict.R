@@ -59,7 +59,7 @@ for (loop_ind.parInd in PARTITION_BEGIN:PARTITION_END) {
                                                                  NFOLDS = INPUT.NFOLDS, 
                                                                  N_CV_REPEATS = 1, 
                                                                  run_ind = loop_ind.parInd, 
-                                                                 type_measure = input.type_measure,
+                                                                 type_measure = input.type_measure.test,
                                                                  input.models = input.models)
 }
 
@@ -91,7 +91,7 @@ for (loop_ind.parInd in PARTITION_BEGIN:PARTITION_END) {
                                                             NFOLDS = INPUT.NFOLDS, 
                                                             N_CV_REPEATS = 1, 
                                                             run_ind = loop_ind.parInd,
-                                                            type_measure = input.type_measure,
+                                                            type_measure = input.type_measure.test,
                                                             input.models = input.models)
 }
 
@@ -120,7 +120,7 @@ for (loop_ind.parInd in PARTITION_BEGIN:PARTITION_END) {
                                                               NFOLDS = INPUT.NFOLDS, 
                                                               N_CV_REPEATS = 1, 
                                                               run_ind = loop_ind.parInd, 
-                                                              type_measure = input.type_measure,
+                                                              type_measure = input.type_measure.test,
                                                               input.models = input.models)
 }
 
