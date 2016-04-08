@@ -78,10 +78,7 @@ Other_Model_Train_Only <- function(data, ground_truth, partition, selected_featu
   )
   
   return (list(
-    elasticNet.model = elasticNet.model
-    , lasso.model = lasso.model
-    , ridge.model = ridge.model
-    , rf.model = rf.model
+    rf.model = rf.model
     , svmLinear.model = svmLinear.model
     , svmRadial.model = svmRadial.model
   ))
