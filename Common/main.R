@@ -235,12 +235,14 @@ if (args[4] == "bortezomib") {
     stop(paste("args[5]", args[5], "is invalid."))
   }
   rm(docetaxel, docetaxel.labels)
-} else if (args[4] == "erlotinib_gdsc" || args[4] == "erlotinib_ccle") {
+} else if (args[4] == "erlotinib_gdsc" || args[4] == "erlotinib_ccle" || args[4] == "erlotinib_all") {
   
   if (args[4] == "erlotinib_gdsc") {
     load("Erlotinib/WS/erlotinib_homogenized_data_gdsc.RData")
-  } else {
+  } else if (args[4] == "erlotinib_ccle") {
     load("Erlotinib/WS/erlotinib_homogenized_data_ccle.RData")
+  } else if (args[4] == "erlotinib_all") {
+    load("Erlotinib/WS/erlotinib_homogenized_data_all.RData")
   }
   
   input.type_measure = "acc"
