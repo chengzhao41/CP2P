@@ -160,3 +160,4 @@ for (loop_ind.parInd in PARTITION_BEGIN:PARTITION_END) {
 print("completed!")
 print(paste("BEGIN and END:", PARTITION_BEGIN, PARTITION_END))
 rm(input_data)
+rm(input.models)
