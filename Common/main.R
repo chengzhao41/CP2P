@@ -412,6 +412,68 @@ if (args[4] == "bortezomib") {
     stop(paste("args[5]", args[5], "is invalid."))
   }
   rm(epirubicin, epirubicin.labels)
+} else if (args[4] == "epirubicin_ComBat") {
+  load("Epirubicin/WS/epirubicin_data_ComBat.RData")
+  
+  input.type_measure = "auc"
+  input_snf.parameter <- seq(from = 5, to = 30, by = 5)
+  
+  if (args[5] == "p2p") {
+    stopifnot(training_var_amount <= length(partition$cell_lines_all))
+    
+    input_data <- epirubicin$patient
+    input_label <- epirubicin.labels$patient
+    input_partition <- partition$cell_lines_all[[training_var_amount]]$p2p
+    input_feature.l1000 <- feature.l1000$pp
+    INPUT.NFOLDS = 3 # too imbalanced to do 5
+  } else if (args[5] == "cp2p_slope") {
+    stopifnot(training_var_amount <= length(partition$cell_lines_all))
+    
+    input_data <- epirubicin$slope_combined.ComBat 
+    input_label <- epirubicin.labels$slope_combined
+    input_partition = partition$cell_lines_all[[training_var_amount]]$cp2p.slope
+    input_feature.l1000 <- feature.l1000$cp
+  } else if (args[5] == "cp2p_auc") {
+    stopifnot(training_var_amount <= length(partition$cell_lines_all))
+    
+    input_data <- epirubicin$AUC_combined.ComBat
+    input_label <- epirubicin.labels$AUC_combined
+    input_partition = partition$cell_lines_all[[training_var_amount]]$cp2p.AUC
+    input_feature.l1000 <- feature.l1000$cp
+  } else if (args[5] == "cp2p_auc_p50") {
+    stopifnot(training_var_amount <= length(partition$patient_50))
+    
+    input_data <- epirubicin$AUC_combined.ComBat
+    input_label <- epirubicin.labels$AUC_combined
+    input_partition = partition$patient_50[[training_var_amount]]$cp2p.AUC
+    input_feature.l1000 <- feature.l1000$cp
+  } else if (args[5] == "cp2p_slope_p50") {
+    stopifnot(training_var_amount <= length(partition$patient_50))
+    
+    input_data <- epirubicin$slope_combined.ComBat
+    input_label <- epirubicin.labels$slope_combined
+    input_partition = partition$patient_50[[training_var_amount]]$cp2p.slope
+    input_feature.l1000 <- feature.l1000$cp
+  } else if (args[5] == "c2p_auc_p50") {
+    stopifnot(training_var_amount <= length(partition$patient_50))
+    
+    input_data <- epirubicin$AUC_combined.ComBat
+    input_label <- epirubicin.labels$AUC_combined
+    input_partition = partition$patient_50[[training_var_amount]]$c2p.AUC
+    input_feature.l1000 <- feature.l1000$cp
+    input.type_measure = "acc" # too imbalanced to do auc
+  } else if (args[5] == "c2p_slope_p50") {
+    stopifnot(training_var_amount <= length(partition$patient_50))
+    
+    input_data <- epirubicin$slope_combined.ComBat
+    input_label <- epirubicin.labels$slope_combined
+    input_partition = partition$patient_50[[training_var_amount]]$c2p.slope
+    input_feature.l1000 <- feature.l1000$cp
+    input.type_measure = "acc" # too imbalanced to do auc
+  } else {
+    stop(paste("args[5]", args[5], "is invalid."))
+  }
+  rm(epirubicin, epirubicin.labels)
 } else {
   stop(paste("args[4]", args[4], "is invalid."))
 }
