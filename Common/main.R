@@ -259,63 +259,63 @@ if (args[4] == "bortezomib") {
   } else if (args[5] == "cp2p_slope") {
     stopifnot(parInd <= length(partition$cell_lines_all))
     
-    input_data <- erlotinib$slope_combined 
+    input_data <- erlotinib$slope_combined.ComBat
     input_label <- erlotinib.labels$slope_combined
     input_partition = partition$cell_lines_all[[parInd]]$cp2p.slope
     input_feature.l1000 <- feature.l1000$cp
   } else if (args[5] == "cp2p_auc") {
     stopifnot(parInd <= length(partition$cell_lines_all))
     
-    input_data <- erlotinib$AUC_combined
+    input_data <- erlotinib$AUC_combined.ComBat
     input_label <- erlotinib.labels$AUC_combined
     input_partition = partition$cell_lines_all[[parInd]]$cp2p.AUC
     input_feature.l1000 <- feature.l1000$cp
   } else if (args[5] == "cp2p_ic50") {
     stopifnot(parInd <= length(partition$cell_lines_all))
     
-    input_data <- erlotinib$IC50_combined
+    input_data <- erlotinib$IC50_combined.ComBat
     input_label <- erlotinib.labels$IC50_combined
     input_partition = partition$cell_lines_all[[parInd]]$cp2p.IC50
     input_feature.l1000 <- feature.l1000$cp
   } else if (args[5] == "cp2p_slope_lung") {
     stopifnot(parInd <= length(partition$cell_lines_lung))
     
-    input_data <- erlotinib$slope_lung 
+    input_data <- erlotinib$slope_lung.ComBat 
     input_label <- erlotinib.labels$slope_lung
     input_partition = partition$cell_lines_lung[[parInd]]$cp2p.slope
     input_feature.l1000 <- feature.l1000$cp
   } else if (args[5] == "cp2p_auc_lung") {
     stopifnot(parInd <= length(partition$cell_lines_lung))
     
-    input_data <- erlotinib$AUC_lung
+    input_data <- erlotinib$AUC_lung.ComBat
     input_label <- erlotinib.labels$AUC_lung
     input_partition = partition$cell_lines_lung[[parInd]]$cp2p.AUC
     input_feature.l1000 <- feature.l1000$cp
   } else if (args[5] == "cp2p_ic50_lung") {
     stopifnot(parInd <= length(partition$cell_lines_lung))
     
-    input_data <- erlotinib$IC50_lung
+    input_data <- erlotinib$IC50_lung.ComBat
     input_label <- erlotinib.labels$IC50_lung
     input_partition = partition$cell_lines_lung[[parInd]]$cp2p.IC50
     input_feature.l1000 <- feature.l1000$cp
   } else if (args[5] == "cp2p_ic50_p24") {
     stopifnot(parInd <= length(partition$patient_24))
     
-    input_data <- erlotinib$IC50_combined
+    input_data <- erlotinib$IC50_combined.ComBat
     input_label <- erlotinib.labels$IC50_combined
     input_partition = partition$patient_24[[parInd]]$cp2p.IC50
     input_feature.l1000 <- feature.l1000$cp
   } else if (args[5] == "cp2p_auc_p24") {
     stopifnot(parInd <= length(partition$patient_24))
     
-    input_data <- erlotinib$AUC_combined
+    input_data <- erlotinib$AUC_combined.ComBat
     input_label <- erlotinib.labels$AUC_combined
     input_partition = partition$patient_24[[parInd]]$cp2p.AUC
     input_feature.l1000 <- feature.l1000$cp
   } else if (args[5] == "cp2p_slope_p24") {
     stopifnot(parInd <= length(partition$patient_24))
     
-    input_data <- erlotinib$slope_combined
+    input_data <- erlotinib$slope_combined.ComBat
     input_label <- erlotinib.labels$slope_combined
     input_partition = partition$patient_24[[parInd]]$cp2p.slope
     input_feature.l1000 <- feature.l1000$cp
@@ -323,7 +323,7 @@ if (args[4] == "bortezomib") {
     stopifnot(parInd <= length(partition$patient_24))
     
     train_once = TRUE
-    input_data <- erlotinib$IC50_combined
+    input_data <- erlotinib$IC50_combined.ComBat
     input_label <- erlotinib.labels$IC50_combined
     input_partition = partition$patient_24[[parInd]]$c2p.IC50
     input_feature.l1000 <- feature.l1000$cp
@@ -331,7 +331,7 @@ if (args[4] == "bortezomib") {
     stopifnot(parInd <= length(partition$patient_24))
     
     train_once = TRUE
-    input_data <- erlotinib$AUC_combined
+    input_data <- erlotinib$AUC_combined.ComBat
     input_label <- erlotinib.labels$AUC_combined
     input_partition = partition$patient_24[[parInd]]$c2p.AUC
     input_feature.l1000 <- feature.l1000$cp
@@ -339,7 +339,7 @@ if (args[4] == "bortezomib") {
     stopifnot(parInd <= length(partition$patient_24))
     
     train_once = TRUE
-    input_data <- erlotinib$slope_combined
+    input_data <- erlotinib$slope_combined.ComBat
     input_label <- erlotinib.labels$slope_combined
     input_partition = partition$patient_24[[parInd]]$c2p.slope
     input_feature.l1000 <- feature.l1000$cp
