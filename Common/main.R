@@ -154,6 +154,134 @@ if (args[4] == "bortezomib") {
     stop(paste("args[5]", args[5], "is invalid."))
   }
   rm(bortezomib, bortezomib.labels)
+} else if (args[4] == "bortezomib_no_homo") {
+  load("Bortezomib/WS/bortezomib_data.RData")
+  
+  input.type_measure = "auc"
+  input_snf.parameter <- seq(from = 5, to = 30, by = 5)
+  
+  if (args[5] == "p2p") {
+    stopifnot(parInd <= length(partition$cell_lines_all))
+    
+    input_data <- bortezomib$patient.combat
+    input_label <- bortezomib.labels$patient
+    input_partition <- partition$cell_lines_all[[parInd]]$p2p
+    input_feature.l1000 <- feature.l1000$pp
+  } else if (args[5] == "cp2p_slope") {
+    stopifnot(parInd <= length(partition$cell_lines_all))
+    
+    input_data <- bortezomib$slope_combined
+    input_label <- bortezomib.labels$slope_combined
+    input_partition = partition$cell_lines_all[[parInd]]$cp2p.slope
+    input_feature.l1000 <- feature.l1000$cp
+  } else if (args[5] == "cp2p_auc") {
+    stopifnot(parInd <= length(partition$cell_lines_all))
+    
+    input_data <- bortezomib$AUC_combined
+    input_label <- bortezomib.labels$AUC_combined
+    input_partition = partition$cell_lines_all[[parInd]]$cp2p.AUC
+    input_feature.l1000 <- feature.l1000$cp
+  } else if (args[5] == "cp2p_ic50") {
+    stopifnot(parInd <= length(partition$cell_lines_all))
+    
+    input_data <- bortezomib$IC50_combined
+    input_label <- bortezomib.labels$IC50_combined
+    input_partition = partition$cell_lines_all[[parInd]]$cp2p.IC50
+    input_feature.l1000 <- feature.l1000$cp
+  } else if (args[5] == "cp2p_ic50_p20") {
+    stopifnot(parInd <= length(partition$patient_20))
+    
+    input_data <- bortezomib$IC50_combined
+    input_label <- bortezomib.labels$IC50_combined
+    input_partition = partition$patient_20[[parInd]]$cp2p.IC50
+    input_feature.l1000 <- feature.l1000$cp
+  } else if (args[5] == "cp2p_auc_p20") {
+    stopifnot(parInd <= length(partition$patient_20))
+    
+    input_data <- bortezomib$AUC_combined
+    input_label <- bortezomib.labels$AUC_combined
+    input_partition = partition$patient_20[[parInd]]$cp2p.AUC
+    input_feature.l1000 <- feature.l1000$cp
+  } else if (args[5] == "cp2p_slope_p20") {
+    stopifnot(parInd <= length(partition$patient_20))
+    
+    input_data <- bortezomib$slope_combined
+    input_label <- bortezomib.labels$slope_combined
+    input_partition = partition$patient_20[[parInd]]$cp2p.slope
+    input_feature.l1000 <- feature.l1000$cp
+  } else if (args[5] == "c2p_ic50_p20") {
+    stopifnot(parInd <= length(partition$patient_20))
+    
+    train_once = TRUE
+    input_data <- bortezomib$IC50_combined
+    input_label <- bortezomib.labels$IC50_combined
+    input_partition = partition$patient_20[[parInd]]$c2p.IC50
+    input_feature.l1000 <- feature.l1000$cp
+  } else if (args[5] == "c2p_auc_p20") {
+    stopifnot(parInd <= length(partition$patient_20))
+    
+    train_once = TRUE
+    input_data <- bortezomib$AUC_combined
+    input_label <- bortezomib.labels$AUC_combined
+    input_partition = partition$patient_20[[parInd]]$c2p.AUC
+    input_feature.l1000 <- feature.l1000$cp
+  } else if (args[5] == "c2p_slope_p20") {
+    stopifnot(parInd <= length(partition$patient_20))
+    
+    train_once = TRUE
+    input_data <- bortezomib$slope_combined
+    input_label <- bortezomib.labels$slope_combined
+    input_partition = partition$patient_20[[parInd]]$c2p.slope
+    input_feature.l1000 <- feature.l1000$cp
+  } else if (args[5] == "cp2p_slope_p40") {
+    stopifnot(parInd <= length(partition$patient_40))
+    
+    input_data <- bortezomib$slope_combined
+    input_label <- bortezomib.labels$slope_combined
+    input_partition = partition$patient_40[[parInd]]$cp2p.slope
+    input_feature.l1000 <- feature.l1000$cp
+  } else if (args[5] == "cp2p_auc_p40") {
+    stopifnot(parInd <= length(partition$patient_40))
+    
+    input_data <- bortezomib$AUC_combined
+    input_label <- bortezomib.labels$AUC_combined
+    input_partition = partition$patient_40[[parInd]]$cp2p.AUC
+    input_feature.l1000 <- feature.l1000$cp
+  } else if (args[5] == "cp2p_ic50_p40") {
+    stopifnot(parInd <= length(partition$patient_40))
+    
+    input_data <- bortezomib$IC50_combined
+    input_label <- bortezomib.labels$IC50_combined
+    input_partition = partition$patient_40[[parInd]]$cp2p.IC50
+    input_feature.l1000 <- feature.l1000$cp
+  } else if (args[5] == "c2p_ic50_p40") {
+    stopifnot(parInd <= length(partition$patient_40))
+    
+    train_once = TRUE
+    input_data <- bortezomib$IC50_combined
+    input_label <- bortezomib.labels$IC50_combined
+    input_partition = partition$patient_40[[parInd]]$c2p.IC50
+    input_feature.l1000 <- feature.l1000$cp
+  } else if (args[5] == "c2p_auc_p40") {
+    stopifnot(parInd <= length(partition$patient_40))
+    
+    train_once = TRUE
+    input_data <- bortezomib$AUC_combined
+    input_label <- bortezomib.labels$AUC_combined
+    input_partition = partition$patient_40[[parInd]]$c2p.AUC
+    input_feature.l1000 <- feature.l1000$cp
+  } else if (args[5] == "c2p_slope_p40") {
+    stopifnot(parInd <= length(partition$patient_40))
+    
+    train_once = TRUE
+    input_data <- bortezomib$slope_combined
+    input_label <- bortezomib.labels$slope_combined
+    input_partition = partition$patient_40[[parInd]]$c2p.slope
+    input_feature.l1000 <- feature.l1000$cp
+  } else {
+    stop(paste("args[5]", args[5], "is invalid."))
+  }
+  rm(bortezomib, bortezomib.labels)
 } else if (args[4] == "docetaxel") {
   load("Docetaxel/WS/docetaxel_data.RData")
   
