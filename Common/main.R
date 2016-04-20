@@ -504,10 +504,13 @@ if (args[4] == "bortezomib") {
            || args[4] == "epirubicin_ComBat") {
   
   if (args[4] == "epirubicin") {
-    load("Epirubicin/WS/epirubicin_data.RData")
+    load("Epirubicin/WS/epirubicin_data_ComBat.RData")
+    epirubicin$slope_combined.ComBat <- epirubicin$slope_combined
+    epirubicin$AUC_combined.ComBat <- epirubicin$AUC_combined
+    
   } else if (args[4] == "epirubicin_ComBat_no_label") {
     load("Epirubicin/WS/epirubicin_data_ComBat_no_labels.RData")
-  } else if (args[4] == "epirubicin_ComBat_no_label") {
+  } else if (args[4] == "epirubicin_ComBat") {
     load("Epirubicin/WS/epirubicin_data_ComBat.RData")
   } else {
     stop("args[4] is wrong!")
