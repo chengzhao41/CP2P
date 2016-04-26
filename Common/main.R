@@ -564,6 +564,7 @@ if (args[4] == "bortezomib") {
     input_feature.l1000 <- feature.l1000$cp
     input.type_measure = "acc"
     input.type_measure.test = "auc"
+    INPUT.NFOLDS = 3 # needed or else the training fails
   } else if (args[5] == "c2p_slope_p20") {
     stopifnot(parInd <= length(partition$patient_20))
     
@@ -574,6 +575,7 @@ if (args[4] == "bortezomib") {
     input_feature.l1000 <- feature.l1000$cp
     input.type_measure = "acc"
     input.type_measure.test = "auc"
+    INPUT.NFOLDS = 3 # needed or else the training fails
   } else if (args[5] == "c2p_auc_p40") {
     stopifnot(parInd <= length(partition$patient_40))
     
@@ -584,6 +586,7 @@ if (args[4] == "bortezomib") {
     input_feature.l1000 <- feature.l1000$cp
     input.type_measure = "acc"
     input.type_measure.test = "auc"
+    INPUT.NFOLDS = 3 # needed or else the training fails
   } else if (args[5] == "c2p_slope_p40") {
     stopifnot(parInd <= length(partition$patient_40))
     
@@ -594,6 +597,7 @@ if (args[4] == "bortezomib") {
     input_feature.l1000 <- feature.l1000$cp
     input.type_measure = "acc"
     input.type_measure.test = "auc"
+    INPUT.NFOLDS = 3 # needed or else the training fails
   } else {
     stop(paste("args[5]", args[5], "is invalid."))
   }
