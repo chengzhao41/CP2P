@@ -574,6 +574,26 @@ if (args[4] == "bortezomib") {
     input_feature.l1000 <- feature.l1000$cp
     input.type_measure = "acc"
     input.type_measure.test = "auc"
+  } else if (args[5] == "c2p_auc_p40") {
+    stopifnot(parInd <= length(partition$patient_40))
+    
+    train_once = TRUE
+    input_data <- epirubicin$AUC_combined
+    input_label <- epirubicin.labels$AUC_combined
+    input_partition = partition$patient_40[[parInd]]$c2p.AUC
+    input_feature.l1000 <- feature.l1000$cp
+    input.type_measure = "acc"
+    input.type_measure.test = "auc"
+  } else if (args[5] == "c2p_slope_p40") {
+    stopifnot(parInd <= length(partition$patient_40))
+    
+    train_once = TRUE
+    input_data <- epirubicin$slope_combined
+    input_label <- epirubicin.labels$slope_combined
+    input_partition = partition$patient_40[[parInd]]$c2p.slope
+    input_feature.l1000 <- feature.l1000$cp
+    input.type_measure = "acc"
+    input.type_measure.test = "auc"
   } else {
     stop(paste("args[5]", args[5], "is invalid."))
   }
