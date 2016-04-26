@@ -598,6 +598,36 @@ if (args[4] == "bortezomib") {
     input.type_measure = "acc"
     input.type_measure.test = "auc"
     INPUT.NFOLDS = 3 # needed or else the training fails
+  } else if (args[5] == "c2p_slope_once") {
+    stopifnot(parInd <= length(partition$patient_40))
+    
+    train_once = TRUE
+    input_data <- epirubicin$slope_combined
+    input_label <- epirubicin.labels$slope_combined
+    input_partition = partition$patient_40[[parInd]]$c2p.slope
+    input_feature.l1000 <- feature.l1000$cp
+    
+    input_partition[[1]]$training_index = 
+      which(epirubicin.labels$slope_combined.source != "patient")
+    input_partition[[1]]$test_index = 
+      which(epirubicin.labels$slope_combined.source == "patient")
+    
+    INPUT.NFOLDS = 3 # needed or else the training fails
+  } else if (args[5] == "c2p_auc_once") {
+    stopifnot(parInd <= length(partition$patient_40))
+    
+    train_once = TRUE
+    input_data <- epirubicin$auc_combined
+    input_label <- epirubicin.labels$auc_combined
+    input_partition = partition$patient_40[[parInd]]$c2p.auc
+    input_feature.l1000 <- feature.l1000$cp
+    
+    input_partition[[1]]$training_index = 
+      which(epirubicin.labels$auc_combined.source != "patient")
+    input_partition[[1]]$test_index = 
+      which(epirubicin.labels$auc_combined.source == "patient")
+    
+    INPUT.NFOLDS = 3 # needed or else the training fails
   } else {
     stop(paste("args[5]", args[5], "is invalid."))
   }
